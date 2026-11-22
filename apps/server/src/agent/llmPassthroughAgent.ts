@@ -1,27 +1,23 @@
 import { randomUUID } from "node:crypto";
-import { asMessageId, type AgentEvent, type ApiErrorCode, type MessageId, type ModelProvider } from "@airport/shared";
+import { asMessageId, type AgentEvent, type ApiErrorCode, type ModelProvider } from "@airport/shared";
 import { HttpError } from "../http/errors.ts";
 import { LlmError, type LlmClient } from "../llm/llmClient.ts";
 import { mainModel } from "../llm/models.ts";
 import type { Agent, AgentRunInput } from "./agent.ts";
 import { classifyMessage, type Classification, type ClassificationLabel } from "./classifier/classifier.ts";
 import { classificationToolEvents } from "./classifier/toolEvents.ts";
-import { answerSystemContext } from "./flow/answerContext.ts";
-import { candidateToolEvents, pickCandidates, routeOf, type Candidates } from "./flow/candidates.ts";
-import { registryLookupTools, resolveCandidates, type LookupTools } from "./flow/resolve.ts";
-import { defaultScoreAirportsTool, type ScoreAirportsTool } from "./flow/scoreAirports.ts";
-import { defaultLoopTools, MAX_TOOL_STEPS, runToolLoop, type ToolLoopOutcome } from "./flow/toolLoop.ts";
-import { runToolStep } from "./flow/toolStep.ts";
-import { gradingSystemPrompt } from "./prompts/grading.ts";
+import { SCORE_AIRPORTS_TOOL_NAME, type ScoreAirportsTool } from "./flow/scoreAirports.ts";
+import { MAX_TOOL_STEPS, runToolLoop } from "./flow/toolLoop.ts";
 import { buildToolLoopPrompt } from "./prompts/toolLoop.ts";
-import type { RegisteredTool } from "./tools/tool.ts";
 import { CAPABILITIES_ANSWER } from "./responses/capabilities.ts";
 import { GREETING_ANSWER } from "./responses/greeting.ts";
 import { offTopicAnswer, type Rng } from "./responses/offTopic.ts";
+import { TOOLS } from "./tools/registry.ts";
+import type { RegisteredTool } from "./tools/tool.ts";
 
 /**
  * Labels answered with one fixed text and no main LLM call (#21; greeting #44). off_topic picks its suggested
- * question with the agent's rng (#44). in_scope goes to the LLM.
+ * question with the agent's rng (#44). The other labels go to the tool loop.
  */
 const STATIC_ANSWERS: Readonly<Partial<Record<ClassificationLabel, (rng: Rng) => string>>> = {
   greeting: () => GREETING_ANSWER,
@@ -41,35 +37,22 @@ const API_CODE: Record<LlmError["code"], ApiErrorCode> = {
 export interface AgentOptions {
   /** The random source for the off_topic suggestion (#44). Default Math.random. */
   readonly rng?: Rng;
-  /** score_airports (#42). Default: the real tool from the TOOLS registry (PR #38). Tests pass a fake. */
+  /** Replaces the registry's score_airports in the loop's tools. Tests pass a fake. */
   readonly scoreAirports?: ScoreAirportsTool;
-  /** The lookup tools that resolve the candidates (#42). Default: the registry's. */
-  readonly lookups?: LookupTools;
-  /** The tool loop's tools (#48). Default: the lookups and get_enplanements from the registry (no score_airports). */
-  readonly loopTools?: readonly RegisteredTool[];
 }
 
-/** Most candidate codes passed on when the loop asks for scores (the candidate schema's own bound). */
-const MAX_CANDIDATE_CODES = 25;
-
 /**
- * The agent: classifies the user's message (shown as a classify_message tool_call/tool_result), then:
+ * The agent (#48): classifies the user's message (shown as a classify_message tool_call/tool_result), then:
  * - `greeting` / `capabilities` / `off_topic`: one fixed answer, no main LLM call (#21, #44);
- * - `in_scope`: the candidate step (fast model, strict JSON) decides the path by its `intent` (#48):
- *   - "score": the lookups that resolve the candidates, score_airports on at most 5 codes, each shown as a
- *     tool_call/tool_result pair; then the main model explains, with the results in its system context (#42),
- *     plus the compare skill for 2–5 scored airports (#46);
- *   - "lookup" (also when unsure): the tool loop (`flow/toolLoop.ts`) over the lookups and get_enplanements, at
- *     most 6 tool runs. score_airports is not a loop tool: a loop that asks for it goes to the scoring flow;
- * - `grading`: one main call with the grading skill in its system context, no tools (#43).
- * The steps are held until the main LLM's first event, so an LlmError before it is still an HttpError (normal
- * 4xx/5xx); after it, an `error` event.
+ * - every other label (`in_scope`, `grading`): the ReAct tool loop (`flow/toolLoop.ts`) with ALL registry tools,
+ *   score_airports included (at most 5 codes, enforced in the loop). The loop's system prompt carries the compare
+ *   skill always, and the grading skill for `grading`.
+ * The classify step is held until the main LLM's first event, so an LlmError before it is still an HttpError
+ * (normal 4xx/5xx); after it, an `error` event.
  */
 export class LlmPassthroughAgent implements Agent {
   private readonly rng: Rng;
-  private readonly scoreAirports: ScoreAirportsTool;
-  private readonly lookups: LookupTools;
-  private readonly loopTools: readonly RegisteredTool[];
+  private readonly tools: readonly RegisteredTool[];
 
   constructor(
     private readonly clients: Readonly<Record<ModelProvider, LlmClient>>,
@@ -78,27 +61,8 @@ export class LlmPassthroughAgent implements Agent {
     options: AgentOptions = {},
   ) {
     this.rng = options.rng ?? Math.random;
-    this.scoreAirports = options.scoreAirports ?? defaultScoreAirportsTool();
-    this.lookups = options.lookups ?? registryLookupTools();
-    this.loopTools = options.loopTools ?? defaultLoopTools();
-  }
-
-  /**
-   * The scoring flow's tool steps (#42): resolve the candidates, score at most 5. Returns the events to show, the
-   * answer's system context.
-   * An abort rethrows; a failed tool is a tool_result with ok: false.
-   */
-  private async scoreSteps(
-    candidates: Candidates,
-    messageId: MessageId,
-    signal: AbortSignal,
-  ): Promise<{ events: AgentEvent[]; system: string }> {
-    const resolution = await resolveCandidates(candidates, this.lookups, messageId, signal);
-    const events: AgentEvent[] = resolution.steps.flatMap((step) => step.events);
-    if (resolution.codes.length === 0) return { events, system: answerSystemContext({ resolution }) };
-    const scored = await runToolStep(this.scoreAirports, { airport_codes: [...resolution.codes] }, messageId, signal);
-    events.push(...scored.events);
-    return { events, system: answerSystemContext({ resolution, score: scored.result }) };
+    const score = options.scoreAirports;
+    this.tools = score === undefined ? TOOLS : TOOLS.map((tool) => (tool.name === SCORE_AIRPORTS_TOOL_NAME ? score : tool));
   }
 
   async *run(input: AgentRunInput): AsyncGenerator<AgentEvent> {
@@ -108,8 +72,7 @@ export class LlmPassthroughAgent implements Agent {
     const { messages } = input.request;
     // First agent step (#13): classify the latest user message. A bad label falls back to in_scope (#19); a
     // failed call is retried, and after the last try it throws an LlmError (#22): nothing has streamed yet, so it
-    // becomes an HttpError and the main LLM is never called. `greeting`, `capabilities` and `off_topic` get a fixed
-    // answer (no main LLM call); the other labels continue to the LLM.
+    // becomes an HttpError and the main LLM is never called.
     let classification: Classification;
     try {
       classification = await classifyMessage(client, messages, input.signal);
@@ -128,90 +91,38 @@ export class LlmPassthroughAgent implements Agent {
       yield { type: "message_end", messageId, stopReason: "end_turn" };
       return;
     }
-    // #42 / #43 / #48: the label (and for in_scope the candidate intent) decides the steps and the main call's system context.
-    let system: string | undefined;
-    const prelude: AgentEvent[] = [...classified];
+
     let started = false;
-    // The steps are held until the first LLM event, so a failure to start is still an HttpError.
-    const begin = function* (): Generator<AgentEvent> {
-      if (started) return;
-      started = true;
-      yield { type: "message_start", messageId, modelId: input.model.id };
-      yield* prelude.splice(0);
-    };
-    const model = mainModel(client.provider, this.claudeMainModel);
+    const loop = runToolLoop({
+      client,
+      model: mainModel(client.provider, this.claudeMainModel),
+      system: buildToolLoopPrompt(this.tools, MAX_TOOL_STEPS, { grading: classification.label === "grading" }),
+      messages,
+      messageId,
+      signal: input.signal,
+      tools: this.tools,
+    });
     try {
-      if (classification.label === "grading") system = gradingSystemPrompt();
-      if (classification.label === "in_scope") {
-        const picked = await pickCandidates(client, messages, input.signal);
-        prelude.push(...candidateToolEvents(messageId, lastUserMessage, picked));
-        let candidates = picked.candidates;
-        if (routeOf(picked) === "lookup") {
-          const loop = runToolLoop({
-            client,
-            model,
-            system: buildToolLoopPrompt(this.loopTools, MAX_TOOL_STEPS),
-            messages,
-            messageId,
-            signal: input.signal,
-            tools: this.loopTools,
-          });
-          const outcome: ToolLoopOutcome = yield* relay(loop, begin);
-          if (outcome.kind === "answered") {
-            yield* begin();
-            yield { type: "message_end", messageId, stopReason: outcome.stopReason };
-            return;
-          }
-          // The loop asked for scores: the #42 flow scores them, capped at 5 like any scoring turn.
-          candidates = { ...candidates, codes: [...new Set([...candidates.codes, ...outcome.codes])].slice(0, MAX_CANDIDATE_CODES) };
+      for (;;) {
+        const step = await loop.next();
+        // The classify step is held until the loop's first event, so a failure to start is still an HttpError.
+        if (!started) {
+          started = true;
+          yield { type: "message_start", messageId, modelId: input.model.id };
+          yield* classified;
         }
-        const steps = await this.scoreSteps(candidates, messageId, input.signal);
-        if (started) yield* steps.events;
-        else prelude.push(...steps.events);
-        system = steps.system;
-      }
-      let thinkingSince: number | undefined;
-      const endThinking = (): AgentEvent[] => {
-        if (thinkingSince === undefined) return [];
-        const durationMs = Date.now() - thinkingSince;
-        thinkingSince = undefined;
-        return [{ type: "thinking_end", messageId, durationMs }];
-      };
-      for await (const event of client.stream({ messages, signal: input.signal, model, ...(system !== undefined ? { system } : {}) })) {
-        yield* begin();
-        if (event.type === "thinking_delta") {
-          thinkingSince ??= Date.now();
-          yield { type: "thinking_delta", messageId, delta: event.text };
-        } else if (event.type === "text_delta") {
-          yield* endThinking();
-          yield { type: "text_delta", messageId, delta: event.text };
-        } else {
-          yield* endThinking();
-          yield { type: "message_end", messageId, stopReason: event.stopReason === "max_tokens" ? "max_tokens" : "end_turn" };
+        if (step.done === true) {
+          yield { type: "message_end", messageId, stopReason: step.value };
           return;
         }
+        yield step.value;
       }
     } catch (err) {
       if (!(err instanceof LlmError)) throw err;
       if (!started) throw new HttpError(API_CODE[err.code], err.message);
       yield { type: "error", error: { code: API_CODE[err.code], message: err.message } };
+    } finally {
+      await loop.return("cancelled");
     }
-  }
-}
-
-/** Relays the loop's events (emitting message_start and the held steps before the first one) and returns its outcome. */
-async function* relay(
-  loop: AsyncGenerator<AgentEvent, ToolLoopOutcome>,
-  begin: () => Generator<AgentEvent>,
-): AsyncGenerator<AgentEvent, ToolLoopOutcome> {
-  try {
-    for (;;) {
-      const step = await loop.next();
-      if (step.done === true) return step.value;
-      yield* begin();
-      yield step.value;
-    }
-  } finally {
-    await loop.return({ kind: "answered", stopReason: "cancelled" });
   }
 }

@@ -1,11 +1,12 @@
-import { asMessageId, type AgentEvent, type JsonValue } from "@airport/shared";
+import { asMessageId, type AgentEvent, type JsonValue, type StopReason } from "@airport/shared";
 import { z } from "zod";
 import { describe, expect, it, vi } from "vitest";
 import { LlmError, type LlmClient, type LlmRequest, type LlmStreamEvent } from "../../llm/llmClient.ts";
 import { ANSWER_NOW, BAD_CALL_ANSWER, EMPTY_ANSWER, stepLimitAnswer } from "../prompts/toolLoop.ts";
-import { getTool } from "../tools/registry.ts";
+import { TOOLS } from "../tools/registry.ts";
+import { fakeScoreAirports } from "../../test/fakeScoreAirports.ts";
 import { defineTool, ok, type RegisteredTool } from "../tools/tool.ts";
-import { defaultLoopTools, LOOP_TOOL_NAMES, MAX_TOOL_STEPS, runToolLoop, type ToolLoopOutcome } from "./toolLoop.ts";
+import { MAX_TOOL_STEPS, runToolLoop, TOO_MANY_AIRPORTS } from "./toolLoop.ts";
 
 const messageId = asMessageId("m1");
 const BOS_CALL = '{"tool":"get_enplanements","input":{"airport_code":"BOS"}}';
@@ -60,7 +61,7 @@ async function drain(client: LlmClient, tools: readonly RegisteredTool[], signal
     tools,
     onToolResult: (name) => recorded.push(name),
   });
-  let outcome: ToolLoopOutcome;
+  let outcome: StopReason;
   for (;;) {
     const step = await loop.next();
     if (step.done === true) {
@@ -75,22 +76,15 @@ async function drain(client: LlmClient, tools: readonly RegisteredTool[], signal
 const types = (events: AgentEvent[]) => events.map((e) => e.type);
 
 describe("runToolLoop (#48)", () => {
-  it("only offers the registry's lookups and get_enplanements, never score_airports", () => {
-    const tools = defaultLoopTools();
-    expect(tools.map((t) => t.name)).toEqual([...LOOP_TOOL_NAMES]);
-    expect(tools.every((t) => t === getTool(t.name))).toBe(true);
-    expect(tools.map((t) => t.name)).not.toContain("score_airports");
-  });
-
   it("calls the real get_enplanements, feeds the result back as delimited data, then streams the answer", async () => {
     const { client, requests } = scripted([BOS_CALL, "BOS had about 20 million boardings in 2024."]);
-    const { events, outcome, recorded, text } = await drain(client, defaultLoopTools());
+    const { events, outcome, recorded, text } = await drain(client, TOOLS);
 
     expect(types(events)).toEqual(["tool_call", "tool_result", "text_delta"]);
     expect(events[0]).toMatchObject({ type: "tool_call", name: "get_enplanements", input: { airport_code: "BOS" } });
     expect(events[1]).toMatchObject({ type: "tool_result", result: { ok: true, output: { airportCode: "BOS" } } });
     expect(text).toBe("BOS had about 20 million boardings in 2024.");
-    expect(outcome).toEqual({ kind: "answered", stopReason: "end_turn" });
+    expect(outcome).toBe("end_turn");
     expect(recorded).toEqual(["get_enplanements"]);
     const [assistant, observation] = requests[1]!.messages.slice(-2);
     expect(assistant).toEqual({ role: "assistant", content: BOS_CALL });
@@ -140,7 +134,7 @@ describe("runToolLoop (#48)", () => {
     expect(ran).toEqual([]);
     expect(text).toBe(BAD_CALL_ANSWER);
     expect(types(events)).toEqual(["text_delta"]);
-    expect(outcome).toEqual({ kind: "answered", stopReason: "end_turn" });
+    expect(outcome).toBe("end_turn");
   });
 
   it("never runs an unknown tool: it is fed back as an error, never shown", async () => {
@@ -150,7 +144,7 @@ describe("runToolLoop (#48)", () => {
     expect(ran).toEqual([]);
     expect(types(events)).toEqual(["text_delta"]);
     expect(text).toBe("Sorry, I only have lookups.");
-    expect(requests[1]!.messages.at(-1)!.content).toContain('there is no tool named "delete_db". Available tools: get_enplanements, score_airports');
+    expect(requests[1]!.messages.at(-1)!.content).toContain('there is no tool named "delete_db". Available tools: get_enplanements');
   });
 
   it("injection: arbitrary tool input is rejected by the tool's zod schema and the tool's code never runs", async () => {
@@ -185,7 +179,7 @@ describe("runToolLoop (#48)", () => {
     expect(requests).toHaveLength(MAX_TOOL_STEPS + 1);
     expect(requests.at(-1)!.messages.at(-1)).toEqual({ role: "user", content: ANSWER_NOW });
     expect(text).toBe("Here is what I found.");
-    expect(outcome.kind).toBe("answered");
+    expect(outcome).toBe("end_turn");
   });
 
   it("the step cap: a model that still calls a tool gets a plain, non-empty answer and no 7th run", async () => {
@@ -207,16 +201,38 @@ describe("runToolLoop (#48)", () => {
   it("keeps max_tokens as the stop reason", async () => {
     const { client } = scripted([[{ type: "text_delta", text: "Partial" }, { type: "done", stopReason: "max_tokens" }]]);
     const { outcome } = await drain(client, []);
-    expect(outcome).toEqual({ kind: "answered", stopReason: "max_tokens" });
+    expect(outcome).toBe("max_tokens");
   });
 
-  it("a score_airports call ends the loop with the requested codes (the agent runs the #42 flow); nothing runs here", async () => {
-    const { tool, ran } = spyTool();
-    const { client } = scripted(['{"tool":"score_airports","input":{"airport_codes":["LAX","SNA",7]}}']);
-    const { outcome, events } = await drain(client, [tool]);
-    expect(outcome).toEqual({ kind: "score", codes: ["LAX", "SNA"] });
-    expect(events).toEqual([]);
-    expect(ran).toEqual([]);
+  it("lookup -> score_airports -> answer: the model resolves a place, then scores the codes", async () => {
+    const score = fakeScoreAirports();
+    const tools = TOOLS.map((t) => (t.name === "score_airports" ? score.tool : t));
+    const { client } = scripted([
+      '{"tool":"find_airports_by_city","input":{"cities":["Los Angeles"]}}',
+      '{"tool":"score_airports","input":{"airport_codes":["LAX","SNA"]}}',
+      "LAX scores higher than SNA.",
+    ]);
+    const { events, text } = await drain(client, tools);
+    expect(events.flatMap((e) => (e.type === "tool_call" ? [e.name] : []))).toEqual(["find_airports_by_city", "score_airports"]);
+    expect(score.calls).toEqual([["LAX", "SNA"]]);
+    expect(text).toBe("LAX scores higher than SNA.");
+  });
+
+  it("score_airports with more than 5 codes does not run; the error goes back and a retry with 5 runs", async () => {
+    const score = fakeScoreAirports();
+    const seven = ["LAX", "SFO", "SAN", "SJC", "OAK", "SMF", "BUR"];
+    const { client, requests } = scripted([
+      JSON.stringify({ tool: "score_airports", input: { airport_codes: seven } }),
+      JSON.stringify({ tool: "score_airports", input: { airport_codes: seven.slice(0, 5) } }),
+      "Ranked.",
+    ]);
+    const { events, text } = await drain(client, [score.tool]);
+    expect(score.calls).toEqual([seven.slice(0, 5)]);
+    expect(events[1]).toMatchObject({ type: "tool_result", result: { ok: false, errorMessage: TOO_MANY_AIRPORTS } });
+    expect(TOO_MANY_AIRPORTS).toBe("max 5 airports; pick the 5 most relevant");
+    expect(requests[1]!.messages.at(-1)!.content).toContain(TOO_MANY_AIRPORTS);
+    expect(events[3]).toMatchObject({ type: "tool_result", result: { ok: true } });
+    expect(text).toBe("Ranked.");
   });
 
   it("an abort between steps stops the loop: no further model call, the run rejects", async () => {

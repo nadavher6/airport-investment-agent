@@ -1,25 +1,24 @@
 import { randomUUID } from "node:crypto";
-import { asToolCallId, type AgentEvent, type JsonValue, type MessageId, type StopReason } from "@airport/shared";
+import { asToolCallId, type AgentEvent, type JsonObject, type JsonValue, type MessageId, type StopReason } from "@airport/shared";
 import type { LlmClient, LlmMessage } from "../../llm/llmClient.ts";
 import { ANSWER_NOW, BAD_CALL_ANSWER, badCallObservation, EMPTY_ANSWER, stepLimitAnswer } from "../prompts/toolLoop.ts";
-import { getTool } from "../tools/registry.ts";
 import { toWireResult, type RegisteredTool } from "../tools/tool.ts";
 import { parseToolCall } from "../toolCall.ts";
-import { SCORE_AIRPORTS_TOOL_NAME } from "./scoreAirports.ts";
+import { MAX_SCORED_AIRPORTS, SCORE_AIRPORTS_TOOL_NAME } from "./scoreAirports.ts";
 
-/** Most tool runs in one lookup turn (#48). After it, the model gets one last call to answer with no tools. */
+/** Most tool runs in one turn (#48). After it, the model gets one last call to answer with no tools. */
 export const MAX_TOOL_STEPS = 6;
 
-/** The loop's tools: the lookups and get_enplanements. score_airports is NOT one (it goes to the #42 flow). */
-export const LOOP_TOOL_NAMES = ["get_airport_by_code", "find_airports_by_city", "find_airports_by_region", "get_enplanements"] as const;
+/** The error fed back (the tool does not run) when score_airports gets more than MAX_SCORED_AIRPORTS codes. */
+export const TOO_MANY_AIRPORTS = `max ${MAX_SCORED_AIRPORTS} airports; pick the ${MAX_SCORED_AIRPORTS} most relevant`;
 
-/** The loop tools from the #30 registry (getTool). A missing one is a programming error. */
-export function defaultLoopTools(): RegisteredTool[] {
-  return LOOP_TOOL_NAMES.map((name) => {
-    const tool = getTool(name);
-    if (tool === undefined) throw new Error(`The ${name} tool is not in the registry`);
-    return tool;
-  });
+/** The loop's own input rule on top of the tool's zod schema: at most 5 distinct codes for score_airports. */
+function loopRejects(name: string, input: JsonObject): string | undefined {
+  if (name !== SCORE_AIRPORTS_TOOL_NAME) return undefined;
+  const codes = input.airport_codes;
+  if (!Array.isArray(codes)) return undefined; // the tool's schema reports it
+  const distinct = new Set(codes.map((c) => (typeof c === "string" ? c.trim().toUpperCase() : JSON.stringify(c))));
+  return distinct.size > MAX_SCORED_AIRPORTS ? TOO_MANY_AIRPORTS : undefined;
 }
 
 export interface ToolLoopInput {
@@ -35,28 +34,24 @@ export interface ToolLoopInput {
   readonly onToolResult?: (name: string, output: JsonValue) => void;
 }
 
-/** How the loop ended: with an answer streamed, or with the model asking for scores (the agent runs #42's flow). */
-export type ToolLoopOutcome =
-  | { readonly kind: "answered"; readonly stopReason: StopReason }
-  | { readonly kind: "score"; readonly codes: readonly string[] };
-
 /** A step's text is held from its first "{" or "`" on, so tool-call JSON is never streamed to the user. */
 const HOLD_FROM = /[{`]/;
 
 /**
- * The lookup path's ReAct loop (#48) over the text-only LlmClient. Each step's reply is parsed as a whole
+ * The agent's ReAct loop (#48) over the text-only LlmClient. Each step's reply is parsed as a whole
  * (toolCall.ts): a call is run through the registry tool's `run` (its zod schema validates the input first) and
  * shown as a tool_call/tool_result pair, and its result goes back to the model as delimited data. Prose before
  * any "{" or "`" streams live; the rest of a step is held until the step is parsed, so raw JSON never reaches
  * the user. A bad call (malformed JSON, unknown tool) is fed back ONCE; a second one ends with a plain answer.
+ * score_airports with more than 5 codes does not run: the error goes back to the model as its tool_result.
  * After MAX_TOOL_STEPS tool runs the model gets one call to answer with no tools; the answer is never empty.
- * A score_airports call ends the loop with `{ kind: "score" }`. Yields no message_start/message_end (the agent
- * does). An abort rethrows at the next step; an LlmError propagates to the agent.
+ * Yields no message_start/message_end (the agent does) and returns the stop reason. An abort rethrows at the
+ * next step; an LlmError propagates to the agent.
  */
-export async function* runToolLoop(input: ToolLoopInput): AsyncGenerator<AgentEvent, ToolLoopOutcome> {
+export async function* runToolLoop(input: ToolLoopInput): AsyncGenerator<AgentEvent, StopReason> {
   const { client, model, system, messageId, signal } = input;
   const byName = new Map(input.tools.map((tool) => [tool.name, tool]));
-  const toolNames = [...byName.keys(), SCORE_AIRPORTS_TOOL_NAME];
+  const toolNames = [...byName.keys()];
   const convo: LlmMessage[] = [...input.messages];
   let thinkingSince: number | undefined;
   let shown = "";
@@ -115,13 +110,13 @@ export async function* runToolLoop(input: ToolLoopInput): AsyncGenerator<AgentEv
   }
 
   /** Ends the turn; `fallback` (a plain sentence, set apart from any lead-in shown) when there is no answer text. */
-  function* finish(stopReason: StopReason, fallback?: string): Generator<AgentEvent, ToolLoopOutcome> {
+  function* finish(stopReason: StopReason, fallback?: string): Generator<AgentEvent, StopReason> {
     yield* endThinking();
     if (fallback !== undefined) {
       separate = true;
       yield* show(fallback);
     }
-    return { kind: "answered", stopReason };
+    return stopReason;
   }
 
   while (toolRuns < MAX_TOOL_STEPS) {
@@ -130,12 +125,6 @@ export async function* runToolLoop(input: ToolLoopInput): AsyncGenerator<AgentEv
     if (parsed.kind === "answer") {
       yield* show(held);
       return yield* finish(stopReason, `${live}${held}`.trim() === "" ? EMPTY_ANSWER : undefined);
-    }
-    if (parsed.kind === "call" && parsed.name === SCORE_AIRPORTS_TOOL_NAME) {
-      yield* endThinking();
-      const raw = parsed.input.airport_codes;
-      const codes = Array.isArray(raw) ? raw.filter((c): c is string => typeof c === "string") : [];
-      return { kind: "score", codes };
     }
     const tool = parsed.kind === "call" ? byName.get(parsed.name) : undefined;
     if (parsed.kind === "bad" || tool === undefined) {
@@ -154,7 +143,8 @@ export async function* runToolLoop(input: ToolLoopInput): AsyncGenerator<AgentEv
     const toolCallId = asToolCallId(randomUUID());
     yield { type: "tool_call", messageId, toolCallId, name: tool.name, input: parsed.input };
     // RegisteredTool.run validates the input with the tool's zod schema before the tool runs, and never throws.
-    const wire = toWireResult(await tool.run(parsed.input, { signal }));
+    const rejected = loopRejects(tool.name, parsed.input);
+    const wire = rejected !== undefined ? ({ ok: false, errorMessage: rejected } as const) : toWireResult(await tool.run(parsed.input, { signal }));
     signal.throwIfAborted();
     yield { type: "tool_result", messageId, toolCallId, result: wire };
     if (wire.ok) input.onToolResult?.(tool.name, wire.output);

@@ -11,6 +11,9 @@ export type ScoreAirportsTool = RegisteredTool;
 
 export const SCORE_AIRPORTS_TOOL_NAME = "score_airports";
 
+/** At most this many airports are scored in one turn (#42; enforced in the tool loop, #48). The owner can change it. */
+export const MAX_SCORED_AIRPORTS = 5;
+
 /** The real score_airports (PR #38), from the TOOLS registry. A missing tool is a programming error. */
 export function defaultScoreAirportsTool(): ScoreAirportsTool {
   const tool = getTool(SCORE_AIRPORTS_TOOL_NAME);
