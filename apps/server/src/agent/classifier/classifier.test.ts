@@ -85,6 +85,19 @@ describe("classifyMessage", () => {
     expect(sawAbort).toBe(true);
   });
 
+  it("still rejects when the client ends its stream quietly on abort", async () => {
+    const controller = new AbortController();
+    const client: LlmClient = {
+      provider: "claude-headless",
+      health: () => Promise.resolve({ status: "ok", detail: "fake" }),
+      // Like Claude headless: returns on abort without a done event.
+      async *stream() {
+        controller.abort(new Error("stopped quietly"));
+      },
+    };
+    await expect(classifyMessage(client, [user("hi")], controller.signal)).rejects.toThrow("stopped quietly");
+  });
+
   it("does not call the client when the signal is already aborted", async () => {
     const controller = new AbortController();
     controller.abort();

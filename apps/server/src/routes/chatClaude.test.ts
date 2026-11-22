@@ -27,8 +27,14 @@ describe("POST /api/chat with claude-headless", () => {
       .post(API_ROUTES.chat)
       .send(body("claude-headless"))
       .expect(200);
-    expect(parseSse(res.text).map((e) => e.type)).toEqual([
+    const events = parseSse(res.text);
+    // The fake replays the same fixture to the classifier call too, so it falls back to in_scope (#13).
+    expect(events[1]).toMatchObject({ type: "tool_call", name: "classify_message" });
+    expect(events[2]).toMatchObject({ type: "tool_result", result: { ok: true, output: { label: "in_scope" } } });
+    expect(events.map((e) => e.type)).toEqual([
       "message_start",
+      "tool_call",
+      "tool_result",
       "thinking_delta",
       "thinking_delta",
       "thinking_end",

@@ -76,6 +76,8 @@ export async function classifyMessage(
     console.warn(`classify_message: ${client.provider} call failed (${detail}); using in_scope`);
     return FALLBACK_CLASSIFICATION;
   }
+  // A client may end its stream quietly on abort (Claude headless does): still cancel.
+  signal.throwIfAborted();
   const parsed = parseClassification(text);
   if (parsed === undefined) {
     console.warn(`classify_message: ${client.provider} reply was not a valid classification; using in_scope`);
