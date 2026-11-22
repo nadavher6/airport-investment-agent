@@ -50,8 +50,8 @@ export const categoryResult = z.object({
   category: z.enum(CATEGORIES),
   label: z.string().check(z.minLength(1)),
   weight: finite.check(z.gte(0), z.lte(1)),
-  mode: z.enum(["relative", "absolute"]),
-  scale: z.optional(z.enum(["percent", "minmax"])),
+  // #75: no `mode`; every category is a fixed scale, "percent" (share ÷ fullAt) or "linear" (growth: 50 + 5 × CAGR).
+  scale: z.optional(z.enum(["percent", "linear"])),
   // The unit of every airport's raw value ("%", "% per year", "departures/yr"); absent in older outputs.
   unit: z.optional(z.string()),
   note: z.optional(nullable(z.string())),

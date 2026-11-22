@@ -4,7 +4,7 @@ import { Fragment, useId, useState } from "react";
 import { CompareGrid, type GridRow } from "../compare/Compare";
 import { KpiTiles } from "../KpiTiles";
 import { ScoreBar } from "./parts";
-import { MAX_SHOWN, MODE_TEXT, formatScore, formatShare, missingText } from "./spec";
+import { MAX_SHOWN, SCALE_TEXT, formatScore, formatShare, missingText } from "./spec";
 import { GrowthView } from "./GrowthView";
 import {
   asCategory,
@@ -180,7 +180,7 @@ export function CategoryView({ result }: { result: CategoryResult }) {
   return (
     <div className="score-view" data-testid="category-view">
       <p className="score-view__mode">
-        {result.label} · {formatShare(result.weight)} of the final score · {MODE_TEXT[result.mode]}
+        {result.label} · {formatShare(result.weight)} of the final score · {SCALE_TEXT}
       </p>
       {growth ? <GrowthView result={result} airports={growth} /> : <Body result={result} />}
       {result.note ? <p className="score-view__not-found">Caveat: {result.note}</p> : null}
