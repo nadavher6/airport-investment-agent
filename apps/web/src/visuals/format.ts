@@ -23,9 +23,13 @@ export function withUnit(text: string, unit: string | undefined): string {
   return unit ? `${text} ${unit}` : text;
 }
 
-/** A "nice" step (1, 2, 2.5 or 5 times a power of ten) for about `count` ticks over `span`. */
+/** Most ticks a scale ever returns, whatever the data looks like. */
+export const MAX_TICKS = 20;
+
+/** A "nice" step (1, 2, 2.5 or 5 times a power of ten) for about `count` ticks over `span`. NaN if it has no sense. */
 function niceStep(span: number, count: number): number {
   const raw = span / Math.max(1, count);
+  if (!Number.isFinite(raw) || raw <= 0) return NaN;
   const power = 10 ** Math.floor(Math.log10(raw));
   const ratio = raw / power;
   const nice = ratio <= 1 ? 1 : ratio <= 2 ? 2 : ratio <= 2.5 ? 2.5 : ratio <= 5 ? 5 : 10;
@@ -38,13 +42,19 @@ export interface Scale {
   ticks: number[];
 }
 
+/** The scale used when the data has no usable span (empty, not finite, or too wide for doubles). */
+const UNIT_SCALE: Scale = { min: 0, max: 1, ticks: [0, 1] };
+
 /**
  * A rounded domain and its ticks. Zero is kept in view when the data sits near it,
  * so magnitudes are not exaggerated; a flat or single value still gets a real span.
+ * Never loops without end: at most MAX_TICKS ticks, and a degenerate span gives a unit scale.
  */
 export function niceScale(values: readonly number[], count = 5, includeZero = true): Scale {
-  let lo = Math.min(...values);
-  let hi = Math.max(...values);
+  const finite = values.filter((v) => Number.isFinite(v));
+  if (finite.length === 0) return { ...UNIT_SCALE, ticks: [...UNIT_SCALE.ticks] };
+  let lo = Math.min(...finite);
+  let hi = Math.max(...finite);
   if (includeZero || (lo >= 0 && lo <= hi / 2)) lo = Math.min(lo, 0);
   if (includeZero || (hi <= 0 && hi >= lo / 2)) hi = Math.max(hi, 0);
   if (lo === hi) {
@@ -52,11 +62,19 @@ export function niceScale(values: readonly number[], count = 5, includeZero = tr
     lo -= lo > 0 ? 0 : pad;
     hi += pad;
   }
-  const step = niceStep(hi - lo, count);
+  const step = niceStep(hi - lo, Math.min(count, MAX_TICKS));
+  if (!(step > 0) || !Number.isFinite(step)) return { ...UNIT_SCALE, ticks: [...UNIT_SCALE.ticks] };
   const min = Math.floor(lo / step) * step;
   const max = Math.ceil(hi / step) * step;
+  const n = Math.round((max - min) / step);
+  if (!Number.isFinite(min) || !Number.isFinite(max) || !Number.isFinite(n) || n < 1 || n >= MAX_TICKS) {
+    // Doubles too coarse for this step (values near 1e17), or an odd count: just the two ends.
+    return min < max && Number.isFinite(min) && Number.isFinite(max)
+      ? { min, max, ticks: [min, max] }
+      : { ...UNIT_SCALE, ticks: [...UNIT_SCALE.ticks] };
+  }
   const ticks: number[] = [];
-  for (let t = min; t <= max + step / 2; t += step) ticks.push(Number(t.toPrecision(12)));
+  for (let i = 0; i <= n; i++) ticks.push(Number((min + i * step).toPrecision(12)));
   return { min, max, ticks };
 }
 
