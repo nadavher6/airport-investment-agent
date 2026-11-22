@@ -9,9 +9,9 @@ const rec = (airportCode: string, extra: Partial<AirportRecord> = {}): AirportRe
 });
 
 const workingSet = new Map<string, AirportRecord>([
-  ["LAX", rec("LAX", { metrics: { score: 61.3 } })],
-  ["SFO", rec("SFO", { metrics: { score: 50.9 } })],
-  ["DEN", rec("DEN", { metrics: { unmetDemandPct: 2.1 } })],
+  ["LAX", rec("LAX", { enplanements: { cy2024: 38_000_000 } })],
+  ["SFO", rec("SFO", { enplanements: { cy2024: 25_000_000 } })],
+  ["DEN", rec("DEN", { enplanements: { cy2024: 2_100_000 } })],
 ]);
 
 describe("selectFocusedRecords", () => {
@@ -43,14 +43,14 @@ describe("buildMemorySystemBlock", () => {
   it("injects the rolling summary and the focused data block", () => {
     const block = buildMemorySystemBlock("SYS", {
       rollingSummary: "Compared LAX, SFO, DEN; LAX ranked highest.",
-      focusedRecords: [rec("DEN", { metrics: { unmetDemandPct: 2.1 } })],
+      focusedRecords: [rec("DEN", { enplanements: { cy2024: 2_100_000 } })],
     });
     expect(block).toContain("SYS");
     expect(block).toContain("## Conversation memory");
     expect(block).toContain("LAX ranked highest");
     expect(block).toContain("## Airport data in focus");
     expect(block).toContain('"DEN"');
-    expect(block).toContain("2.1");
+    expect(block).toContain("2100000");
   });
 });
 
@@ -74,7 +74,7 @@ describe("assembleRequest", () => {
       systemPrompt: "SYS",
       history,
       rollingSummary: "Discussed LAX, SFO.",
-      focusedRecords: [rec("DEN", { metrics: { unmetDemandPct: 2.1 } })],
+      focusedRecords: [rec("DEN", { enplanements: { cy2024: 2_100_000 } })],
     });
     expect(system).toContain("## Airport data in focus");
     for (const m of messages) expect(m.content).not.toContain("Airport data in focus");

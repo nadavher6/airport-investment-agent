@@ -62,7 +62,7 @@ because **3 of 4 labels never load airport data**:
 export interface AirportRecord {
   airportCode: string;
   // whatever the tools return, stored verbatim so follow-ups stay numerically consistent
-  metrics?: unknown;        // from get_airport_metrics (live/congestion)
+  airport?: AirportSummary; // from the #23 lookups (get_airport_by_code, find_airports_by_city/region)
   enplanements?: unknown;   // from get_enplanements (Task 3)
   fetchedAtTurn: number;    // turn index when first/last fetched
   lastReferencedTurn: number;
@@ -126,12 +126,11 @@ For each target code:
 - **In working set and fresh enough** → reuse the cached `AirportRecord` (no tool call).
   Keeps numbers consistent across follow-ups and avoids re-hitting AirLabs.
 - **Missing, or a `MODIFY` that needs new data** → let the agent call the tools
-  (`get_airport_metrics`, `get_enplanements`), then **store the result by code** and set
+  (`get_enplanements`, the #23 lookups), then **store the result by code** and set
   `fetchedAtTurn`.
 
-Freshness policy: `enplanements` (annual) never goes stale within a session; live
-`metrics` may be re-fetched after a TTL (e.g. 10 min) — reuse within the session is fine
-for a conversation.
+Freshness policy: `enplanements` (annual) and the `airport` lookup never go stale within
+a session — reuse within the session is fine for a conversation.
 
 ---
 
@@ -364,7 +363,7 @@ on non-data turns and hold only the *focused* subset on data turns.
 - **classify →** `{ label: "in_scope", reason: "Airport investment comparison." }`
 - **Focus resolution (§4):** explicit codes → `[LAX, SFO]`. FS ← `[LAX, SFO]`.
 - **Fetch vs reuse (§5):** neither in WS → call tools for both, store records.
-- WS now: `{ LAX: {metrics, enplanements, fetchedAtTurn:3}, SFO: {…} }`
+- WS now: `{ LAX: {airport, enplanements, fetchedAtTurn:3}, SFO: {…} }`
 - **Assembled prompt (§6):**
   ```
   [system prompt]
@@ -436,7 +435,7 @@ No wire-contract change (consistent with #13):
 
 - Classifier already surfaces as `tool_call(classify_message) → tool_result`.
 - Data fetches surface as the normal `tool_call → tool_result` for
-  `get_airport_metrics` / `get_enplanements`.
+  `get_enplanements` and the #23 lookups.
 - Memory itself is **invisible server-side state** — it shapes what context the agent
   gets, but emits no new event types.
 - `AbortSignal` cancels any in-flight resolver/tool/LLM call; memory is only committed
@@ -469,7 +468,7 @@ No wire-contract change (consistent with #13):
 - **Classifier flips to `off_topic` mid-thread** → answer off-topic without touching data,
   but keep the working set intact so the next `in_scope` follow-up still works.
 - **Same code fetched by two tools** → one `AirportRecord` per code holding both
-  `metrics` and `enplanements`.
+  `airport` and `enplanements`.
 
 ---
 
@@ -492,4 +491,4 @@ No wire-contract change (consistent with #13):
 
 Depends on **#9** and **#13**. Branch from #13's head; after #13 merges, update with
 `main`. One PR. Suggested owner decisions to confirm before build: **N** (dialogue
-window), **K** (max injected records), and the live-metrics reuse TTL.
+window) and **K** (max injected records).
