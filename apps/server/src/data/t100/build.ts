@@ -10,21 +10,9 @@
 import { writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { aggregateT100, type T100Row } from "./aggregate.ts";
 
 const BASE = "https://data.bts.gov/resource/r495-tyji.json";
-
-interface Row {
-  origin_airport_code?: string;
-  departures?: string;
-  passengers?: string;
-  seats?: string;
-  domestic_seats?: string;
-}
-
-const num = (v: string | undefined): number => {
-  const n = Number(v);
-  return Number.isFinite(n) ? n : 0;
-};
 
 /** First-of-month ISO date (YYYY-MM-DD). */
 const monthKey = (d: Date): string => `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-01`;
@@ -53,28 +41,10 @@ async function main(): Promise<void> {
   });
   const res = await fetch(`${BASE}?${params.toString()}`);
   if (!res.ok) throw new Error(`BTS T-100 request failed: ${res.status} ${res.statusText}`);
-  const rows = (await res.json()) as Row[];
-
-  const airports: Record<string, unknown> = {};
-  for (const r of rows) {
-    const code = (r.origin_airport_code ?? "").trim().toUpperCase();
-    const seats = num(r.seats);
-    if (code === "" || seats <= 0) continue;
-    const passengers = num(r.passengers);
-    const departures = num(r.departures);
-    const domesticSeats = Math.min(seats, num(r.domestic_seats));
-    const internationalSeats = Math.max(0, seats - domesticSeats);
-    airports[code] = {
-      code,
-      departures,
-      passengers,
-      seats,
-      domesticSeats,
-      internationalSeats,
-      loadFactor: Math.round((passengers / seats) * 1000) / 10, // percent, 1 dp
-      internationalShare: Math.round((internationalSeats / seats) * 1000) / 10, // percent, 1 dp
-    };
-  }
+  const rows = (await res.json()) as T100Row[];
+  // Sorted by airport code (aggregate.ts), so a rebuild of the same window gives byte-identical JSON
+  // apart from meta.builtAt.
+  const airports = aggregateT100(rows);
 
   const out = {
     meta: {
