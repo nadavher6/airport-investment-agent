@@ -123,6 +123,21 @@ describe("score_airports: the card collapses and expands (#58)", () => {
     }
   });
 
+  it("a collapsed score card shows its airport codes in the header summary", async () => {
+    render(<ToolUseBlockView block={{ ...block(SCORE_TWO), input: { airport_codes: ["LAX", "SNA"] } }} />);
+    const h = screen.getByRole("button", { name: /score_airports/ });
+    await userEvent.click(h);
+    expect(h).toHaveAttribute("aria-expanded", "false");
+    expect(h).toHaveTextContent("LAX, SNA");
+  });
+
+  it("a generic card's summary is still its first string argument", () => {
+    render(<ToolUseBlockView block={block({ intent: "in_scope" }, "classify_message")} />);
+    expect(screen.getByRole("button", { name: /classify_message/ })).toHaveTextContent("classify_message");
+    render(<ToolUseBlockView block={{ ...block({ ok: true }, "other_tool"), input: { query: "hello there" } }} />);
+    expect(screen.getByRole("button", { name: /other_tool/ })).toHaveTextContent("hello there");
+  });
+
   it("a generic tool card is unchanged: closed by default, toggles its JSON", async () => {
     render(<ToolUseBlockView block={block({ intent: "in_scope" }, "classify_message")} />);
     const h = screen.getByRole("button", { name: /classify_message/ });

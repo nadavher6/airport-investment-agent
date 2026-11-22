@@ -11,11 +11,19 @@ const STATUS_LABEL: Record<ToolCallStatus, string> = {
   failed: "Failed",
 };
 
-/** First short string argument, shown inline so a collapsed card still says something useful. */
+/**
+ * First short argument, shown inline so a collapsed card still says something useful: the first
+ * non-empty string, or else the first array of strings joined ("LAX, SNA"). Long text is cut.
+ */
 function summarize(input: ToolUseBlock["input"]): string | null {
-  const first = Object.values(input).find((v): v is string => typeof v === "string" && v.trim() !== "");
-  if (!first) return null;
-  return first.length > 64 ? `${first.slice(0, 64)}…` : first;
+  const values = Object.values(input);
+  const text =
+    values.find((v): v is string => typeof v === "string" && v.trim() !== "") ??
+    values
+      .map((v) => (Array.isArray(v) && v.length > 0 && v.every((x) => typeof x === "string") ? (v as string[]).join(", ") : ""))
+      .find((j) => j.trim() !== "");
+  if (!text) return null;
+  return text.length > 64 ? `${text.slice(0, 64)}…` : text;
 }
 
 const pretty = (value: JsonValue) => JSON.stringify(value, null, 2);
