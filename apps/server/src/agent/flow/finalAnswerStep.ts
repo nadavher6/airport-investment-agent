@@ -18,17 +18,17 @@ export type FinalStep =
   | { readonly kind: "done"; readonly rest: string; readonly fallback?: string };
 
 /**
- * Is this step a final answer (not a tool call)? A reply whose first JSON object has a `tool` key is a tool
- * step; one with `kind` or `answer` (quoted or not) is a final answer; otherwise prose is a final answer (an invalid one) and
- * everything else is a tool step (#49's parser decides).
+ * Is this step a final answer (not a tool call)? A reply whose first JSON object has a `kind` or `answer` key
+ * is one (even if its markdown quotes a tool call); so is prose (#49's parser finds no call attempt; an invalid
+ * final answer). Otherwise it is a tool step, except broken JSON with a `kind`/`answer` key and no `tool` key.
  */
 export function isFinalAnswerStep(text: string, parsed: ModelStep): boolean {
   const keys = scanReply(text).topKeys;
-  if (keys.includes("tool")) return false;
   if (keys.includes("kind") || keys.includes("answer")) return true;
+  if (parsed.kind === "answer") return true;
+  if (keys.includes("tool")) return false;
   // Broken JSON the scanner could not follow (e.g. unquoted keys): by its key names.
-  if (FINAL_KEY.test(text) && !TOOL_KEY.test(text)) return true;
-  return parsed.kind === "answer";
+  return FINAL_KEY.test(text) && !TOOL_KEY.test(text);
 }
 
 const FINAL_KEY = /[{,]\s*["']?(?:kind|answer)["']?\s*:/;

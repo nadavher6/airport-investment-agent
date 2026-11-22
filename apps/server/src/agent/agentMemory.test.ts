@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { z } from "zod";
 import type { LlmClient, LlmRequest } from "../llm/llmClient.ts";
 import { fakeScoreAirports } from "../test/fakeScoreAirports.ts";
-import { collect } from "../test/helpers.ts";
+import { collect, finalAnswerJson } from "../test/helpers.ts";
 import { CLASSIFIER_PROMPT } from "./classifier/prompt.ts";
 import { LlmPassthroughAgent } from "./llmPassthroughAgent.ts";
 import { ConversationMemory } from "./memory/conversationMemory.ts";
@@ -45,13 +45,13 @@ function fakeClient(label = "in_scope", delayMs = 0) {
       const question = request.messages.filter((m) => !m.content.startsWith("<tool_result")).at(-1)!.content;
       const inFocus = focusBlock(request.system);
       let text: string;
-      if (last.startsWith("<tool_result")) text = `Answer from the tool: ${last.slice(0, 200)}`;
+      if (last.startsWith("<tool_result")) text = finalAnswerJson(`Answer from the tool: ${last.slice(0, 200)}`);
       else if (/compare|better|higher/i.test(question) && codesIn(question).length >= 2) {
         text = JSON.stringify({ tool: "score_airports", input: { airport_codes: codesIn(question) } });
-      } else if (inFocus !== "") text = `Answer from memory: ${inFocus}`;
+      } else if (inFocus !== "") text = finalAnswerJson(`Answer from memory: ${inFocus}`);
       else if (codesIn(question).length > 0) {
         text = JSON.stringify({ tool: "get_enplanements", input: { airport_code: codesIn(question)[0] } });
-      } else text = "Which airport do you mean?";
+      } else text = finalAnswerJson("Which airport do you mean?");
       yield { type: "text_delta", text };
       yield { type: "done", stopReason: "end_turn" };
     },
@@ -223,7 +223,7 @@ function scriptedClient(script: readonly string[]) {
         return;
       }
       seen.push({ ...request, messages: [...request.messages] });
-      yield { type: "text_delta", text: script[next++] ?? "done" };
+      yield { type: "text_delta", text: script[next++] ?? finalAnswerJson("done") };
       yield { type: "done", stopReason: "end_turn" };
     },
   };
@@ -236,7 +236,7 @@ describe("memory cache and the #49 tool-call guard (#50)", () => {
 
   it("a call served from the conversation cache is not a repeat_call; a repeat within the turn still is", async () => {
     // Turn 1: call, answer. Turn 2: the same call (cache hit), the same call again (repeat in this turn), answer.
-    const { client, seen } = scriptedClient([call, "LAX had a lot.", call, call, "Final answer."]);
+    const { client, seen } = scriptedClient([call, finalAnswerJson("LAX had a lot."), call, call, finalAnswerJson("Final answer.")]);
     const enplanements = fakeEnplanements();
     const agent = new LlmPassthroughAgent({ "claude-headless": client, gemini: client }, undefined, {
       scoreAirports: fakeScoreAirports().tool,

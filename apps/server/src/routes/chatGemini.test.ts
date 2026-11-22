@@ -26,13 +26,13 @@ function wiredApp(status: number, responseBody: string, withKey = true) {
 
 describe("POST /api/chat with gemini", () => {
   it("streams Gemini's answer as AgentEvents in README order", async () => {
-    const { app, urls } = wiredApp(200, sse(["Good candidates ", "are congested."]));
+    const { app, urls } = wiredApp(200, sse(['{"kind":"final_answer","answer":{"summary":"Good candidates are congested.","markdown":"Good candidates ', 'are congested."}}']));
     const res = await request(app).post(API_ROUTES.chat).send(body).expect(200);
     const events = parseSse(res.text);
     // classify_message, then the tool loop's answer (#48).
     expect(events.map((e) => e.type)).toEqual(["message_start", "tool_call", "tool_result", "text_delta", "text_delta", "message_end"]);
-    expect(events.flatMap((e) => (e.type === "text_delta" ? [e.delta] : [])).join("")).toBe("Good candidates are congested.");
-    // The fake replies plain text, so the classify step (#13, fast model) retries once (#19), then the tool loop
+    expect(events.flatMap((e) => (e.type === "text_delta" ? [e.delta] : [])).join("")).toBe("**Good candidates are congested.**\n\nGood candidates are congested.");
+    // The fake replies with no valid label, so the classify step (#13, fast model) retries once (#19), then the tool loop
     // answers with the main model (#17, #48).
     const url = (model: string) => `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse`;
     const fast = url("gemini-flash-lite-latest");

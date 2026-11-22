@@ -84,7 +84,7 @@ export function parseFinalAnswer(text: string, knownAirport: (code: string) => b
   if (trimmed === "") return fail("not_json", "the reply is empty");
   const body = unfence(trimmed);
   if (!body.startsWith("{")) {
-    return body.includes("{")
+    return /["']?(?:kind|answer)["']?\s*:/.test(body)
       ? fail("extra_text", "there is text before the JSON object; reply with the JSON object only")
       : fail("not_json", "the reply is prose, not the final-answer JSON object");
   }

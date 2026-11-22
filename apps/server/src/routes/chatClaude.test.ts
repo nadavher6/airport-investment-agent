@@ -24,7 +24,20 @@ function wiredApp(spec: FakeClaudeSpec | null) {
 
 describe("POST /api/chat with claude-headless", () => {
   it("streams the child's answer as AgentEvents", async () => {
-    const res = await request(wiredApp({ lines: fixtureLines("stream-thinking-text.jsonl") }))
+    // The fixture's two text deltas, rewritten as a final answer (#63) split across the same two deltas.
+    const halves: Record<string, string> = {
+      "High congestion ": '{"kind":"final_answer","answer":{"summary":"High congestion and growth.","markdown":"High congestion ',
+      "and growth.": 'and growth."}}',
+    };
+    const lines = fixtureLines("stream-thinking-text.jsonl").map((line) => {
+      const parsed = JSON.parse(line) as { event?: { delta?: { type?: string; text?: string } } };
+      const delta = parsed.event?.delta;
+      const replacement = delta?.type === "text_delta" && delta.text !== undefined ? halves[delta.text] : undefined;
+      if (delta === undefined || replacement === undefined) return line;
+      delta.text = replacement;
+      return JSON.stringify(parsed);
+    });
+    const res = await request(wiredApp({ lines }))
       .post(API_ROUTES.chat)
       .send(body("claude-headless"))
       .expect(200);
@@ -32,7 +45,7 @@ describe("POST /api/chat with claude-headless", () => {
     // The fake replays the same fixture to the classifier call too, so it falls back to in_scope (#13).
     expect(events[1]).toMatchObject({ type: "tool_call", name: "classify_message" });
     expect(events[2]).toMatchObject({ type: "tool_result", result: { ok: true, output: { label: "in_scope" } } });
-    // ...then the tool loop (#48): the fixture's prose is the answer, so no tool runs.
+    // ...then the tool loop (#48): the final answer streams (summary + body, then the rest of the body); no tool runs.
     expect(events.map((e) => e.type)).toEqual([
       "message_start",
       "tool_call",
@@ -44,6 +57,8 @@ describe("POST /api/chat with claude-headless", () => {
       "text_delta",
       "message_end",
     ]);
+    const text = events.flatMap((e) => (e.type === "text_delta" ? [e.delta] : [])).join("");
+    expect(text).toBe("**High congestion and growth.**\n\nHigh congestion and growth.");
   });
 
   it("returns 503 JSON before the stream when claude is not logged in", async () => {
