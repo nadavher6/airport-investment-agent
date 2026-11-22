@@ -32,4 +32,13 @@ describe("loadConfig", () => {
     const config = loadConfig({ GEMINI_API_KEY: "  ", GROQ_API_KEY: "\n", OPENROUTER_API_KEY: " k3 " });
     expect([...config.configuredProviders]).toEqual(["openrouter"]);
   });
+
+  it("defaults the Claude settings: claude on PATH, no model", () => {
+    expect(loadConfig({ PATH: "/usr/bin" }).claude).toEqual({ bin: undefined, searchPath: "/usr/bin", model: undefined });
+  });
+
+  it("reads CLAUDE_BIN and CLAUDE_MODEL", () => {
+    const { claude } = loadConfig({ CLAUDE_BIN: " /opt/claude ", CLAUDE_MODEL: "sonnet" });
+    expect(claude).toMatchObject({ bin: "/opt/claude", model: "sonnet" });
+  });
 });

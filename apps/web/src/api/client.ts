@@ -7,7 +7,9 @@ import {
   type ApiRoute,
   type ChatRequest,
   type HealthResponse,
+  type ModelProvider,
   type ModelsResponse,
+  type ProviderHealthResponse,
 } from "@airport/shared";
 import { readSseData } from "./sse";
 
@@ -67,7 +69,7 @@ function parseEvent(data: string, status: number): AgentEvent | null {
   return parsed as AgentEvent;
 }
 
-async function getJson<T>(route: ApiRoute, signal?: AbortSignal): Promise<T> {
+async function getJson<T>(route: ApiRoute | string, signal?: AbortSignal): Promise<T> {
   const res = await fetch(route, signal ? { signal } : {});
   if (!res.ok) throw await toClientError(res);
   return (await res.json()) as T;
@@ -77,6 +79,9 @@ export const api = {
   health: (signal?: AbortSignal) => getJson<HealthResponse>(API_ROUTES.health, signal),
 
   models: (signal?: AbortSignal) => getJson<ModelsResponse>(API_ROUTES.models, signal),
+
+  providerHealth: (provider: ModelProvider, signal?: AbortSignal) =>
+    getJson<ProviderHealthResponse>(API_ROUTES.providerHealth.replace(":provider", encodeURIComponent(provider)), signal),
 
   /** Streams the agent's response. Abort the signal to stop it. */
   async *streamChat(request: ChatRequest, signal: AbortSignal): AsyncGenerator<AgentEvent> {

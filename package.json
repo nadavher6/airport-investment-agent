@@ -15,7 +15,8 @@
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
     "test:coverage": "npm run test --workspaces --if-present -- --coverage",
-    "data:download": "bash scripts/download-faa-enplanements.sh"
+    "data:download": "bash scripts/download-faa-enplanements.sh",
+    "data:build-enplanements": "tsx apps/server/src/data/enplanements/build.ts"
   },
   "author": "nadavher6",
   "license": "MIT",

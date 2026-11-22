@@ -80,3 +80,62 @@ Every workbook was checked field by field after a clean `npm run data:download`.
   Pick one rule and document it. The simplest is to take each year's value from that year's own file.
 - **CY2025 exists** on the FAA's current-year page (`arp-cy2025-commercial-service-enplanements.xlsx`). It's left out
   here because the task scope is CY2015–CY2024.
+
+## The built dataset: `data/enplanements.json`
+
+`npm run data:build-enplanements` (code in `apps/server/src/data/enplanements/`) reads the first sheet of every
+`data/raw/faa-enplanements-cy*.xlsx` and writes `data/enplanements.json`, which is committed. It needs no network,
+and two runs give byte-identical output apart from `meta.builtAt`. Server code reads the data through
+`apps/server/src/data/enplanements/dataset.ts`.
+
+**Parsing rules**
+- A row is an airport if and only if its `S/L` is `P` or `CS`. Airports are keyed on `Locid` (codes such as `W33`
+  are not always 3 letters); `name`, `city` and `state` come from the latest year the airport appears.
+- The current-year column is `CY {yy} Enplanements`, with `yy` from the file name; the prior-year column is
+  `CY {yy-1} Enplanements`. Other columns are matched by normalized header name, not position.
+- `Hub` is `L`/`M`/`S`/`N` for primary airports; `None` and `-` become `null`.
+- The FAA `% Change` column is never read. `latest.yoyChangePct` = `(latest − prior) / prior × 100`, using the
+  prior-year figure in the latest year's own file.
+
+**Revision rule.** Each year's value comes from that year's own file. The next file's prior-year column is used
+only as a cross-check (the build prints the differences). It finds exactly the four known FAA revisions listed
+above (SFB 2016, JMS 2016, ALS 2022, MRI 2023); the dataset keeps the original figure for each.
+
+**COVID note.** CY2020 hub categories are based on COVID-depressed traffic, so some airports have a different
+`hubType` that year. Each `series` point keeps its own year's `hubType`; the airport's top-level `hubType` is the
+latest year's. Don't read a CY2020 hub change as a structural change.
+
+**Trend fields** (percent unless noted; `null` when an endpoint is missing, never estimated)
+- `cagr5yr`: CAGR from CY2019 to CY2024, 5 periods: `((2024 / 2019)^(1/5) − 1) × 100`.
+- `cagr10yr`: CAGR from CY2015 to CY2024. The name says 10 years (10 data years), but that is **9 periods**:
+  `((2024 / 2015)^(1/9) − 1) × 100`.
+- `recoveryVs2019`: latest-year enplanements / CY2019 enplanements, as a ratio (1 = back to 2019 level).
+- Rates are rounded to 4 decimals. Missing years are omitted from `series`; a missing prior-year figure gives
+  `priorYear: null` and `yoyChangePct: null`.
+
+`meta.airportCount` counts unique codes across all ten years (575); CY2024 alone has 513.
+
+## Known `npm audit` finding: `xlsx@0.18.5`
+
+The build reads the FAA workbooks with SheetJS (`xlsx`, `apps/server/src/data/enplanements/workbook.ts`). `npm audit`
+reports one high-severity finding for it, with no fix available on the npm registry:
+
+| Advisory | Issue | Affected range (from `npm audit`) |
+|---|---|---|
+| GHSA-4r6h-8v6p-xvw6 (CVE-2023-30533) | Prototype pollution when reading a crafted file | `< 0.19.3` |
+| GHSA-5pgg-2g8v-p4x9 (CVE-2024-22363) | Regular expression denial of service (ReDoS) | `< 0.20.2` |
+
+**Why it is acceptable here**
+- `xlsx` is a `devDependency` of `apps/server`, pinned exactly to `0.18.5`. `npm audit --omit=dev` (the production
+  dependencies) reports `found 0 vulnerabilities`.
+- Only build code imports it: `workbook.ts`, which `build.ts` and the tests use. `dataset.ts`, the runtime entry point,
+  imports only the committed `data/enplanements.json`, so the running server never loads `xlsx`.
+- It only parses the 10 FAA files, and those are not arbitrary input: `npm run data:download` rejects any file whose
+  SHA-256 differs from the values in the table above, so a crafted workbook can't reach the parser through that script.
+  Both flaws need a malicious file.
+
+**Why the SheetJS CDN build was not used.** SheetJS publishes the fixed versions (0.19.3 and later, 0.20.x) only on
+its own CDN, not on npm; the latest `xlsx` on npm is 0.18.5. A tarball from the CDN would avoid the finding, but it
+takes the dependency off the npm registry, and the review asked for the version to be pinned there. The risk above is
+low, so the pinned registry version was kept. If a clean `npm audit` is wanted later, switch to the CDN tarball
+(0.20.x) or to another parser; the build only uses `XLSX.read` and `sheet_to_json`.
