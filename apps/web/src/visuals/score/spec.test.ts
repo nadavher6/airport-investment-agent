@@ -25,14 +25,19 @@ describe("parseScoreResult", () => {
     ["a string", "LAX 88"],
     ["an array", [SCORE_ONE]],
     ["an empty object", {}],
-    ["no ranking", { mode: "relative", notFound: [] }],
-    ["0 airports", { mode: "relative", ranking: [], notFound: ["ZZZ"] }],
-    ["an unknown mode", { ...SCORE_ONE, mode: "best" }],
-    ["no notFound", { mode: "absolute", ranking: SCORE_ONE.ranking }],
+    ["no ranking", { notFound: [] }],
+    ["0 airports", { ranking: [], notFound: ["ZZZ"] }],
+    ["no notFound", { ranking: SCORE_ONE.ranking }],
   ])("rejects %s without throwing", (_name, value) => {
     const r = parseScoreResult(value);
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.reason).toMatch(/\S/);
+  });
+
+  it("#75: has no mode; an older output that still carries one parses, and the mode is dropped", () => {
+    const r = parseScoreResult({ ...SCORE_ONE, mode: "absolute" });
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.result).not.toHaveProperty("mode");
   });
 
   it("rejects a ranking item missing a category, a score above 100, or a string score", () => {

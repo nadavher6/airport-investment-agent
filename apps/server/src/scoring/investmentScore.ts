@@ -10,19 +10,21 @@
  *                  its sub-score is the load factor percentage itself (scale percent, fullAt 1.0, capped at 100)
  * - long_haul    — international seats ÷ total seats (BTS T-100 (latest 12 months));
  *                  its sub-score is that share ÷ 50% × 100, capped at 100 (scale percent, fullAt 0.5)
- * - growth       — enplanement 5-year CAGR, CY2019 -> CY2024, % per year (FAA data); missing if no CAGR
+ * - growth       — enplanement 5-year CAGR, CY2019 -> CY2024, % per year (FAA data); missing if no CAGR;
+ *                  its sub-score is a fixed linear scale on the CAGR: 50 + 5 × CAGR, clamped (−10%/yr = 0, +10%/yr = 100)
+ *
+ * Every sub-score is a fixed scale on the airport's own numbers (#75): nothing depends on the other airports.
  *
  * All four are computed, so an airport present in both datasets reports coverage = 1.0.
  * An airport missing from a source yields null for that KPI; the engine renormalizes weights
  * over the available KPIs and reports `coverage` + `missing`, so partial data stays honest.
  */
-import { enplanementsDataset } from "../data/enplanements/dataset.ts";
 import type { AirportRecord } from "../data/enplanements/types.ts";
 import { getCapacity } from "../data/capacity/dataset.ts";
 import type { CapacityAirport } from "../data/capacity/types.ts";
 import { getT100 } from "../data/t100/dataset.ts";
 import type { T100Airport } from "../data/t100/types.ts";
-import { buildScorer, percentScore, type KpiDef, type Scale, type ScoredItem } from "./engine.ts";
+import { buildScorer, linearScore, percentScore, type KpiDef, type Scale, type ScoredItem } from "./engine.ts";
 
 /**
  * The growth KPI in its one unit: percent per year (5-year CAGR). Airports without a CAGR get null
@@ -31,6 +33,13 @@ import { buildScorer, percentScore, type KpiDef, type Scale, type ScoredItem } f
 export function growthPctPerYear(a: AirportRecord): number | null {
   return a.trend.cagr5yr;
 }
+
+/**
+ * The growth KPI's scale (#75): a fixed linear scale on the airport's own 5-year CAGR in % per year, so the
+ * sub-score = 50 + 5 × CAGR, clamped: −10%/yr scores 0, 0%/yr 50 and +10%/yr 100 (LAX −2.5 -> 37.5). The owner
+ * may move the endpoints; they are the only numbers here.
+ */
+export const GROWTH_SCALE: Extract<Scale, { kind: "linear" }> = { kind: "linear", zeroAt: -10, fullAt: 10 };
 
 /** FAA rule of thumb for runway utilization (operations ÷ ASV): start planning at 60%, start building at 80%. */
 export const FAA_PLANNING_TRIGGER_PCT = 60;
@@ -211,16 +220,17 @@ export const INVESTMENT_KPIS: readonly KpiDef<AirportRecord>[] = [
     label: "Growth / durability",
     weight: 0.2,
     direction: "higher",
-    note: "Enplanement 5-year CAGR, CY2019->CY2024 (FAA), in percent per year. Missing when the airport has no CY2019 or CY2024 figure; never filled from another unit.",
+    scale: GROWTH_SCALE,
+    note: "Enplanement 5-year CAGR, CY2019->CY2024 (FAA), in percent per year. Missing when the airport has no CY2019 or CY2024 figure; never filled from another unit. Sub-score = a fixed scale on the CAGR: 50 + 5 × CAGR, clamped to 0-100 (−10%/yr = 0, 0%/yr = 50, +10%/yr = 100).",
     extract: (a) => growthPctPerYear(a),
     evidence: (a) => {
       const cagr = growthPctPerYear(a);
       const explanation =
         cagr !== null
-          ? `Passengers grew ${cagr.toFixed(1)}% per year on average from CY2019 to CY2024.`
+          ? `Passengers ${cagr < 0 ? "shrank" : "grew"} ${Math.abs(cagr).toFixed(1)}% per year on average from CY2019 to CY2024; on the fixed growth scale (−10%/yr = 0, 0%/yr = 50, +10%/yr = 100) → ${linearScore(cagr, "higher", GROWTH_SCALE.zeroAt, GROWTH_SCALE.fullAt)}.${cagr <= GROWTH_SCALE.zeroAt || cagr >= GROWTH_SCALE.fullAt ? " The sub-score is clamped at the end of the scale." : ""}`
           : `No 5-year CAGR: the FAA data has no CY2019 or CY2024 figure for this airport (latest year ${a.latest.year}), so growth is left missing.`;
       return {
-        formula: "5-year enplanement CAGR, CY2019→CY2024, % per year: ((CY2024 ÷ CY2019)^(1/5) − 1) × 100",
+        formula: "5-year enplanement CAGR, CY2019→CY2024, % per year: ((CY2024 ÷ CY2019)^(1/5) − 1) × 100. Sub-score = 50 + 5 × CAGR, clamped to 0-100",
         inputs: { cagr5yr: cagr, unit: "% per year", enplanements: a.latest.enplanements, year: a.latest.year },
         value: cagr,
         explanation,
@@ -229,28 +239,19 @@ export const INVESTMENT_KPIS: readonly KpiDef<AirportRecord>[] = [
   },
 ];
 
-/** All airports in the FAA dataset — the reference population KPI bounds are fixed against. */
-const referencePopulation: readonly AirportRecord[] = Object.values(enplanementsDataset.airports);
+/** The scorer: every KPI is a fixed scale on the airport's own numbers, so scores are stable and comparable. */
+export const investmentScorer = buildScorer(INVESTMENT_KPIS, { tieBreak: byAirportCode });
 
-/** Scorer with bounds fixed to the full US dataset, so scores are stable and comparable. */
-export const investmentScorer = buildScorer(referencePopulation, INVESTMENT_KPIS, { tieBreak: byAirportCode });
-
-/** Score one airport on the ABSOLUTE scale (bounds fixed to all US airports). */
+/** Score one airport on the fixed scales (its own numbers only). */
 export function scoreAirport(record: AirportRecord): ScoredItem<AirportRecord> {
   return investmentScorer.score(record);
 }
 
-/** Rank records on the ABSOLUTE scale (vs. all US airports). Big hubs may saturate the caps. */
+/**
+ * Rank records on the fixed scales, for one airport or a comparison of many (#75: there is no relative mode).
+ * Every sub-score comes from the airport's own numbers, so an airport scores the same alone and in any compared
+ * set; the ranking is sorted by final score with the airport-code tie-break.
+ */
 export function rankAirports(records: readonly AirportRecord[]): ScoredItem<AirportRecord>[] {
   return investmentScorer.rank(records);
-}
-
-/**
- * Rank records RELATIVE to each other: KPI bounds come from the compared set itself, so a
- * score of 100 means "best among these" and the comparison actually differentiates (e.g. a
- * big international gateway beats a domestic hub on long-haul). This is the right mode for
- * "compare / rank these airports". Needs >= 2 records to be meaningful.
- */
-export function rankAirportsRelative(records: readonly AirportRecord[]): ScoredItem<AirportRecord>[] {
-  return buildScorer(records, INVESTMENT_KPIS, { tieBreak: byAirportCode }).rank(records);
 }

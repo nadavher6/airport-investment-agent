@@ -1,23 +1,22 @@
-// Real get_growth outputs (#67), generated from data/enplanements.json with the server tool (tsx). 0AK has no CY2020 / CY2021 figure.
+// Real get_growth outputs (#67; regenerated for #75's fixed growth scale), generated from data/enplanements.json with the server tool (tsx). 0AK has no CY2020 / CY2021 figure.
 import type { JsonValue } from "@airport/shared";
 
 export const GROWTH_ONE: JsonValue = {
   "category": "growth",
   "label": "Growth / durability",
   "weight": 0.2,
-  "mode": "absolute",
-  "scale": "minmax",
+  "scale": "linear",
   "unit": "% per year",
-  "note": "Enplanement 5-year CAGR, CY2019->CY2024 (FAA), in percent per year. Missing when the airport has no CY2019 or CY2024 figure; never filled from another unit.",
+  "note": "Enplanement 5-year CAGR, CY2019->CY2024 (FAA), in percent per year. Missing when the airport has no CY2019 or CY2024 figure; never filled from another unit. Sub-score = a fixed scale on the CAGR: 50 + 5 × CAGR, clamped to 0-100 (−10%/yr = 0, 0%/yr = 50, +10%/yr = 100).",
   "airports": [
     {
       "airportCode": "LAX",
       "name": "Los Angeles International",
       "available": true,
       "raw": -2.5375,
-      "subScore": 44.1,
+      "subScore": 37.3,
       "evidence": {
-        "formula": "5-year enplanement CAGR, CY2019→CY2024, % per year: ((CY2024 ÷ CY2019)^(1/5) − 1) × 100",
+        "formula": "5-year enplanement CAGR, CY2019→CY2024, % per year: ((CY2024 ÷ CY2019)^(1/5) − 1) × 100. Sub-score = 50 + 5 × CAGR, clamped to 0-100",
         "inputs": {
           "cagr5yr": -2.5375,
           "unit": "% per year",
@@ -25,7 +24,7 @@ export const GROWTH_ONE: JsonValue = {
           "year": 2024
         },
         "value": -2.5375,
-        "explanation": "Passengers grew -2.5% per year on average from CY2019 to CY2024."
+        "explanation": "Passengers shrank 2.5% per year on average from CY2019 to CY2024; on the fixed growth scale (−10%/yr = 0, 0%/yr = 50, +10%/yr = 100) → 37.3."
       },
       "growth": {
         "series": [
@@ -109,19 +108,18 @@ export const GROWTH_THREE: JsonValue = {
   "category": "growth",
   "label": "Growth / durability",
   "weight": 0.2,
-  "mode": "absolute",
-  "scale": "minmax",
+  "scale": "linear",
   "unit": "% per year",
-  "note": "Enplanement 5-year CAGR, CY2019->CY2024 (FAA), in percent per year. Missing when the airport has no CY2019 or CY2024 figure; never filled from another unit.",
+  "note": "Enplanement 5-year CAGR, CY2019->CY2024 (FAA), in percent per year. Missing when the airport has no CY2019 or CY2024 figure; never filled from another unit. Sub-score = a fixed scale on the CAGR: 50 + 5 × CAGR, clamped to 0-100 (−10%/yr = 0, 0%/yr = 50, +10%/yr = 100).",
   "airports": [
     {
       "airportCode": "LAX",
       "name": "Los Angeles International",
       "available": true,
       "raw": -2.5375,
-      "subScore": 44.1,
+      "subScore": 37.3,
       "evidence": {
-        "formula": "5-year enplanement CAGR, CY2019→CY2024, % per year: ((CY2024 ÷ CY2019)^(1/5) − 1) × 100",
+        "formula": "5-year enplanement CAGR, CY2019→CY2024, % per year: ((CY2024 ÷ CY2019)^(1/5) − 1) × 100. Sub-score = 50 + 5 × CAGR, clamped to 0-100",
         "inputs": {
           "cagr5yr": -2.5375,
           "unit": "% per year",
@@ -129,7 +127,7 @@ export const GROWTH_THREE: JsonValue = {
           "year": 2024
         },
         "value": -2.5375,
-        "explanation": "Passengers grew -2.5% per year on average from CY2019 to CY2024."
+        "explanation": "Passengers shrank 2.5% per year on average from CY2019 to CY2024; on the fixed growth scale (−10%/yr = 0, 0%/yr = 50, +10%/yr = 100) → 37.3."
       },
       "growth": {
         "series": [
@@ -198,9 +196,9 @@ export const GROWTH_THREE: JsonValue = {
       "name": "Denver International",
       "available": true,
       "raw": 3.5596,
-      "subScore": 70.8,
+      "subScore": 67.8,
       "evidence": {
-        "formula": "5-year enplanement CAGR, CY2019→CY2024, % per year: ((CY2024 ÷ CY2019)^(1/5) − 1) × 100",
+        "formula": "5-year enplanement CAGR, CY2019→CY2024, % per year: ((CY2024 ÷ CY2019)^(1/5) − 1) × 100. Sub-score = 50 + 5 × CAGR, clamped to 0-100",
         "inputs": {
           "cagr5yr": 3.5596,
           "unit": "% per year",
@@ -208,7 +206,7 @@ export const GROWTH_THREE: JsonValue = {
           "year": 2024
         },
         "value": 3.5596,
-        "explanation": "Passengers grew 3.6% per year on average from CY2019 to CY2024."
+        "explanation": "Passengers grew 3.6% per year on average from CY2019 to CY2024; on the fixed growth scale (−10%/yr = 0, 0%/yr = 50, +10%/yr = 100) → 67.8."
       },
       "growth": {
         "series": [
@@ -277,9 +275,9 @@ export const GROWTH_THREE: JsonValue = {
       "name": "Pilot Station",
       "available": true,
       "raw": -3.3013,
-      "subScore": 40.7,
+      "subScore": 33.5,
       "evidence": {
-        "formula": "5-year enplanement CAGR, CY2019→CY2024, % per year: ((CY2024 ÷ CY2019)^(1/5) − 1) × 100",
+        "formula": "5-year enplanement CAGR, CY2019→CY2024, % per year: ((CY2024 ÷ CY2019)^(1/5) − 1) × 100. Sub-score = 50 + 5 × CAGR, clamped to 0-100",
         "inputs": {
           "cagr5yr": -3.3013,
           "unit": "% per year",
@@ -287,7 +285,7 @@ export const GROWTH_THREE: JsonValue = {
           "year": 2024
         },
         "value": -3.3013,
-        "explanation": "Passengers grew -3.3% per year on average from CY2019 to CY2024."
+        "explanation": "Passengers shrank 3.3% per year on average from CY2019 to CY2024; on the fixed growth scale (−10%/yr = 0, 0%/yr = 50, +10%/yr = 100) → 33.5."
       },
       "growth": {
         "series": [

@@ -2,7 +2,7 @@
  "airportCount": 575,
  "airports": {
   "0AK": {
-   "score": 40.7,
+   "score": 33.5,
    "coverage": 0.2,
    "missing": [
     "congestion",
@@ -31,13 +31,13 @@
     "growth": {
      "available": true,
      "raw": -3.3013,
-     "normalized": 40.7,
-     "contribution": 40.7
+     "normalized": 33.5,
+     "contribution": 33.5
     }
    }
   },
   "16A": {
-   "score": 35.5,
+   "score": 27.6,
    "coverage": 0.2,
    "missing": [
     "congestion",
@@ -66,8 +66,8 @@
     "growth": {
      "available": true,
      "raw": -4.4827,
-     "normalized": 35.5,
-     "contribution": 35.5
+     "normalized": 27.6,
+     "contribution": 27.6
     }
    }
   },
@@ -141,7 +141,7 @@
    }
   },
   "2A9": {
-   "score": 45.5,
+   "score": 38.9,
    "coverage": 0.2,
    "missing": [
     "congestion",
@@ -170,8 +170,8 @@
     "growth": {
      "available": true,
      "raw": -2.2167,
-     "normalized": 45.5,
-     "contribution": 45.5
+     "normalized": 38.9,
+     "contribution": 38.9
     }
    }
   },
@@ -212,7 +212,7 @@
    }
   },
   "4A2": {
-   "score": 37.4,
+   "score": 29.7,
    "coverage": 0.2,
    "missing": [
     "congestion",
@@ -241,8 +241,8 @@
     "growth": {
      "available": true,
      "raw": -4.0524,
-     "normalized": 37.4,
-     "contribution": 37.4
+     "normalized": 29.7,
+     "contribution": 29.7
     }
    }
   },
@@ -352,7 +352,7 @@
    }
   },
   "A61": {
-   "score": 11.6,
+   "score": 9.7,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -377,13 +377,13 @@
     "growth": {
      "available": true,
      "raw": -6.9455,
-     "normalized": 24.7,
-     "contribution": 4.9
+     "normalized": 15.3,
+     "contribution": 3.1
     }
    }
   },
   "ABE": {
-   "score": 39.4,
+   "score": 38.4,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -408,13 +408,13 @@
     "growth": {
      "available": true,
      "raw": 0.6321,
-     "normalized": 58,
-     "contribution": 11.6
+     "normalized": 53.2,
+     "contribution": 10.6
     }
    }
   },
   "ABI": {
-   "score": 37.7,
+   "score": 37,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -439,13 +439,13 @@
     "growth": {
      "available": true,
      "raw": 2.9424,
-     "normalized": 68.1,
-     "contribution": 13.6
+     "normalized": 64.7,
+     "contribution": 12.9
     }
    }
   },
   "ABQ": {
-   "score": 40.8,
+   "score": 39.8,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -470,13 +470,13 @@
     "growth": {
      "available": true,
      "raw": 0.3666,
-     "normalized": 56.8,
-     "contribution": 11.4
+     "normalized": 51.8,
+     "contribution": 10.4
     }
    }
   },
   "ABR": {
-   "score": 29.1,
+   "score": 27.5,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -501,13 +501,13 @@
     "growth": {
      "available": true,
      "raw": -4.3213,
-     "normalized": 36.2,
-     "contribution": 7.2
+     "normalized": 28.4,
+     "contribution": 5.7
     }
    }
   },
   "ABY": {
-   "score": 23.1,
+   "score": 21.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -532,13 +532,13 @@
     "growth": {
      "available": true,
      "raw": -5.9949,
-     "normalized": 28.9,
-     "contribution": 5.8
+     "normalized": 20,
+     "contribution": 4
     }
    }
   },
   "ACK": {
-   "score": 34.4,
+   "score": 33.7,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -563,13 +563,13 @@
     "growth": {
      "available": true,
      "raw": 2.7175,
-     "normalized": 67.1,
-     "contribution": 13.4
+     "normalized": 63.6,
+     "contribution": 12.7
     }
    }
   },
   "ACT": {
-   "score": 28,
+   "score": 26.6,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -594,13 +594,13 @@
     "growth": {
      "available": true,
      "raw": -3.0616,
-     "normalized": 41.8,
-     "contribution": 8.4
+     "normalized": 34.7,
+     "contribution": 6.9
     }
    }
   },
   "ACV": {
-   "score": 43.4,
+   "score": 43.5,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -625,13 +625,13 @@
     "growth": {
      "available": true,
      "raw": 9.1859,
-     "normalized": 95.5,
-     "contribution": 19.1
+     "normalized": 95.9,
+     "contribution": 19.2
     }
    }
   },
   "ACY": {
-   "score": 31.2,
+   "score": 30,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -656,8 +656,8 @@
     "growth": {
      "available": true,
      "raw": -1.5549,
-     "normalized": 48.4,
-     "contribution": 9.7
+     "normalized": 42.2,
+     "contribution": 8.4
     }
    }
   },
@@ -695,7 +695,7 @@
    }
   },
   "ADQ": {
-   "score": 29.6,
+   "score": 28.6,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -720,13 +720,13 @@
     "growth": {
      "available": true,
      "raw": 0.2148,
-     "normalized": 56.2,
-     "contribution": 11.2
+     "normalized": 51.1,
+     "contribution": 10.2
     }
    }
   },
   "AEX": {
-   "score": 42.3,
+   "score": 42.2,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -751,13 +751,13 @@
     "growth": {
      "available": true,
      "raw": 7.6038,
-     "normalized": 88.6,
-     "contribution": 17.7
+     "normalized": 88,
+     "contribution": 17.6
     }
    }
   },
   "AFE": {
-   "score": 51.7,
+   "score": 46,
    "coverage": 0.2,
    "missing": [
     "congestion",
@@ -786,8 +786,8 @@
     "growth": {
      "available": true,
      "raw": -0.7933,
-     "normalized": 51.7,
-     "contribution": 51.7
+     "normalized": 46,
+     "contribution": 46
     }
    }
   },
@@ -828,7 +828,7 @@
    }
   },
   "AGS": {
-   "score": 34.7,
+   "score": 33.4,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -853,13 +853,13 @@
     "growth": {
      "available": true,
      "raw": -1.9738,
-     "normalized": 46.5,
-     "contribution": 9.3
+     "normalized": 40.1,
+     "contribution": 8
     }
    }
   },
   "AIA": {
-   "score": 35.5,
+   "score": 35.2,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -884,13 +884,13 @@
     "growth": {
      "available": true,
      "raw": 6.5389,
-     "normalized": 83.9,
-     "contribution": 16.8
+     "normalized": 82.7,
+     "contribution": 16.5
     }
    }
   },
   "AKI": {
-   "score": 18.6,
+   "score": 17.2,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -915,13 +915,13 @@
     "growth": {
      "available": true,
      "raw": -2.8316,
-     "normalized": 42.8,
-     "contribution": 8.6
+     "normalized": 35.8,
+     "contribution": 7.2
     }
    }
   },
   "AKN": {
-   "score": 24.2,
+   "score": 22.9,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -946,13 +946,13 @@
     "growth": {
      "available": true,
      "raw": -2.3475,
-     "normalized": 44.9,
-     "contribution": 9
+     "normalized": 38.3,
+     "contribution": 7.7
     }
    }
   },
   "AKP": {
-   "score": 24.3,
+   "score": 23,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -977,13 +977,13 @@
     "growth": {
      "available": true,
      "raw": -1.858,
-     "normalized": 47,
-     "contribution": 9.4
+     "normalized": 40.7,
+     "contribution": 8.1
     }
    }
   },
   "AKW": {
-   "score": 75.2,
+   "score": 72.8,
    "coverage": 0.2,
    "missing": [
     "congestion",
@@ -1012,13 +1012,13 @@
     "growth": {
      "available": true,
      "raw": 4.5627,
-     "normalized": 75.2,
-     "contribution": 75.2
+     "normalized": 72.8,
+     "contribution": 72.8
     }
    }
   },
   "ALB": {
-   "score": 39.7,
+   "score": 38.7,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -1043,8 +1043,8 @@
     "growth": {
      "available": true,
      "raw": -0.0779,
-     "normalized": 54.9,
-     "contribution": 11
+     "normalized": 49.6,
+     "contribution": 9.9
     }
    }
   },
@@ -1080,7 +1080,7 @@
    }
   },
   "ALS": {
-   "score": 30.8,
+   "score": 30.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -1105,13 +1105,13 @@
     "growth": {
      "available": true,
      "raw": 4.0203,
-     "normalized": 72.9,
-     "contribution": 14.6
+     "normalized": 70.1,
+     "contribution": 14
     }
    }
   },
   "ALW": {
-   "score": 26.9,
+   "score": 25.1,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -1136,13 +1136,13 @@
     "growth": {
      "available": true,
      "raw": -5.6127,
-     "normalized": 30.6,
-     "contribution": 6.1
+     "normalized": 21.9,
+     "contribution": 4.4
     }
    }
   },
   "AMA": {
-   "score": 37.4,
+   "score": 36.7,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -1167,13 +1167,13 @@
     "growth": {
      "available": true,
      "raw": 2.6426,
-     "normalized": 66.8,
-     "contribution": 13.4
+     "normalized": 63.2,
+     "contribution": 12.6
     }
    }
   },
   "ANC": {
-   "score": 49.7,
+   "score": 48.7,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -1198,8 +1198,8 @@
     "growth": {
      "available": true,
      "raw": 0.3949,
-     "normalized": 56.9,
-     "contribution": 11.4
+     "normalized": 52,
+     "contribution": 10.4
     }
    }
   },
@@ -1235,7 +1235,7 @@
    }
   },
   "AOO": {
-   "score": 35.5,
+   "score": 35.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -1260,13 +1260,13 @@
     "growth": {
      "available": true,
      "raw": 7.0969,
-     "normalized": 86.4,
-     "contribution": 17.3
+     "normalized": 85.5,
+     "contribution": 17.1
     }
    }
   },
   "APN": {
-   "score": 21.6,
+   "score": 20.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -1291,13 +1291,13 @@
     "growth": {
      "available": true,
      "raw": -2.2958,
-     "normalized": 45.1,
-     "contribution": 9
+     "normalized": 38.5,
+     "contribution": 7.7
     }
    }
   },
   "AQH": {
-   "score": 32.3,
+   "score": 23.9,
    "coverage": 0.2,
    "missing": [
     "congestion",
@@ -1326,8 +1326,8 @@
     "growth": {
      "available": true,
      "raw": -5.2264,
-     "normalized": 32.3,
-     "contribution": 32.3
+     "normalized": 23.9,
+     "contribution": 23.9
     }
    }
   },
@@ -1368,7 +1368,7 @@
    }
   },
   "ART": {
-   "score": 30.6,
+   "score": 29.6,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -1393,13 +1393,13 @@
     "growth": {
      "available": true,
      "raw": 0.5935,
-     "normalized": 57.8,
-     "contribution": 11.6
+     "normalized": 53,
+     "contribution": 10.6
     }
    }
   },
   "ASE": {
-   "score": 35.6,
+   "score": 34.9,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -1424,8 +1424,8 @@
     "growth": {
      "available": true,
      "raw": 2.5673,
-     "normalized": 66.5,
-     "contribution": 13.3
+     "normalized": 62.8,
+     "contribution": 12.6
     }
    }
   },
@@ -1463,7 +1463,7 @@
    }
   },
   "ATL": {
-   "score": 65.7,
+   "score": 64.6,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -1488,13 +1488,13 @@
     "growth": {
      "available": true,
      "raw": -0.3745,
-     "normalized": 53.6,
-     "contribution": 10.7
+     "normalized": 48.1,
+     "contribution": 9.6
     }
    }
   },
   "ATW": {
-   "score": 43.9,
+   "score": 43.7,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -1519,13 +1519,13 @@
     "growth": {
      "available": true,
      "raw": 6.9182,
-     "normalized": 85.6,
-     "contribution": 17.1
+     "normalized": 84.6,
+     "contribution": 16.9
     }
    }
   },
   "ATY": {
-   "score": 26.2,
+   "score": 25.6,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -1550,13 +1550,13 @@
     "growth": {
      "available": true,
      "raw": 3.886,
-     "normalized": 72.3,
-     "contribution": 14.5
+     "normalized": 69.4,
+     "contribution": 13.9
     }
    }
   },
   "AUG": {
-   "score": 22.4,
+   "score": 21.2,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -1581,13 +1581,13 @@
     "growth": {
      "available": true,
      "raw": -0.7936,
-     "normalized": 51.7,
-     "contribution": 10.3
+     "normalized": 46,
+     "contribution": 9.2
     }
    }
   },
   "AUK": {
-   "score": 21.5,
+   "score": 20.8,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -1612,13 +1612,13 @@
     "growth": {
      "available": true,
      "raw": 2.5856,
-     "normalized": 66.6,
-     "contribution": 13.3
+     "normalized": 62.9,
+     "contribution": 12.6
     }
    }
   },
   "AUS": {
-   "score": 57.3,
+   "score": 56.9,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -1643,13 +1643,13 @@
     "growth": {
      "available": true,
      "raw": 4.65,
-     "normalized": 75.6,
-     "contribution": 15.1
+     "normalized": 73.3,
+     "contribution": 14.7
     }
    }
   },
   "AVL": {
-   "score": 44.5,
+   "score": 44.2,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -1674,13 +1674,13 @@
     "growth": {
      "available": true,
      "raw": 6.229,
-     "normalized": 82.6,
-     "contribution": 16.5
+     "normalized": 81.1,
+     "contribution": 16.2
     }
    }
   },
   "AVP": {
-   "score": 31.3,
+   "score": 29.6,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -1705,13 +1705,13 @@
     "growth": {
      "available": true,
      "raw": -5.3449,
-     "normalized": 31.7,
-     "contribution": 6.3
+     "normalized": 23.3,
+     "contribution": 4.7
     }
    }
   },
   "AWI": {
-   "score": 33.7,
+   "score": 25.5,
    "coverage": 0.2,
    "missing": [
     "congestion",
@@ -1740,13 +1740,13 @@
     "growth": {
      "available": true,
      "raw": -4.9064,
-     "normalized": 33.7,
-     "contribution": 33.7
+     "normalized": 25.5,
+     "contribution": 25.5
     }
    }
   },
   "AZO": {
-   "score": 24.1,
+   "score": 21.9,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -1771,8 +1771,8 @@
     "growth": {
      "available": true,
      "raw": -9.3649,
-     "normalized": 14.1,
-     "contribution": 2.8
+     "normalized": 3.2,
+     "contribution": 0.6
     }
    }
   },
@@ -1813,7 +1813,7 @@
    }
   },
   "BDL": {
-   "score": 43.7,
+   "score": 42.6,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -1838,8 +1838,8 @@
     "growth": {
      "available": true,
      "raw": -0.2323,
-     "normalized": 54.2,
-     "contribution": 10.8
+     "normalized": 48.8,
+     "contribution": 9.8
     }
    }
   },
@@ -1877,7 +1877,7 @@
    }
   },
   "BET": {
-   "score": 37.1,
+   "score": 36.2,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -1902,13 +1902,13 @@
     "growth": {
      "available": true,
      "raw": 0.6106,
-     "normalized": 57.9,
-     "contribution": 11.6
+     "normalized": 53.1,
+     "contribution": 10.6
     }
    }
   },
   "BFD": {
-   "score": 16.8,
+   "score": 15.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -1933,13 +1933,13 @@
     "growth": {
      "available": true,
      "raw": -3.8872,
-     "normalized": 38.1,
-     "contribution": 7.6
+     "normalized": 30.6,
+     "contribution": 6.1
     }
    }
   },
   "BFF": {
-   "score": 20.8,
+   "score": 19.2,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -1964,13 +1964,13 @@
     "growth": {
      "available": true,
      "raw": -4.8071,
-     "normalized": 34.1,
-     "contribution": 6.8
+     "normalized": 26,
+     "contribution": 5.2
     }
    }
   },
   "BFI": {
-   "score": 27.7,
+   "score": 26.5,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -1995,8 +1995,8 @@
     "growth": {
      "available": true,
      "raw": -1.2058,
-     "normalized": 49.9,
-     "contribution": 10
+     "normalized": 44,
+     "contribution": 8.8
     }
    }
   },
@@ -2063,7 +2063,7 @@
    }
   },
   "BGM": {
-   "score": 19.8,
+   "score": 17.8,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -2088,13 +2088,13 @@
     "growth": {
      "available": true,
      "raw": -8.4508,
-     "normalized": 18.1,
-     "contribution": 3.6
+     "normalized": 7.7,
+     "contribution": 1.5
     }
    }
   },
   "BGR": {
-   "score": 39.6,
+   "score": 38.9,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -2119,13 +2119,13 @@
     "growth": {
      "available": true,
      "raw": 2.973,
-     "normalized": 68.3,
-     "contribution": 13.7
+     "normalized": 64.9,
+     "contribution": 13
     }
    }
   },
   "BHB": {
-   "score": 31.7,
+   "score": 30.8,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -2150,13 +2150,13 @@
     "growth": {
      "available": true,
      "raw": 1.8236,
-     "normalized": 63.2,
-     "contribution": 12.6
+     "normalized": 59.1,
+     "contribution": 11.8
     }
    }
   },
   "BHM": {
-   "score": 40,
+   "score": 39.1,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -2181,13 +2181,13 @@
     "growth": {
      "available": true,
      "raw": 1.0393,
-     "normalized": 59.8,
-     "contribution": 12
+     "normalized": 55.2,
+     "contribution": 11
     }
    }
   },
   "BID": {
-   "score": 19.6,
+   "score": 17.7,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -2212,8 +2212,8 @@
     "growth": {
      "available": true,
      "raw": -6.8346,
-     "normalized": 25.2,
-     "contribution": 5
+     "normalized": 15.8,
+     "contribution": 3.2
     }
    }
   },
@@ -2251,7 +2251,7 @@
    }
   },
   "BIL": {
-   "score": 37.3,
+   "score": 36.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -2276,13 +2276,13 @@
     "growth": {
      "available": true,
      "raw": 0.2734,
-     "normalized": 56.4,
-     "contribution": 11.3
+     "normalized": 51.4,
+     "contribution": 10.3
     }
    }
   },
   "BIS": {
-   "score": 35.8,
+   "score": 34.6,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -2307,13 +2307,13 @@
     "growth": {
      "available": true,
      "raw": -1.0298,
-     "normalized": 50.7,
-     "contribution": 10.1
+     "normalized": 44.9,
+     "contribution": 9
     }
    }
   },
   "BJI": {
-   "score": 31.9,
+   "score": 30.7,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -2338,8 +2338,8 @@
     "growth": {
      "available": true,
      "raw": -1.5703,
-     "normalized": 48.3,
-     "contribution": 9.7
+     "normalized": 42.1,
+     "contribution": 8.4
     }
    }
   },
@@ -2410,7 +2410,7 @@
    }
   },
   "BLI": {
-   "score": 33.5,
+   "score": 31.9,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -2435,13 +2435,13 @@
     "growth": {
      "available": true,
      "raw": -4.4926,
-     "normalized": 35.5,
-     "contribution": 7.1
+     "normalized": 27.5,
+     "contribution": 5.5
     }
    }
   },
   "BLV": {
-   "score": 36.5,
+   "score": 35.5,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -2466,13 +2466,13 @@
     "growth": {
      "available": true,
      "raw": -0.1462,
-     "normalized": 54.6,
-     "contribution": 10.9
+     "normalized": 49.3,
+     "contribution": 9.9
     }
    }
   },
   "BMI": {
-   "score": 30.1,
+   "score": 28.5,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -2497,13 +2497,13 @@
     "growth": {
      "available": true,
      "raw": -4.9847,
-     "normalized": 33.3,
-     "contribution": 6.7
+     "normalized": 25.1,
+     "contribution": 5
     }
    }
   },
   "BNA": {
-   "score": 53.3,
+   "score": 53.1,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -2528,13 +2528,13 @@
     "growth": {
      "available": true,
      "raw": 6.178,
-     "normalized": 82.3,
-     "contribution": 16.5
+     "normalized": 80.9,
+     "contribution": 16.2
     }
    }
   },
   "BOI": {
-   "score": 43.9,
+   "score": 43.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -2559,13 +2559,13 @@
     "growth": {
      "available": true,
      "raw": 3.7647,
-     "normalized": 71.7,
-     "contribution": 14.3
+     "normalized": 68.8,
+     "contribution": 13.8
     }
    }
   },
   "BOS": {
-   "score": 66.9,
+   "score": 65.9,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -2590,13 +2590,13 @@
     "growth": {
      "available": true,
      "raw": 0.3753,
-     "normalized": 56.9,
-     "contribution": 11.4
+     "normalized": 51.9,
+     "contribution": 10.4
     }
    }
   },
   "BPT": {
-   "score": 34.1,
+   "score": 33.5,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -2621,13 +2621,13 @@
     "growth": {
      "available": true,
      "raw": 3.1276,
-     "normalized": 68.9,
-     "contribution": 13.8
+     "normalized": 65.6,
+     "contribution": 13.1
     }
    }
   },
   "BQK": {
-   "score": 34.2,
+   "score": 33.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -2652,13 +2652,13 @@
     "growth": {
      "available": true,
      "raw": 0.9827,
-     "normalized": 59.5,
-     "contribution": 11.9
+     "normalized": 54.9,
+     "contribution": 11
     }
    }
   },
   "BQN": {
-   "score": 37.6,
+   "score": 36.4,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -2683,13 +2683,13 @@
     "growth": {
      "available": true,
      "raw": -0.5068,
-     "normalized": 53,
-     "contribution": 10.6
+     "normalized": 47.5,
+     "contribution": 9.5
     }
    }
   },
   "BRD": {
-   "score": 21.6,
+   "score": 19.8,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -2714,8 +2714,8 @@
     "growth": {
      "available": true,
      "raw": -6.3378,
-     "normalized": 27.4,
-     "contribution": 5.5
+     "normalized": 18.3,
+     "contribution": 3.7
     }
    }
   },
@@ -2751,7 +2751,7 @@
    }
   },
   "BRO": {
-   "score": 41.6,
+   "score": 41.5,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -2776,13 +2776,13 @@
     "growth": {
      "available": true,
      "raw": 7.7736,
-     "normalized": 89.3,
-     "contribution": 17.9
+     "normalized": 88.9,
+     "contribution": 17.8
     }
    }
   },
   "BRW": {
-   "score": 28.9,
+   "score": 27.7,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -2807,8 +2807,8 @@
     "growth": {
      "available": true,
      "raw": -1.297,
-     "normalized": 49.5,
-     "contribution": 9.9
+     "normalized": 43.5,
+     "contribution": 8.7
     }
    }
   },
@@ -2846,7 +2846,7 @@
    }
   },
   "BTM": {
-   "score": 22.5,
+   "score": 20.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -2871,13 +2871,13 @@
     "growth": {
      "available": true,
      "raw": -9.4749,
-     "normalized": 13.6,
-     "contribution": 2.7
+     "normalized": 2.6,
+     "contribution": 0.5
     }
    }
   },
   "BTR": {
-   "score": 37.2,
+   "score": 36.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -2902,13 +2902,13 @@
     "growth": {
      "available": true,
      "raw": 0.9746,
-     "normalized": 59.5,
-     "contribution": 11.9
+     "normalized": 54.9,
+     "contribution": 11
     }
    }
   },
   "BTV": {
-   "score": 37.5,
+   "score": 36.4,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -2933,13 +2933,13 @@
     "growth": {
      "available": true,
      "raw": -0.4936,
-     "normalized": 53,
-     "contribution": 10.6
+     "normalized": 47.5,
+     "contribution": 9.5
     }
    }
   },
   "BUF": {
-   "score": 42.3,
+   "score": 41.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -2964,13 +2964,13 @@
     "growth": {
      "available": true,
      "raw": 0.324,
-     "normalized": 56.6,
-     "contribution": 11.3
+     "normalized": 51.6,
+     "contribution": 10.3
     }
    }
   },
   "BUR": {
-   "score": 44.2,
+   "score": 43.5,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -2995,13 +2995,13 @@
     "growth": {
      "available": true,
      "raw": 2.5108,
-     "normalized": 66.2,
-     "contribution": 13.2
+     "normalized": 62.6,
+     "contribution": 12.5
     }
    }
   },
   "BVK": {
-   "score": 40.4,
+   "score": 33.1,
    "coverage": 0.2,
    "missing": [
     "congestion",
@@ -3030,8 +3030,8 @@
     "growth": {
      "available": true,
      "raw": -3.3741,
-     "normalized": 40.4,
-     "contribution": 40.4
+     "normalized": 33.1,
+     "contribution": 33.1
     }
    }
   },
@@ -3067,7 +3067,7 @@
    }
   },
   "BWI": {
-   "score": 54.4,
+   "score": 53.4,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -3092,8 +3092,8 @@
     "growth": {
      "available": true,
      "raw": -0.0954,
-     "normalized": 54.8,
-     "contribution": 11
+     "normalized": 49.5,
+     "contribution": 9.9
     }
    }
   },
@@ -3129,7 +3129,7 @@
    }
   },
   "CAE": {
-   "score": 38.9,
+   "score": 37.9,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -3154,13 +3154,13 @@
     "growth": {
      "available": true,
      "raw": 0.3843,
-     "normalized": 56.9,
-     "contribution": 11.4
+     "normalized": 51.9,
+     "contribution": 10.4
     }
    }
   },
   "CAK": {
-   "score": 34.3,
+   "score": 33.1,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -3185,8 +3185,8 @@
     "growth": {
      "available": true,
      "raw": -1.3827,
-     "normalized": 49.1,
-     "contribution": 9.8
+     "normalized": 43.1,
+     "contribution": 8.6
     }
    }
   },
@@ -3319,7 +3319,7 @@
    }
   },
   "CDV": {
-   "score": 20.9,
+   "score": 19.8,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -3344,13 +3344,13 @@
     "growth": {
      "available": true,
      "raw": -0.7827,
-     "normalized": 51.8,
-     "contribution": 10.4
+     "normalized": 46.1,
+     "contribution": 9.2
     }
    }
   },
   "CEC": {
-   "score": 24.7,
+   "score": 23.4,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -3375,13 +3375,13 @@
     "growth": {
      "available": true,
      "raw": -2.5721,
-     "normalized": 43.9,
-     "contribution": 8.8
+     "normalized": 37.1,
+     "contribution": 7.4
     }
    }
   },
   "CEZ": {
-   "score": 31.2,
+   "score": 30.2,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -3406,13 +3406,13 @@
     "growth": {
      "available": true,
      "raw": 0.2306,
-     "normalized": 56.2,
-     "contribution": 11.2
+     "normalized": 51.2,
+     "contribution": 10.2
     }
    }
   },
   "CFK": {
-   "score": 17.2,
+   "score": 6.7,
    "coverage": 0.2,
    "missing": [
     "congestion",
@@ -3441,8 +3441,8 @@
     "growth": {
      "available": true,
      "raw": -8.6506,
-     "normalized": 17.2,
-     "contribution": 17.2
+     "normalized": 6.7,
+     "contribution": 6.7
     }
    }
   },
@@ -3481,7 +3481,7 @@
    }
   },
   "CGI": {
-   "score": 26.7,
+   "score": 25.1,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -3506,13 +3506,13 @@
     "growth": {
      "available": true,
      "raw": -4.3191,
-     "normalized": 36.2,
-     "contribution": 7.2
+     "normalized": 28.4,
+     "contribution": 5.7
     }
    }
   },
   "CHA": {
-   "score": 37.6,
+   "score": 36.6,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -3537,13 +3537,13 @@
     "growth": {
      "available": true,
      "raw": 0.1657,
-     "normalized": 55.9,
-     "contribution": 11.2
+     "normalized": 50.8,
+     "contribution": 10.2
     }
    }
   },
   "CHO": {
-   "score": 35.4,
+   "score": 34.2,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -3568,13 +3568,13 @@
     "growth": {
      "available": true,
      "raw": -1.9728,
-     "normalized": 46.5,
-     "contribution": 9.3
+     "normalized": 40.1,
+     "contribution": 8
     }
    }
   },
   "CHS": {
-   "score": 47.5,
+   "score": 47.1,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -3599,13 +3599,13 @@
     "growth": {
      "available": true,
      "raw": 5.5681,
-     "normalized": 79.7,
-     "contribution": 15.9
+     "normalized": 77.8,
+     "contribution": 15.6
     }
    }
   },
   "CID": {
-   "score": 40.1,
+   "score": 39.4,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -3630,13 +3630,13 @@
     "growth": {
      "available": true,
      "raw": 2.4853,
-     "normalized": 66.1,
-     "contribution": 13.2
+     "normalized": 62.4,
+     "contribution": 12.5
     }
    }
   },
   "CIU": {
-   "score": 34.3,
+   "score": 33.5,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -3661,13 +3661,13 @@
     "growth": {
      "available": true,
      "raw": 1.6595,
-     "normalized": 62.5,
-     "contribution": 12.5
+     "normalized": 58.3,
+     "contribution": 11.7
     }
    }
   },
   "CKB": {
-   "score": 30.6,
+   "score": 29.6,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -3692,13 +3692,13 @@
     "growth": {
      "available": true,
      "raw": 0.2315,
-     "normalized": 56.2,
-     "contribution": 11.2
+     "normalized": 51.2,
+     "contribution": 10.2
     }
    }
   },
   "CLE": {
-   "score": 43.8,
+   "score": 42.7,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -3723,13 +3723,13 @@
     "growth": {
      "available": true,
      "raw": 0.227,
-     "normalized": 56.2,
-     "contribution": 11.2
+     "normalized": 51.1,
+     "contribution": 10.2
     }
    }
   },
   "CLL": {
-   "score": 29.4,
+   "score": 27.9,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -3754,13 +3754,13 @@
     "growth": {
      "available": true,
      "raw": -4.0108,
-     "normalized": 37.6,
-     "contribution": 7.5
+     "normalized": 29.9,
+     "contribution": 6
     }
    }
   },
   "CLT": {
-   "score": 61,
+   "score": 60.4,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -3785,13 +3785,13 @@
     "growth": {
      "available": true,
      "raw": 3.3426,
-     "normalized": 69.9,
-     "contribution": 14
+     "normalized": 66.7,
+     "contribution": 13.3
     }
    }
   },
   "CMH": {
-   "score": 43.8,
+   "score": 42.9,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -3816,13 +3816,13 @@
     "growth": {
      "available": true,
      "raw": 1.0116,
-     "normalized": 59.6,
-     "contribution": 11.9
+     "normalized": 55.1,
+     "contribution": 11
     }
    }
   },
   "CMI": {
-   "score": 28.6,
+   "score": 27.1,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -3847,13 +3847,13 @@
     "growth": {
      "available": true,
      "raw": -3.8763,
-     "normalized": 38.2,
-     "contribution": 7.6
+     "normalized": 30.6,
+     "contribution": 6.1
     }
    }
   },
   "CMX": {
-   "score": 34.6,
+   "score": 33.7,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -3878,13 +3878,13 @@
     "growth": {
      "available": true,
      "raw": 0.6948,
-     "normalized": 58.3,
-     "contribution": 11.7
+     "normalized": 53.5,
+     "contribution": 10.7
     }
    }
   },
   "CNM": {
-   "score": 19.2,
+   "score": 17.6,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -3909,13 +3909,13 @@
     "growth": {
      "available": true,
      "raw": -4.8418,
-     "normalized": 33.9,
-     "contribution": 6.8
+     "normalized": 25.8,
+     "contribution": 5.2
     }
    }
   },
   "CNY": {
-   "score": 21.3,
+   "score": 19.2,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -3940,13 +3940,13 @@
     "growth": {
      "available": true,
      "raw": -8.4511,
-     "normalized": 18.1,
-     "contribution": 3.6
+     "normalized": 7.7,
+     "contribution": 1.5
     }
    }
   },
   "COD": {
-   "score": 31.6,
+   "score": 30.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -3971,8 +3971,8 @@
     "growth": {
      "available": true,
      "raw": -1.9073,
-     "normalized": 46.8,
-     "contribution": 9.4
+     "normalized": 40.5,
+     "contribution": 8.1
     }
    }
   },
@@ -4008,7 +4008,7 @@
    }
   },
   "COU": {
-   "score": 29.2,
+   "score": 27.6,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -4033,13 +4033,13 @@
     "growth": {
      "available": true,
      "raw": -4.4818,
-     "normalized": 35.5,
-     "contribution": 7.1
+     "normalized": 27.6,
+     "contribution": 5.5
     }
    }
   },
   "CPR": {
-   "score": 35,
+   "score": 34,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -4064,13 +4064,13 @@
     "growth": {
      "available": true,
      "raw": 0.4679,
-     "normalized": 57.3,
-     "contribution": 11.5
+     "normalized": 52.3,
+     "contribution": 10.5
     }
    }
   },
   "CPX": {
-   "score": 20.3,
+   "score": 18.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -4095,13 +4095,13 @@
     "growth": {
      "available": true,
      "raw": -7.803,
-     "normalized": 20.9,
-     "contribution": 4.2
+     "normalized": 11,
+     "contribution": 2.2
     }
    }
   },
   "CRP": {
-   "score": 37,
+   "score": 36.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -4126,8 +4126,8 @@
     "growth": {
      "available": true,
      "raw": 2.3986,
-     "normalized": 65.7,
-     "contribution": 13.1
+     "normalized": 62,
+     "contribution": 12.4
     }
    }
   },
@@ -4168,7 +4168,7 @@
    }
   },
   "CRW": {
-   "score": 32.9,
+   "score": 31.6,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -4193,13 +4193,13 @@
     "growth": {
      "available": true,
      "raw": -2.263,
-     "normalized": 45.3,
-     "contribution": 9.1
+     "normalized": 38.7,
+     "contribution": 7.7
     }
    }
   },
   "CSG": {
-   "score": 36.9,
+   "score": 36.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -4224,13 +4224,13 @@
     "growth": {
      "available": true,
      "raw": 3.9114,
-     "normalized": 72.4,
-     "contribution": 14.5
+     "normalized": 69.6,
+     "contribution": 13.9
     }
    }
   },
   "CVG": {
-   "score": 43.2,
+   "score": 42.2,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -4255,8 +4255,8 @@
     "growth": {
      "available": true,
      "raw": 0.391,
-     "normalized": 56.9,
-     "contribution": 11.4
+     "normalized": 52,
+     "contribution": 10.4
     }
    }
   },
@@ -4292,7 +4292,7 @@
    }
   },
   "CWA": {
-   "score": 26.3,
+   "score": 24.2,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -4317,13 +4317,13 @@
     "growth": {
      "available": true,
      "raw": -8.586,
-     "normalized": 17.5,
-     "contribution": 3.5
+     "normalized": 7.1,
+     "contribution": 1.4
     }
    }
   },
   "CXF": {
-   "score": 31.4,
+   "score": 30.8,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -4348,8 +4348,8 @@
     "growth": {
      "available": true,
      "raw": 3.904,
-     "normalized": 72.4,
-     "contribution": 14.5
+     "normalized": 69.5,
+     "contribution": 13.9
     }
    }
   },
@@ -4385,7 +4385,7 @@
    }
   },
   "D76": {
-   "score": 27.4,
+   "score": 18.3,
    "coverage": 0.2,
    "missing": [
     "congestion",
@@ -4414,13 +4414,13 @@
     "growth": {
      "available": true,
      "raw": -6.3308,
-     "normalized": 27.4,
-     "contribution": 27.4
+     "normalized": 18.3,
+     "contribution": 18.3
     }
    }
   },
   "DAB": {
-   "score": 35.4,
+   "score": 34.4,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -4445,13 +4445,13 @@
     "growth": {
      "available": true,
      "raw": -0.1797,
-     "normalized": 54.4,
-     "contribution": 10.9
+     "normalized": 49.1,
+     "contribution": 9.8
     }
    }
   },
   "DAL": {
-   "score": 48.2,
+   "score": 47.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -4476,13 +4476,13 @@
     "growth": {
      "available": true,
      "raw": 1.3831,
-     "normalized": 61.3,
-     "contribution": 12.3
+     "normalized": 56.9,
+     "contribution": 11.4
     }
    }
   },
   "DAY": {
-   "score": 31.4,
+   "score": 29.7,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -4507,8 +4507,8 @@
     "growth": {
      "available": true,
      "raw": -5.8708,
-     "normalized": 29.4,
-     "contribution": 5.9
+     "normalized": 20.6,
+     "contribution": 4.1
     }
    }
   },
@@ -4544,7 +4544,7 @@
    }
   },
   "DCA": {
-   "score": 64.7,
+   "score": 63.9,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -4569,8 +4569,8 @@
     "growth": {
      "available": true,
      "raw": 1.9179,
-     "normalized": 63.6,
-     "contribution": 12.7
+     "normalized": 59.6,
+     "contribution": 11.9
     }
    }
   },
@@ -4606,7 +4606,7 @@
    }
   },
   "DEC": {
-   "score": 28.2,
+   "score": 28.1,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -4631,13 +4631,13 @@
     "growth": {
      "available": true,
      "raw": 8.2871,
-     "normalized": 91.6,
+     "normalized": 91.4,
      "contribution": 18.3
     }
    }
   },
   "DEN": {
-   "score": 57.9,
+   "score": 57.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -4662,13 +4662,13 @@
     "growth": {
      "available": true,
      "raw": 3.5596,
-     "normalized": 70.8,
-     "contribution": 14.2
+     "normalized": 67.8,
+     "contribution": 13.6
     }
    }
   },
   "DFW": {
-   "score": 65.4,
+   "score": 64.7,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -4693,13 +4693,13 @@
     "growth": {
      "available": true,
      "raw": 3.4305,
-     "normalized": 70.3,
-     "contribution": 14.1
+     "normalized": 67.2,
+     "contribution": 13.4
     }
    }
   },
   "DHN": {
-   "score": 27.1,
+   "score": 25.1,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -4724,13 +4724,13 @@
     "growth": {
      "available": true,
      "raw": -7.7427,
-     "normalized": 21.2,
-     "contribution": 4.2
+     "normalized": 11.3,
+     "contribution": 2.3
     }
    }
   },
   "DIK": {
-   "score": 33.1,
+   "score": 32.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -4755,13 +4755,13 @@
     "growth": {
      "available": true,
      "raw": 1.8681,
-     "normalized": 63.4,
-     "contribution": 12.7
+     "normalized": 59.3,
+     "contribution": 11.9
     }
    }
   },
   "DLG": {
-   "score": 25.3,
+   "score": 24.2,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -4786,13 +4786,13 @@
     "growth": {
      "available": true,
      "raw": -0.4722,
-     "normalized": 53.1,
-     "contribution": 10.6
+     "normalized": 47.6,
+     "contribution": 9.5
     }
    }
   },
   "DLH": {
-   "score": 33.9,
+   "score": 32.5,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -4817,13 +4817,13 @@
     "growth": {
      "available": true,
      "raw": -2.653,
-     "normalized": 43.6,
-     "contribution": 8.7
+     "normalized": 36.7,
+     "contribution": 7.3
     }
    }
   },
   "DRO": {
-   "score": 40.7,
+   "score": 40.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -4848,8 +4848,8 @@
     "growth": {
      "available": true,
      "raw": 5.1248,
-     "normalized": 77.7,
-     "contribution": 15.5
+     "normalized": 75.6,
+     "contribution": 15.1
     }
    }
   },
@@ -4887,7 +4887,7 @@
    }
   },
   "DSM": {
-   "score": 40.8,
+   "score": 40,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -4912,8 +4912,8 @@
     "growth": {
      "available": true,
      "raw": 1.7383,
-     "normalized": 62.8,
-     "contribution": 12.6
+     "normalized": 58.7,
+     "contribution": 11.7
     }
    }
   },
@@ -4954,7 +4954,7 @@
    }
   },
   "DTW": {
-   "score": 49.1,
+   "score": 47.8,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -4979,13 +4979,13 @@
     "growth": {
      "available": true,
      "raw": -2.3481,
-     "normalized": 44.9,
-     "contribution": 9
+     "normalized": 38.3,
+     "contribution": 7.7
     }
    }
   },
   "DUJ": {
-   "score": 19.9,
+   "score": 18.7,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -5010,13 +5010,13 @@
     "growth": {
      "available": true,
      "raw": -0.8755,
-     "normalized": 51.4,
-     "contribution": 10.3
+     "normalized": 45.6,
+     "contribution": 9.1
     }
    }
   },
   "DUT": {
-   "score": 25.6,
+   "score": 24.1,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -5041,13 +5041,13 @@
     "growth": {
      "available": true,
      "raw": -3.5649,
-     "normalized": 39.6,
-     "contribution": 7.9
+     "normalized": 32.2,
+     "contribution": 6.4
     }
    }
   },
   "DUY": {
-   "score": 29.9,
+   "score": 21.2,
    "coverage": 0.2,
    "missing": [
     "congestion",
@@ -5076,13 +5076,13 @@
     "growth": {
      "available": true,
      "raw": -5.7667,
-     "normalized": 29.9,
-     "contribution": 29.9
+     "normalized": 21.2,
+     "contribution": 21.2
     }
    }
   },
   "DVL": {
-   "score": 28.6,
+   "score": 28.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -5107,13 +5107,13 @@
     "growth": {
      "available": true,
      "raw": 6.528,
-     "normalized": 83.9,
-     "contribution": 16.8
+     "normalized": 82.6,
+     "contribution": 16.5
     }
    }
   },
   "EAR": {
-   "score": 27.8,
+   "score": 25.8,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -5138,13 +5138,13 @@
     "growth": {
      "available": true,
      "raw": -7.8846,
-     "normalized": 20.6,
-     "contribution": 4.1
+     "normalized": 10.6,
+     "contribution": 2.1
     }
    }
   },
   "EAT": {
-   "score": 30.5,
+   "score": 28.6,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -5169,13 +5169,13 @@
     "growth": {
      "available": true,
      "raw": -7.206,
-     "normalized": 23.6,
-     "contribution": 4.7
+     "normalized": 14,
+     "contribution": 2.8
     }
    }
   },
   "EAU": {
-   "score": 31.3,
+   "score": 30,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -5200,13 +5200,13 @@
     "growth": {
      "available": true,
      "raw": -1.6869,
-     "normalized": 47.8,
-     "contribution": 9.6
+     "normalized": 41.6,
+     "contribution": 8.3
     }
    }
   },
   "ECP": {
-   "score": 45,
+   "score": 44.9,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -5231,13 +5231,13 @@
     "growth": {
      "available": true,
      "raw": 8.1279,
-     "normalized": 90.9,
-     "contribution": 18.2
+     "normalized": 90.6,
+     "contribution": 18.1
     }
    }
   },
   "EEK": {
-   "score": 14.7,
+   "score": 12.6,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -5262,13 +5262,13 @@
     "growth": {
      "available": true,
      "raw": -8.3798,
-     "normalized": 18.4,
-     "contribution": 3.7
+     "normalized": 8.1,
+     "contribution": 1.6
     }
    }
   },
   "EGE": {
-   "score": 39.1,
+   "score": 39,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -5293,13 +5293,13 @@
     "growth": {
      "available": true,
      "raw": 8.1267,
-     "normalized": 90.9,
-     "contribution": 18.2
+     "normalized": 90.6,
+     "contribution": 18.1
     }
    }
   },
   "EKO": {
-   "score": 23.9,
+   "score": 21.9,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -5324,13 +5324,13 @@
     "growth": {
      "available": true,
      "raw": -8.4043,
-     "normalized": 18.3,
-     "contribution": 3.7
+     "normalized": 8,
+     "contribution": 1.6
     }
    }
   },
   "ELD": {
-   "score": 9.2,
+   "score": 7.1,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -5355,8 +5355,8 @@
     "growth": {
      "available": true,
      "raw": -8.8334,
-     "normalized": 16.4,
-     "contribution": 3.3
+     "normalized": 5.8,
+     "contribution": 1.2
     }
    }
   },
@@ -5394,7 +5394,7 @@
    }
   },
   "ELM": {
-   "score": 26.1,
+   "score": 25.1,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -5419,13 +5419,13 @@
     "growth": {
      "available": true,
      "raw": -11.3411,
-     "normalized": 5.4,
-     "contribution": 1.1
+     "normalized": 0,
+     "contribution": 0
     }
    }
   },
   "ELP": {
-   "score": 40.3,
+   "score": 39.7,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -5450,13 +5450,13 @@
     "growth": {
      "available": true,
      "raw": 3.4847,
-     "normalized": 70.5,
-     "contribution": 14.1
+     "normalized": 67.4,
+     "contribution": 13.5
     }
    }
   },
   "ENA": {
-   "score": 30.7,
+   "score": 29.1,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -5481,13 +5481,13 @@
     "growth": {
      "available": true,
      "raw": -4.5655,
-     "normalized": 35.2,
-     "contribution": 7
+     "normalized": 27.2,
+     "contribution": 5.4
     }
    }
   },
   "ENM": {
-   "score": 66,
+   "score": 62.2,
    "coverage": 0.2,
    "missing": [
     "congestion",
@@ -5516,8 +5516,8 @@
     "growth": {
      "available": true,
      "raw": 2.4471,
-     "normalized": 66,
-     "contribution": 66
+     "normalized": 62.2,
+     "contribution": 62.2
     }
    }
   },
@@ -5553,7 +5553,7 @@
    }
   },
   "ESC": {
-   "score": 25.2,
+   "score": 23.9,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -5578,13 +5578,13 @@
     "growth": {
      "available": true,
      "raw": -2.1271,
-     "normalized": 45.9,
-     "contribution": 9.2
+     "normalized": 39.4,
+     "contribution": 7.9
     }
    }
   },
   "EUG": {
-   "score": 40.7,
+   "score": 40.5,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -5609,13 +5609,13 @@
     "growth": {
      "available": true,
      "raw": 6.7121,
-     "normalized": 84.7,
-     "contribution": 16.9
+     "normalized": 83.6,
+     "contribution": 16.7
     }
    }
   },
   "EVV": {
-   "score": 30.5,
+   "score": 28.9,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -5640,8 +5640,8 @@
     "growth": {
      "available": true,
      "raw": -4.786,
-     "normalized": 34.2,
-     "contribution": 6.8
+     "normalized": 26.1,
+     "contribution": 5.2
     }
    }
   },
@@ -5679,7 +5679,7 @@
    }
   },
   "EWN": {
-   "score": 28.8,
+   "score": 27.1,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -5704,13 +5704,13 @@
     "growth": {
      "available": true,
      "raw": -5.3584,
-     "normalized": 31.7,
-     "contribution": 6.3
+     "normalized": 23.2,
+     "contribution": 4.6
     }
    }
   },
   "EWR": {
-   "score": 78,
+   "score": 77.1,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -5735,8 +5735,8 @@
     "growth": {
      "available": true,
      "raw": 1.1672,
-     "normalized": 60.3,
-     "contribution": 12.1
+     "normalized": 55.8,
+     "contribution": 11.2
     }
    }
   },
@@ -5777,7 +5777,7 @@
    }
   },
   "EYW": {
-   "score": 44.4,
+   "score": 44.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -5802,13 +5802,13 @@
     "growth": {
      "available": true,
      "raw": 8.2804,
-     "normalized": 91.6,
+     "normalized": 91.4,
      "contribution": 18.3
     }
    }
   },
   "FAI": {
-   "score": 36.1,
+   "score": 35.1,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -5833,8 +5833,8 @@
     "growth": {
      "available": true,
      "raw": 0.4089,
-     "normalized": 57,
-     "contribution": 11.4
+     "normalized": 52,
+     "contribution": 10.4
     }
    }
   },
@@ -5875,7 +5875,7 @@
    }
   },
   "FAR": {
-   "score": 40.9,
+   "score": 40.2,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -5900,13 +5900,13 @@
     "growth": {
      "available": true,
      "raw": 2.8335,
-     "normalized": 67.7,
-     "contribution": 13.5
+     "normalized": 64.2,
+     "contribution": 12.8
     }
    }
   },
   "FAT": {
-   "score": 50.6,
+   "score": 50.4,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -5931,13 +5931,13 @@
     "growth": {
      "available": true,
      "raw": 6.4019,
-     "normalized": 83.3,
-     "contribution": 16.7
+     "normalized": 82,
+     "contribution": 16.4
     }
    }
   },
   "FAY": {
-   "score": 30.3,
+   "score": 28.7,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -5962,13 +5962,13 @@
     "growth": {
      "available": true,
      "raw": -4.9628,
-     "normalized": 33.4,
-     "contribution": 6.7
+     "normalized": 25.2,
+     "contribution": 5
     }
    }
   },
   "FHR": {
-   "score": 50.7,
+   "score": 44.9,
    "coverage": 0.2,
    "missing": [
     "congestion",
@@ -5997,13 +5997,13 @@
     "growth": {
      "available": true,
      "raw": -1.0209,
-     "normalized": 50.7,
-     "contribution": 50.7
+     "normalized": 44.9,
+     "contribution": 44.9
     }
    }
   },
   "FLG": {
-   "score": 27,
+   "score": 25,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -6028,13 +6028,13 @@
     "growth": {
      "available": true,
      "raw": -7.9812,
-     "normalized": 20.2,
-     "contribution": 4
+     "normalized": 10.1,
+     "contribution": 2
     }
    }
   },
   "FLL": {
-   "score": 62.1,
+   "score": 60.9,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -6059,13 +6059,13 @@
     "growth": {
      "available": true,
      "raw": -0.9711,
-     "normalized": 50.9,
-     "contribution": 10.2
+     "normalized": 45.1,
+     "contribution": 9
     }
    }
   },
   "FLO": {
-   "score": 18.4,
+   "score": 16.5,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -6090,8 +6090,8 @@
     "growth": {
      "available": true,
      "raw": -10.4233,
-     "normalized": 9.4,
-     "contribution": 1.9
+     "normalized": 0,
+     "contribution": 0
     }
    }
   },
@@ -6162,7 +6162,7 @@
    }
   },
   "FNT": {
-   "score": 36.1,
+   "score": 34.9,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -6187,13 +6187,13 @@
     "growth": {
      "available": true,
      "raw": -1.1856,
-     "normalized": 50,
-     "contribution": 10
+     "normalized": 44.1,
+     "contribution": 8.8
     }
    }
   },
   "FOD": {
-   "score": 19.9,
+   "score": 18.7,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -6218,8 +6218,8 @@
     "growth": {
      "available": true,
      "raw": -1.4716,
-     "normalized": 48.7,
-     "contribution": 9.7
+     "normalized": 42.6,
+     "contribution": 8.5
     }
    }
   },
@@ -6257,7 +6257,7 @@
    }
   },
   "FSD": {
-   "score": 42,
+   "score": 41.4,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -6282,13 +6282,13 @@
     "growth": {
      "available": true,
      "raw": 4.0039,
-     "normalized": 72.8,
-     "contribution": 14.6
+     "normalized": 70,
+     "contribution": 14
     }
    }
   },
   "FSM": {
-   "score": 25,
+   "score": 23,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -6313,13 +6313,13 @@
     "growth": {
      "available": true,
      "raw": -8.4164,
-     "normalized": 18.2,
-     "contribution": 3.6
+     "normalized": 7.9,
+     "contribution": 1.6
     }
    }
   },
   "FWA": {
-   "score": 38.2,
+   "score": 37.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -6344,13 +6344,13 @@
     "growth": {
      "available": true,
      "raw": 1.0746,
-     "normalized": 59.9,
-     "contribution": 12
+     "normalized": 55.4,
+     "contribution": 11.1
     }
    }
   },
   "FXE": {
-   "score": 57.4,
+   "score": 57.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -6375,13 +6375,13 @@
     "growth": {
      "available": true,
      "raw": 7.2749,
-     "normalized": 87.2,
-     "contribution": 17.4
+     "normalized": 86.4,
+     "contribution": 17.3
     }
    }
   },
   "FYU": {
-   "score": 22.4,
+   "score": 20.8,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -6406,13 +6406,13 @@
     "growth": {
      "available": true,
      "raw": -5.3688,
-     "normalized": 31.6,
-     "contribution": 6.3
+     "normalized": 23.2,
+     "contribution": 4.6
     }
    }
   },
   "GAL": {
-   "score": 27.8,
+   "score": 26.7,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -6437,13 +6437,13 @@
     "growth": {
      "available": true,
      "raw": -0.0303,
-     "normalized": 55.1,
-     "contribution": 11
+     "normalized": 49.8,
+     "contribution": 10
     }
    }
   },
   "GAM": {
-   "score": 24.7,
+   "score": 23.2,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -6468,13 +6468,13 @@
     "growth": {
      "available": true,
      "raw": -3.8653,
-     "normalized": 38.2,
-     "contribution": 7.6
+     "normalized": 30.7,
+     "contribution": 6.1
     }
    }
   },
   "GCC": {
-   "score": 34.1,
+   "score": 33.2,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -6499,13 +6499,13 @@
     "growth": {
      "available": true,
      "raw": 0.5526,
-     "normalized": 57.6,
-     "contribution": 11.5
+     "normalized": 52.8,
+     "contribution": 10.6
     }
    }
   },
   "GCK": {
-   "score": 35.7,
+   "score": 35.2,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -6530,8 +6530,8 @@
     "growth": {
      "available": true,
      "raw": 4.4474,
-     "normalized": 74.7,
-     "contribution": 14.9
+     "normalized": 72.2,
+     "contribution": 14.4
     }
    }
   },
@@ -6602,7 +6602,7 @@
    }
   },
   "GEG": {
-   "score": 41.9,
+   "score": 41,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -6627,13 +6627,13 @@
     "growth": {
      "available": true,
      "raw": 1.2025,
-     "normalized": 60.5,
-     "contribution": 12.1
+     "normalized": 56,
+     "contribution": 11.2
     }
    }
   },
   "GFK": {
-   "score": 31,
+   "score": 29.4,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -6658,13 +6658,13 @@
     "growth": {
      "available": true,
      "raw": -4.6727,
-     "normalized": 34.7,
-     "contribution": 6.9
+     "normalized": 26.6,
+     "contribution": 5.3
     }
    }
   },
   "GGG": {
-   "score": 36.3,
+   "score": 35.8,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -6689,13 +6689,13 @@
     "growth": {
      "available": true,
      "raw": 5.2371,
-     "normalized": 78.2,
-     "contribution": 15.6
+     "normalized": 76.2,
+     "contribution": 15.2
     }
    }
   },
   "GGV": {
-   "score": 21,
+   "score": 11,
    "coverage": 0.2,
    "missing": [
     "congestion",
@@ -6724,13 +6724,13 @@
     "growth": {
      "available": true,
      "raw": -7.7989,
-     "normalized": 21,
-     "contribution": 21
+     "normalized": 11,
+     "contribution": 11
     }
    }
   },
   "GGW": {
-   "score": 19,
+   "score": 17,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -6755,13 +6755,13 @@
     "growth": {
      "available": true,
      "raw": -7.7561,
-     "normalized": 21.1,
-     "contribution": 4.2
+     "normalized": 11.2,
+     "contribution": 2.2
     }
    }
   },
   "GJT": {
-   "score": 37.1,
+   "score": 36.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -6786,8 +6786,8 @@
     "growth": {
      "available": true,
      "raw": 1.6201,
-     "normalized": 62.3,
-     "contribution": 12.5
+     "normalized": 58.1,
+     "contribution": 11.6
     }
    }
   },
@@ -6823,7 +6823,7 @@
    }
   },
   "GNV": {
-   "score": 36.9,
+   "score": 36.1,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -6848,13 +6848,13 @@
     "growth": {
      "available": true,
      "raw": 1.236,
-     "normalized": 60.6,
-     "contribution": 12.1
+     "normalized": 56.2,
+     "contribution": 11.2
     }
    }
   },
   "GPI": {
-   "score": 86.7,
+   "score": 85.8,
    "coverage": 0.2,
    "missing": [
     "congestion",
@@ -6883,13 +6883,13 @@
     "growth": {
      "available": true,
      "raw": 7.1652,
-     "normalized": 86.7,
-     "contribution": 86.7
+     "normalized": 85.8,
+     "contribution": 85.8
     }
    }
   },
   "GPT": {
-   "score": 38.1,
+   "score": 37.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -6914,13 +6914,13 @@
     "growth": {
      "available": true,
      "raw": 2.3189,
-     "normalized": 65.4,
-     "contribution": 13.1
+     "normalized": 61.6,
+     "contribution": 12.3
     }
    }
   },
   "GRB": {
-   "score": 35,
+   "score": 33.9,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -6945,13 +6945,13 @@
     "growth": {
      "available": true,
      "raw": -0.5318,
-     "normalized": 52.9,
-     "contribution": 10.6
+     "normalized": 47.3,
+     "contribution": 9.5
     }
    }
   },
   "GRI": {
-   "score": 33,
+   "score": 31.8,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -6976,13 +6976,13 @@
     "growth": {
      "available": true,
      "raw": -0.796,
-     "normalized": 51.7,
-     "contribution": 10.3
+     "normalized": 46,
+     "contribution": 9.2
     }
    }
   },
   "GRK": {
-   "score": 20.3,
+   "score": 18.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -7007,13 +7007,13 @@
     "growth": {
      "available": true,
      "raw": -7.8253,
-     "normalized": 20.8,
-     "contribution": 4.2
+     "normalized": 10.9,
+     "contribution": 2.2
     }
    }
   },
   "GRO": {
-   "score": 50,
+   "score": 44.1,
    "coverage": 0.2,
    "missing": [
     "congestion",
@@ -7042,13 +7042,13 @@
     "growth": {
      "available": true,
      "raw": -1.1794,
-     "normalized": 50,
-     "contribution": 50
+     "normalized": 44.1,
+     "contribution": 44.1
     }
    }
   },
   "GRR": {
-   "score": 42.1,
+   "score": 41.4,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -7073,8 +7073,8 @@
     "growth": {
      "available": true,
      "raw": 2.9369,
-     "normalized": 68.1,
-     "contribution": 13.6
+     "normalized": 64.7,
+     "contribution": 12.9
     }
    }
   },
@@ -7114,7 +7114,7 @@
    }
   },
   "GSO": {
-   "score": 35.5,
+   "score": 34.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -7139,13 +7139,13 @@
     "growth": {
      "available": true,
      "raw": -1.7565,
-     "normalized": 47.5,
-     "contribution": 9.5
+     "normalized": 41.2,
+     "contribution": 8.2
     }
    }
   },
   "GSP": {
-   "score": 42.8,
+   "score": 42,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -7170,13 +7170,13 @@
     "growth": {
      "available": true,
      "raw": 2.0455,
-     "normalized": 64.2,
-     "contribution": 12.8
+     "normalized": 60.2,
+     "contribution": 12
     }
    }
   },
   "GST": {
-   "score": 24.9,
+   "score": 23.6,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -7201,13 +7201,13 @@
     "growth": {
      "available": true,
      "raw": -1.974,
-     "normalized": 46.5,
-     "contribution": 9.3
+     "normalized": 40.1,
+     "contribution": 8
     }
    }
   },
   "GTF": {
-   "score": 37.6,
+   "score": 36.7,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -7232,13 +7232,13 @@
     "growth": {
      "available": true,
      "raw": 1.2404,
-     "normalized": 60.7,
-     "contribution": 12.1
+     "normalized": 56.2,
+     "contribution": 11.2
     }
    }
   },
   "GTR": {
-   "score": 33.4,
+   "score": 32.1,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -7263,8 +7263,8 @@
     "growth": {
      "available": true,
      "raw": -1.7468,
-     "normalized": 47.5,
-     "contribution": 9.5
+     "normalized": 41.3,
+     "contribution": 8.3
     }
    }
   },
@@ -7428,7 +7428,7 @@
    }
   },
   "HGR": {
-   "score": 43.5,
+   "score": 43.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -7453,8 +7453,8 @@
     "growth": {
      "available": true,
      "raw": 7.3576,
-     "normalized": 87.5,
-     "contribution": 17.5
+     "normalized": 86.8,
+     "contribution": 17.4
     }
    }
   },
@@ -7490,7 +7490,7 @@
    }
   },
   "HIB": {
-   "score": 15,
+   "score": 12.8,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -7515,13 +7515,13 @@
     "growth": {
      "available": true,
      "raw": -9.1944,
-     "normalized": 14.8,
-     "contribution": 3
+     "normalized": 4,
+     "contribution": 0.8
     }
    }
   },
   "HLA": {
-   "score": 55.2,
+   "score": 50,
    "coverage": 0.2,
    "missing": [
     "congestion",
@@ -7550,13 +7550,13 @@
     "growth": {
      "available": true,
      "raw": 0.0061,
-     "normalized": 55.2,
-     "contribution": 55.2
+     "normalized": 50,
+     "contribution": 50
     }
    }
   },
   "HLN": {
-   "score": 32.2,
+   "score": 30.8,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -7581,8 +7581,8 @@
     "growth": {
      "available": true,
      "raw": -3.0352,
-     "normalized": 41.9,
-     "contribution": 8.4
+     "normalized": 34.8,
+     "contribution": 7
     }
    }
   },
@@ -7623,7 +7623,7 @@
    }
   },
   "HNH": {
-   "score": 18.7,
+   "score": 16.8,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -7648,13 +7648,13 @@
     "growth": {
      "available": true,
      "raw": -6.7934,
-     "normalized": 25.4,
-     "contribution": 5.1
+     "normalized": 16,
+     "contribution": 3.2
     }
    }
   },
   "HNL": {
-   "score": 53.7,
+   "score": 52.8,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -7679,8 +7679,8 @@
     "growth": {
      "available": true,
      "raw": 0.9052,
-     "normalized": 59.2,
-     "contribution": 11.8
+     "normalized": 54.5,
+     "contribution": 10.9
     }
    }
   },
@@ -7718,7 +7718,7 @@
    }
   },
   "HNS": {
-   "score": 17.3,
+   "score": 15.2,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -7743,13 +7743,13 @@
     "growth": {
      "available": true,
      "raw": -8.6716,
-     "normalized": 17.1,
-     "contribution": 3.4
+     "normalized": 6.6,
+     "contribution": 1.3
     }
    }
   },
   "HOB": {
-   "score": 30.1,
+   "score": 28.9,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -7774,13 +7774,13 @@
     "growth": {
      "available": true,
      "raw": -1.151,
-     "normalized": 50.2,
-     "contribution": 10
+     "normalized": 44.2,
+     "contribution": 8.8
     }
    }
   },
   "HOM": {
-   "score": 17.1,
+   "score": 14.8,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -7805,13 +7805,13 @@
     "growth": {
      "available": true,
      "raw": -9.9325,
-     "normalized": 11.6,
-     "contribution": 2.3
+     "normalized": 0.3,
+     "contribution": 0.1
     }
    }
   },
   "HOT": {
-   "score": 19.2,
+   "score": 17.2,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -7836,13 +7836,13 @@
     "growth": {
      "available": true,
      "raw": -7.498,
-     "normalized": 22.3,
-     "contribution": 4.5
+     "normalized": 12.5,
+     "contribution": 2.5
     }
    }
   },
   "HOU": {
-   "score": 46.7,
+   "score": 45.7,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -7867,13 +7867,13 @@
     "growth": {
      "available": true,
      "raw": 0.1336,
-     "normalized": 55.8,
-     "contribution": 11.2
+     "normalized": 50.7,
+     "contribution": 10.1
     }
    }
   },
   "HPB": {
-   "score": 19.1,
+   "score": 17.6,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -7898,13 +7898,13 @@
     "growth": {
      "available": true,
      "raw": -3.101,
-     "normalized": 41.6,
-     "contribution": 8.3
+     "normalized": 34.5,
+     "contribution": 6.9
     }
    }
   },
   "HPN": {
-   "score": 44,
+   "score": 43.7,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -7929,8 +7929,8 @@
     "growth": {
      "available": true,
      "raw": 6.2787,
-     "normalized": 82.8,
-     "contribution": 16.6
+     "normalized": 81.4,
+     "contribution": 16.3
     }
    }
   },
@@ -7966,7 +7966,7 @@
    }
   },
   "HRO": {
-   "score": 26.4,
+   "score": 24.9,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -7991,13 +7991,13 @@
     "growth": {
      "available": true,
      "raw": -3.9144,
-     "normalized": 38,
-     "contribution": 7.6
+     "normalized": 30.4,
+     "contribution": 6.1
     }
    }
   },
   "HSV": {
-   "score": 40.4,
+   "score": 39.7,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -8022,13 +8022,13 @@
     "growth": {
      "available": true,
      "raw": 2.7507,
-     "normalized": 67.3,
-     "contribution": 13.5
+     "normalized": 63.8,
+     "contribution": 12.8
     }
    }
   },
   "HTS": {
-   "score": 31.6,
+   "score": 30.2,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -8053,8 +8053,8 @@
     "growth": {
      "available": true,
      "raw": -2.9699,
-     "normalized": 42.2,
-     "contribution": 8.4
+     "normalized": 35.2,
+     "contribution": 7
     }
    }
   },
@@ -8090,7 +8090,7 @@
    }
   },
   "HVR": {
-   "score": 25.4,
+   "score": 24.1,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -8115,13 +8115,13 @@
     "growth": {
      "available": true,
      "raw": -1.5827,
-     "normalized": 48.3,
-     "contribution": 9.7
+     "normalized": 42.1,
+     "contribution": 8.4
     }
    }
   },
   "HXD": {
-   "score": 53.7,
+   "score": 48.3,
    "coverage": 0.2,
    "missing": [
     "congestion",
@@ -8150,13 +8150,13 @@
     "growth": {
      "available": true,
      "raw": -0.3337,
-     "normalized": 53.7,
-     "contribution": 53.7
+     "normalized": 48.3,
+     "contribution": 48.3
     }
    }
   },
   "HYA": {
-   "score": 25.9,
+   "score": 25,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -8181,13 +8181,13 @@
     "growth": {
      "available": true,
      "raw": 0.9316,
-     "normalized": 59.3,
-     "contribution": 11.9
+     "normalized": 54.7,
+     "contribution": 10.9
     }
    }
   },
   "HYS": {
-   "score": 27.7,
+   "score": 26.7,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -8212,13 +8212,13 @@
     "growth": {
      "available": true,
      "raw": 0.3285,
-     "normalized": 56.6,
-     "contribution": 11.3
+     "normalized": 51.6,
+     "contribution": 10.3
     }
    }
   },
   "IAD": {
-   "score": 62.4,
+   "score": 61.6,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -8243,8 +8243,8 @@
     "growth": {
      "available": true,
      "raw": 1.8162,
-     "normalized": 63.2,
-     "contribution": 12.6
+     "normalized": 59.1,
+     "contribution": 11.8
     }
    }
   },
@@ -8280,7 +8280,7 @@
    }
   },
   "IAH": {
-   "score": 63,
+   "score": 62.1,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -8305,13 +8305,13 @@
     "growth": {
      "available": true,
      "raw": 1.2848,
-     "normalized": 60.8,
-     "contribution": 12.2
+     "normalized": 56.4,
+     "contribution": 11.3
     }
    }
   },
   "IAN": {
-   "score": 15.2,
+   "score": 13.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -8336,13 +8336,13 @@
     "growth": {
      "available": true,
      "raw": -10.4592,
-     "normalized": 9.3,
-     "contribution": 1.9
+     "normalized": 0,
+     "contribution": 0
     }
    }
   },
   "ICT": {
-   "score": 37,
+   "score": 36,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -8367,8 +8367,8 @@
     "growth": {
      "available": true,
      "raw": 0.6798,
-     "normalized": 58.2,
-     "contribution": 11.6
+     "normalized": 53.4,
+     "contribution": 10.7
     }
    }
   },
@@ -8473,7 +8473,7 @@
    }
   },
   "IIK": {
-   "score": 29.5,
+   "score": 20.7,
    "coverage": 0.2,
    "missing": [
     "congestion",
@@ -8502,8 +8502,8 @@
     "growth": {
      "available": true,
      "raw": -5.8527,
-     "normalized": 29.5,
-     "contribution": 29.5
+     "normalized": 20.7,
+     "contribution": 20.7
     }
    }
   },
@@ -8541,7 +8541,7 @@
    }
   },
   "ILI": {
-   "score": 16.7,
+   "score": 15.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -8566,13 +8566,13 @@
     "growth": {
      "available": true,
      "raw": -2.9699,
-     "normalized": 42.2,
-     "contribution": 8.4
+     "normalized": 35.2,
+     "contribution": 7
     }
    }
   },
   "ILM": {
-   "score": 43.3,
+   "score": 43,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -8597,13 +8597,13 @@
     "growth": {
      "available": true,
      "raw": 6.4413,
-     "normalized": 83.5,
-     "contribution": 16.7
+     "normalized": 82.2,
+     "contribution": 16.4
     }
    }
   },
   "IMT": {
-   "score": 26.2,
+   "score": 24.8,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -8628,13 +8628,13 @@
     "growth": {
      "available": true,
      "raw": -2.5956,
-     "normalized": 43.8,
-     "contribution": 8.8
+     "normalized": 37,
+     "contribution": 7.4
     }
    }
   },
   "IND": {
-   "score": 47.8,
+   "score": 47,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -8659,13 +8659,13 @@
     "growth": {
      "available": true,
      "raw": 1.9317,
-     "normalized": 63.7,
-     "contribution": 12.7
+     "normalized": 59.7,
+     "contribution": 11.9
     }
    }
   },
   "INL": {
-   "score": 22.2,
+   "score": 20.7,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -8690,13 +8690,13 @@
     "growth": {
      "available": true,
      "raw": -3.5087,
-     "normalized": 39.8,
-     "contribution": 8
+     "normalized": 32.5,
+     "contribution": 6.5
     }
    }
   },
   "IPL": {
-   "score": 25.6,
+   "score": 25.1,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -8721,8 +8721,8 @@
     "growth": {
      "available": true,
      "raw": 4.1588,
-     "normalized": 73.5,
-     "contribution": 14.7
+     "normalized": 70.8,
+     "contribution": 14.2
     }
    }
   },
@@ -8760,7 +8760,7 @@
    }
   },
   "IRK": {
-   "score": 22,
+   "score": 21.1,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -8785,8 +8785,8 @@
     "growth": {
      "available": true,
      "raw": 1.3621,
-     "normalized": 61.2,
-     "contribution": 12.2
+     "normalized": 56.8,
+     "contribution": 11.4
     }
    }
   },
@@ -8827,7 +8827,7 @@
    }
   },
   "ISP": {
-   "score": 33.7,
+   "score": 32.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -8852,13 +8852,13 @@
     "growth": {
      "available": true,
      "raw": -2.4855,
-     "normalized": 44.3,
-     "contribution": 8.9
+     "normalized": 37.6,
+     "contribution": 7.5
     }
    }
   },
   "ITH": {
-   "score": 25.8,
+   "score": 23.7,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -8883,13 +8883,13 @@
     "growth": {
      "available": true,
      "raw": -8.6198,
-     "normalized": 17.4,
-     "contribution": 3.5
+     "normalized": 6.9,
+     "contribution": 1.4
     }
    }
   },
   "ITO": {
-   "score": 38.1,
+   "score": 37.4,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -8914,13 +8914,13 @@
     "growth": {
      "available": true,
      "raw": 3.1482,
-     "normalized": 69,
-     "contribution": 13.8
+     "normalized": 65.7,
+     "contribution": 13.1
     }
    }
   },
   "IWA": {
-   "score": 64.4,
+   "score": 60.5,
    "coverage": 0.2,
    "missing": [
     "congestion",
@@ -8949,13 +8949,13 @@
     "growth": {
      "available": true,
      "raw": 2.0974,
-     "normalized": 64.4,
-     "contribution": 64.4
+     "normalized": 60.5,
+     "contribution": 60.5
     }
    }
   },
   "IWD": {
-   "score": 25.6,
+   "score": 25.4,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -8980,13 +8980,13 @@
     "growth": {
      "available": true,
      "raw": 6.7261,
-     "normalized": 84.7,
-     "contribution": 16.9
+     "normalized": 83.6,
+     "contribution": 16.7
     }
    }
   },
   "JAC": {
-   "score": 38.8,
+   "score": 38.1,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -9011,13 +9011,13 @@
     "growth": {
      "available": true,
      "raw": 3.1589,
-     "normalized": 69.1,
-     "contribution": 13.8
+     "normalized": 65.8,
+     "contribution": 13.2
     }
    }
   },
   "JAN": {
-   "score": 38.2,
+   "score": 37.5,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -9042,13 +9042,13 @@
     "growth": {
      "available": true,
      "raw": 2.3525,
-     "normalized": 65.5,
-     "contribution": 13.1
+     "normalized": 61.8,
+     "contribution": 12.4
     }
    }
   },
   "JAX": {
-   "score": 44.7,
+   "score": 43.8,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -9073,8 +9073,8 @@
     "growth": {
      "available": true,
      "raw": 1.505,
-     "normalized": 61.8,
-     "contribution": 12.4
+     "normalized": 57.5,
+     "contribution": 11.5
     }
    }
   },
@@ -9112,7 +9112,7 @@
    }
   },
   "JFK": {
-   "score": 85.9,
+   "score": 84.9,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -9137,8 +9137,8 @@
     "growth": {
      "available": true,
      "raw": 0.2752,
-     "normalized": 56.4,
-     "contribution": 11.3
+     "normalized": 51.4,
+     "contribution": 10.3
     }
    }
   },
@@ -9174,7 +9174,7 @@
    }
   },
   "JMS": {
-   "score": 21.2,
+   "score": 19.8,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -9199,13 +9199,13 @@
     "growth": {
      "available": true,
      "raw": -3.1647,
-     "normalized": 41.3,
-     "contribution": 8.3
+     "normalized": 34.2,
+     "contribution": 6.8
     }
    }
   },
   "JNU": {
-   "score": 32.2,
+   "score": 31,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -9230,13 +9230,13 @@
     "growth": {
      "available": true,
      "raw": -1.0104,
-     "normalized": 50.8,
-     "contribution": 10.2
+     "normalized": 44.9,
+     "contribution": 9
     }
    }
   },
   "JQF": {
-   "score": 28.8,
+   "score": 19.9,
    "coverage": 0.2,
    "missing": [
     "congestion",
@@ -9265,8 +9265,8 @@
     "growth": {
      "available": true,
      "raw": -6.0133,
-     "normalized": 28.8,
-     "contribution": 28.8
+     "normalized": 19.9,
+     "contribution": 19.9
     }
    }
   },
@@ -9433,7 +9433,7 @@
    }
   },
   "KOA": {
-   "score": 40.2,
+   "score": 39.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -9458,8 +9458,8 @@
     "growth": {
      "available": true,
      "raw": 0.9593,
-     "normalized": 59.4,
-     "contribution": 11.9
+     "normalized": 54.8,
+     "contribution": 11
     }
    }
   },
@@ -9495,7 +9495,7 @@
    }
   },
   "KTN": {
-   "score": 34.1,
+   "score": 33.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -9520,8 +9520,8 @@
     "growth": {
      "available": true,
      "raw": 2.0973,
-     "normalized": 64.4,
-     "contribution": 12.9
+     "normalized": 60.5,
+     "contribution": 12.1
     }
    }
   },
@@ -9592,7 +9592,7 @@
    }
   },
   "KVL": {
-   "score": 18,
+   "score": 15.9,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -9617,13 +9617,13 @@
     "growth": {
      "available": true,
      "raw": -8.6257,
-     "normalized": 17.3,
-     "contribution": 3.5
+     "normalized": 6.9,
+     "contribution": 1.4
     }
    }
   },
   "KWT": {
-   "score": 18.5,
+   "score": 17.1,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -9648,8 +9648,8 @@
     "growth": {
      "available": true,
      "raw": -3.221,
-     "normalized": 41.1,
-     "contribution": 8.2
+     "normalized": 33.9,
+     "contribution": 6.8
     }
    }
   },
@@ -9720,7 +9720,7 @@
    }
   },
   "LAN": {
-   "score": 26.3,
+   "score": 24.5,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -9745,13 +9745,13 @@
     "growth": {
      "available": true,
      "raw": -5.8374,
-     "normalized": 29.6,
-     "contribution": 5.9
+     "normalized": 20.8,
+     "contribution": 4.2
     }
    }
   },
   "LAR": {
-   "score": 29.9,
+   "score": 28.8,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -9776,13 +9776,13 @@
     "growth": {
      "available": true,
      "raw": 0.0694,
-     "normalized": 55.5,
-     "contribution": 11.1
+     "normalized": 50.3,
+     "contribution": 10.1
     }
    }
   },
   "LAS": {
-   "score": 62,
+   "score": 61.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -9807,13 +9807,13 @@
     "growth": {
      "available": true,
      "raw": 2.695,
-     "normalized": 67,
-     "contribution": 13.4
+     "normalized": 63.5,
+     "contribution": 12.7
     }
    }
   },
   "LAW": {
-   "score": 24.7,
+   "score": 23.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -9838,13 +9838,13 @@
     "growth": {
      "available": true,
      "raw": -2.9893,
-     "normalized": 42.1,
-     "contribution": 8.4
+     "normalized": 35.1,
+     "contribution": 7
     }
    }
   },
   "LAX": {
-   "score": 67.5,
+   "score": 66.1,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -9869,13 +9869,13 @@
     "growth": {
      "available": true,
      "raw": -2.5375,
-     "normalized": 44.1,
-     "contribution": 8.8
+     "normalized": 37.3,
+     "contribution": 7.5
     }
    }
   },
   "LBB": {
-   "score": 36.9,
+   "score": 36.1,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -9900,8 +9900,8 @@
     "growth": {
      "available": true,
      "raw": 1.6011,
-     "normalized": 62.2,
-     "contribution": 12.4
+     "normalized": 58,
+     "contribution": 11.6
     }
    }
   },
@@ -9937,7 +9937,7 @@
    }
   },
   "LBF": {
-   "score": 28.3,
+   "score": 27.4,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -9962,13 +9962,13 @@
     "growth": {
      "available": true,
      "raw": 0.5121,
-     "normalized": 57.5,
-     "contribution": 11.5
+     "normalized": 52.6,
+     "contribution": 10.5
     }
    }
   },
   "LBL": {
-   "score": 16.1,
+   "score": 14.4,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -9993,8 +9993,8 @@
     "growth": {
      "available": true,
      "raw": -5.303,
-     "normalized": 31.9,
-     "contribution": 6.4
+     "normalized": 23.5,
+     "contribution": 4.7
     }
    }
   },
@@ -10024,13 +10024,13 @@
     "growth": {
      "available": true,
      "raw": 7.9072,
-     "normalized": 89.9,
-     "contribution": 18
+     "normalized": 89.5,
+     "contribution": 17.9
     }
    }
   },
   "LCK": {
-   "score": 36.1,
+   "score": 34.9,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -10055,13 +10055,13 @@
     "growth": {
      "available": true,
      "raw": -1.4472,
-     "normalized": 48.9,
-     "contribution": 9.8
+     "normalized": 42.8,
+     "contribution": 8.6
     }
    }
   },
   "LEB": {
-   "score": 27,
+   "score": 26.1,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -10086,13 +10086,13 @@
     "growth": {
      "available": true,
      "raw": 1.0765,
-     "normalized": 59.9,
-     "contribution": 12
+     "normalized": 55.4,
+     "contribution": 11.1
     }
    }
   },
   "LEX": {
-   "score": 39.7,
+   "score": 38.9,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -10117,13 +10117,13 @@
     "growth": {
      "available": true,
      "raw": 1.8889,
-     "normalized": 63.5,
-     "contribution": 12.7
+     "normalized": 59.4,
+     "contribution": 11.9
     }
    }
   },
   "LFT": {
-   "score": 36,
+   "score": 34.9,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -10148,13 +10148,13 @@
     "growth": {
      "available": true,
      "raw": -0.0821,
-     "normalized": 54.8,
-     "contribution": 11
+     "normalized": 49.6,
+     "contribution": 9.9
     }
    }
   },
   "LGA": {
-   "score": 67,
+   "score": 66.1,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -10179,13 +10179,13 @@
     "growth": {
      "available": true,
      "raw": 1.6614,
-     "normalized": 62.5,
-     "contribution": 12.5
+     "normalized": 58.3,
+     "contribution": 11.7
     }
    }
   },
   "LGB": {
-   "score": 39.3,
+   "score": 38.7,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -10210,8 +10210,8 @@
     "growth": {
      "available": true,
      "raw": 3.0044,
-     "normalized": 68.4,
-     "contribution": 13.7
+     "normalized": 65,
+     "contribution": 13
     }
    }
   },
@@ -10252,7 +10252,7 @@
    }
   },
   "LIH": {
-   "score": 39,
+   "score": 38.2,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -10277,13 +10277,13 @@
     "growth": {
      "available": true,
      "raw": 1.3945,
-     "normalized": 61.3,
-     "contribution": 12.3
+     "normalized": 57,
+     "contribution": 11.4
     }
    }
   },
   "LIT": {
-   "score": 37.8,
+   "score": 36.9,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -10308,8 +10308,8 @@
     "growth": {
      "available": true,
      "raw": 1.0621,
-     "normalized": 59.9,
-     "contribution": 12
+     "normalized": 55.3,
+     "contribution": 11.1
     }
    }
   },
@@ -10350,7 +10350,7 @@
    }
   },
   "LNK": {
-   "score": 30.8,
+   "score": 29.1,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -10375,13 +10375,13 @@
     "growth": {
      "available": true,
      "raw": -4.8575,
-     "normalized": 33.9,
-     "contribution": 6.8
+     "normalized": 25.7,
+     "contribution": 5.1
     }
    }
   },
   "LNS": {
-   "score": 37.2,
+   "score": 37.1,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -10406,13 +10406,13 @@
     "growth": {
      "available": true,
      "raw": 7.889,
-     "normalized": 89.9,
-     "contribution": 18
+     "normalized": 89.4,
+     "contribution": 17.9
     }
    }
   },
   "LNY": {
-   "score": 19.8,
+   "score": 19.6,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -10437,8 +10437,8 @@
     "growth": {
      "available": true,
      "raw": -12.3033,
-     "normalized": 1.2,
-     "contribution": 0.2
+     "normalized": 0,
+     "contribution": 0
     }
    }
   },
@@ -10571,7 +10571,7 @@
    }
   },
   "LWB": {
-   "score": 15.2,
+   "score": 13.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -10596,13 +10596,13 @@
     "growth": {
      "available": true,
      "raw": -6.8635,
-     "normalized": 25.1,
-     "contribution": 5
+     "normalized": 15.7,
+     "contribution": 3.1
     }
    }
   },
   "LWS": {
-   "score": 36.8,
+   "score": 36.6,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -10627,13 +10627,13 @@
     "growth": {
      "available": true,
      "raw": 6.5418,
-     "normalized": 83.9,
-     "contribution": 16.8
+     "normalized": 82.7,
+     "contribution": 16.5
     }
    }
   },
   "LYH": {
-   "score": 32,
+   "score": 30.6,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -10658,13 +10658,13 @@
     "growth": {
      "available": true,
      "raw": -2.654,
-     "normalized": 43.6,
-     "contribution": 8.7
+     "normalized": 36.7,
+     "contribution": 7.3
     }
    }
   },
   "MAF": {
-   "score": 35.3,
+   "score": 34.6,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -10689,13 +10689,13 @@
     "growth": {
      "available": true,
      "raw": 2.5303,
-     "normalized": 66.3,
-     "contribution": 13.3
+     "normalized": 62.7,
+     "contribution": 12.5
     }
    }
   },
   "MAZ": {
-   "score": 34.2,
+   "score": 33.6,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -10720,8 +10720,8 @@
     "growth": {
      "available": true,
      "raw": 3.7043,
-     "normalized": 71.5,
-     "contribution": 14.3
+     "normalized": 68.5,
+     "contribution": 13.7
     }
    }
   },
@@ -10795,7 +10795,7 @@
    }
   },
   "MBS": {
-   "score": 31.7,
+   "score": 30.2,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -10820,13 +10820,13 @@
     "growth": {
      "available": true,
      "raw": -3.7857,
-     "normalized": 38.6,
-     "contribution": 7.7
+     "normalized": 31.1,
+     "contribution": 6.2
     }
    }
   },
   "MCE": {
-   "score": 23,
+   "score": 21.2,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -10851,8 +10851,8 @@
     "growth": {
      "available": true,
      "raw": -6.5486,
-     "normalized": 26.4,
-     "contribution": 5.3
+     "normalized": 17.3,
+     "contribution": 3.5
     }
    }
   },
@@ -10890,7 +10890,7 @@
    }
   },
   "MCI": {
-   "score": 44.6,
+   "score": 43.6,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -10915,8 +10915,8 @@
     "growth": {
      "available": true,
      "raw": 0.5348,
-     "normalized": 57.6,
-     "contribution": 11.5
+     "normalized": 52.7,
+     "contribution": 10.5
     }
    }
   },
@@ -10954,7 +10954,7 @@
    }
   },
   "MCN": {
-   "score": 27.4,
+   "score": 26.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -10979,13 +10979,13 @@
     "growth": {
      "available": true,
      "raw": -0.1043,
-     "normalized": 54.7,
-     "contribution": 10.9
+     "normalized": 49.5,
+     "contribution": 9.9
     }
    }
   },
   "MCO": {
-   "score": 59.9,
+   "score": 59.1,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -11010,13 +11010,13 @@
     "growth": {
      "available": true,
      "raw": 2.5515,
-     "normalized": 66.4,
-     "contribution": 13.3
+     "normalized": 62.8,
+     "contribution": 12.6
     }
    }
   },
   "MCW": {
-   "score": 17.2,
+   "score": 15.6,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -11041,13 +11041,13 @@
     "growth": {
      "available": true,
      "raw": -4.0136,
-     "normalized": 37.6,
-     "contribution": 7.5
+     "normalized": 29.9,
+     "contribution": 6
     }
    }
   },
   "MDM": {
-   "score": 47.3,
+   "score": 41,
    "coverage": 0.2,
    "missing": [
     "congestion",
@@ -11076,13 +11076,13 @@
     "growth": {
      "available": true,
      "raw": -1.8002,
-     "normalized": 47.3,
-     "contribution": 47.3
+     "normalized": 41,
+     "contribution": 41
     }
    }
   },
   "MDT": {
-   "score": 38.9,
+   "score": 37.8,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -11107,13 +11107,13 @@
     "growth": {
      "available": true,
      "raw": -0.52,
-     "normalized": 52.9,
-     "contribution": 10.6
+     "normalized": 47.4,
+     "contribution": 9.5
     }
    }
   },
   "MDW": {
-   "score": 50.7,
+   "score": 49.7,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -11138,13 +11138,13 @@
     "growth": {
      "available": true,
      "raw": 0.5461,
-     "normalized": 57.6,
-     "contribution": 11.5
+     "normalized": 52.7,
+     "contribution": 10.5
     }
    }
   },
   "MEI": {
-   "score": 26.7,
+   "score": 25.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -11169,13 +11169,13 @@
     "growth": {
      "available": true,
      "raw": -2.9656,
-     "normalized": 42.2,
-     "contribution": 8.4
+     "normalized": 35.2,
+     "contribution": 7
     }
    }
   },
   "MEM": {
-   "score": 41.3,
+   "score": 40.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -11200,13 +11200,13 @@
     "growth": {
      "available": true,
      "raw": 1.022,
-     "normalized": 59.7,
-     "contribution": 11.9
+     "normalized": 55.1,
+     "contribution": 11
     }
    }
   },
   "MFE": {
-   "score": 45.2,
+   "score": 45.1,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -11231,13 +11231,13 @@
     "growth": {
      "available": true,
      "raw": 8.1726,
-     "normalized": 91.1,
+     "normalized": 90.9,
      "contribution": 18.2
     }
    }
   },
   "MFR": {
-   "score": 35.3,
+   "score": 34.1,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -11262,13 +11262,13 @@
     "growth": {
      "available": true,
      "raw": -0.9502,
-     "normalized": 51,
-     "contribution": 10.2
+     "normalized": 45.2,
+     "contribution": 9
     }
    }
   },
   "MGM": {
-   "score": 35.5,
+   "score": 34.4,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -11293,13 +11293,13 @@
     "growth": {
      "available": true,
      "raw": -0.1279,
-     "normalized": 54.6,
-     "contribution": 10.9
+     "normalized": 49.4,
+     "contribution": 9.9
     }
    }
   },
   "MGW": {
-   "score": 26.3,
+   "score": 25.5,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -11324,13 +11324,13 @@
     "growth": {
      "available": true,
      "raw": 1.8803,
-     "normalized": 63.5,
-     "contribution": 12.7
+     "normalized": 59.4,
+     "contribution": 11.9
     }
    }
   },
   "MHK": {
-   "score": 32.8,
+   "score": 31.9,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -11355,13 +11355,13 @@
     "growth": {
      "available": true,
      "raw": 1.1053,
-     "normalized": 60.1,
-     "contribution": 12
+     "normalized": 55.5,
+     "contribution": 11.1
     }
    }
   },
   "MHT": {
-   "score": 31.2,
+   "score": 29.5,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -11386,13 +11386,13 @@
     "growth": {
      "available": true,
      "raw": -5.7687,
-     "normalized": 29.9,
-     "contribution": 6
+     "normalized": 21.2,
+     "contribution": 4.2
     }
    }
   },
   "MIA": {
-   "score": 79.2,
+   "score": 78.7,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -11417,13 +11417,13 @@
     "growth": {
      "available": true,
      "raw": 4.4165,
-     "normalized": 74.6,
-     "contribution": 14.9
+     "normalized": 72.1,
+     "contribution": 14.4
     }
    }
   },
   "MKE": {
-   "score": 38.5,
+   "score": 37.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -11448,8 +11448,8 @@
     "growth": {
      "available": true,
      "raw": -1.6544,
-     "normalized": 47.9,
-     "contribution": 9.6
+     "normalized": 41.7,
+     "contribution": 8.3
     }
    }
   },
@@ -11516,7 +11516,7 @@
    }
   },
   "MKL": {
-   "score": 15.6,
+   "score": 13.5,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -11541,13 +11541,13 @@
     "growth": {
      "available": true,
      "raw": -10.1931,
-     "normalized": 10.4,
-     "contribution": 2.1
+     "normalized": 0,
+     "contribution": 0
     }
    }
   },
   "MLB": {
-   "score": 49.7,
+   "score": 49.6,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -11572,13 +11572,13 @@
     "growth": {
      "available": true,
      "raw": 7.6165,
-     "normalized": 88.7,
-     "contribution": 17.7
+     "normalized": 88.1,
+     "contribution": 17.6
     }
    }
   },
   "MLI": {
-   "score": 34.1,
+   "score": 32.8,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -11603,13 +11603,13 @@
     "growth": {
      "available": true,
      "raw": -1.6711,
-     "normalized": 47.9,
-     "contribution": 9.6
+     "normalized": 41.6,
+     "contribution": 8.3
     }
    }
   },
   "MLU": {
-   "score": 33.6,
+   "score": 32.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -11634,8 +11634,8 @@
     "growth": {
      "available": true,
      "raw": -1.8528,
-     "normalized": 47.1,
-     "contribution": 9.4
+     "normalized": 40.7,
+     "contribution": 8.1
     }
    }
   },
@@ -11671,7 +11671,7 @@
    }
   },
   "MOB": {
-   "score": 36.7,
+   "score": 35.5,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -11696,13 +11696,13 @@
     "growth": {
      "available": true,
      "raw": -0.8578,
-     "normalized": 51.4,
-     "contribution": 10.3
+     "normalized": 45.7,
+     "contribution": 9.1
     }
    }
   },
   "MOT": {
-   "score": 35.7,
+   "score": 34.7,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -11727,13 +11727,13 @@
     "growth": {
      "available": true,
      "raw": 0.6449,
-     "normalized": 58,
-     "contribution": 11.6
+     "normalized": 53.2,
+     "contribution": 10.6
     }
    }
   },
   "MOU": {
-   "score": 21.8,
+   "score": 20.4,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -11758,13 +11758,13 @@
     "growth": {
      "available": true,
      "raw": -2.3953,
-     "normalized": 44.7,
-     "contribution": 8.9
+     "normalized": 38,
+     "contribution": 7.6
     }
    }
   },
   "MRI": {
-   "score": 26.6,
+   "score": 26.1,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -11789,13 +11789,13 @@
     "growth": {
      "available": true,
      "raw": 4.2271,
-     "normalized": 73.8,
-     "contribution": 14.8
+     "normalized": 71.1,
+     "contribution": 14.2
     }
    }
   },
   "MRY": {
-   "score": 40.4,
+   "score": 40,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -11820,13 +11820,13 @@
     "growth": {
      "available": true,
      "raw": 5.4757,
-     "normalized": 79.3,
-     "contribution": 15.9
+     "normalized": 77.4,
+     "contribution": 15.5
     }
    }
   },
   "MSL": {
-   "score": 28.2,
+   "score": 27.6,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -11851,13 +11851,13 @@
     "growth": {
      "available": true,
      "raw": 3.7819,
-     "normalized": 71.8,
-     "contribution": 14.4
+     "normalized": 68.9,
+     "contribution": 13.8
     }
    }
   },
   "MSN": {
-   "score": 39.4,
+   "score": 38.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -11882,13 +11882,13 @@
     "growth": {
      "available": true,
      "raw": -0.097,
-     "normalized": 54.8,
-     "contribution": 11
+     "normalized": 49.5,
+     "contribution": 9.9
     }
    }
   },
   "MSO": {
-   "score": 39.1,
+   "score": 38.4,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -11913,13 +11913,13 @@
     "growth": {
      "available": true,
      "raw": 2.4269,
-     "normalized": 65.9,
-     "contribution": 13.2
+     "normalized": 62.1,
+     "contribution": 12.4
     }
    }
   },
   "MSP": {
-   "score": 52,
+   "score": 50.8,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -11944,13 +11944,13 @@
     "growth": {
      "available": true,
      "raw": -1.2155,
-     "normalized": 49.9,
-     "contribution": 10
+     "normalized": 43.9,
+     "contribution": 8.8
     }
    }
   },
   "MSS": {
-   "score": 32.3,
+   "score": 31.4,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -11975,13 +11975,13 @@
     "growth": {
      "available": true,
      "raw": 1.2312,
-     "normalized": 60.6,
-     "contribution": 12.1
+     "normalized": 56.2,
+     "contribution": 11.2
     }
    }
   },
   "MSY": {
-   "score": 45.8,
+   "score": 44.7,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -12006,8 +12006,8 @@
     "growth": {
      "available": true,
      "raw": -1.0004,
-     "normalized": 50.8,
-     "contribution": 10.2
+     "normalized": 45,
+     "contribution": 9
     }
    }
   },
@@ -12110,7 +12110,7 @@
    }
   },
   "MVY": {
-   "score": 40,
+   "score": 40.1,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -12135,13 +12135,13 @@
     "growth": {
      "available": true,
      "raw": 9.582,
-     "normalized": 97.3,
-     "contribution": 19.5
+     "normalized": 97.9,
+     "contribution": 19.6
     }
    }
   },
   "MWA": {
-   "score": 33.6,
+   "score": 33.1,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -12166,8 +12166,8 @@
     "growth": {
      "available": true,
      "raw": 4.4768,
-     "normalized": 74.9,
-     "contribution": 15
+     "normalized": 72.4,
+     "contribution": 14.5
     }
    }
   },
@@ -12197,7 +12197,7 @@
     "growth": {
      "available": true,
      "raw": 8.0748,
-     "normalized": 90.7,
+     "normalized": 90.4,
      "contribution": 18.1
     }
    }
@@ -12236,7 +12236,7 @@
    }
   },
   "NYL": {
-   "score": 8.4,
+   "score": 6.9,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -12261,13 +12261,13 @@
     "growth": {
      "available": true,
      "raw": -3.2392,
-     "normalized": 41,
-     "contribution": 8.2
+     "normalized": 33.8,
+     "contribution": 6.8
     }
    }
   },
   "OAJ": {
-   "score": 33.1,
+   "score": 31.8,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -12292,13 +12292,13 @@
     "growth": {
      "available": true,
      "raw": -2.2762,
-     "normalized": 45.2,
-     "contribution": 9
+     "normalized": 38.6,
+     "contribution": 7.7
     }
    }
   },
   "OAK": {
-   "score": 41.8,
+   "score": 40.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -12323,13 +12323,13 @@
     "growth": {
      "available": true,
      "raw": -4.2029,
-     "normalized": 36.7,
-     "contribution": 7.3
+     "normalized": 29,
+     "contribution": 5.8
     }
    }
   },
   "OGD": {
-   "score": 34.5,
+   "score": 33.4,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -12354,13 +12354,13 @@
     "growth": {
      "available": true,
      "raw": -0.7307,
-     "normalized": 52,
-     "contribution": 10.4
+     "normalized": 46.3,
+     "contribution": 9.3
     }
    }
   },
   "OGG": {
-   "score": 42.1,
+   "score": 40.8,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -12385,8 +12385,8 @@
     "growth": {
      "available": true,
      "raw": -2.068,
-     "normalized": 46.1,
-     "contribution": 9.2
+     "normalized": 39.7,
+     "contribution": 7.9
     }
    }
   },
@@ -12422,7 +12422,7 @@
    }
   },
   "OKC": {
-   "score": 39.3,
+   "score": 38.4,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -12447,13 +12447,13 @@
     "growth": {
      "available": true,
      "raw": 0.9294,
-     "normalized": 59.3,
-     "contribution": 11.9
+     "normalized": 54.6,
+     "contribution": 10.9
     }
    }
   },
   "OLF": {
-   "score": 23.2,
+   "score": 21.7,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -12478,13 +12478,13 @@
     "growth": {
      "available": true,
      "raw": -3.5878,
-     "normalized": 39.5,
-     "contribution": 7.9
+     "normalized": 32.1,
+     "contribution": 6.4
     }
    }
   },
   "OMA": {
-   "score": 40.5,
+   "score": 39.6,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -12509,13 +12509,13 @@
     "growth": {
      "available": true,
      "raw": 1.0211,
-     "normalized": 59.7,
-     "contribution": 11.9
+     "normalized": 55.1,
+     "contribution": 11
     }
    }
   },
   "OME": {
-   "score": 30.3,
+   "score": 29.4,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -12540,13 +12540,13 @@
     "growth": {
      "available": true,
      "raw": 1.3478,
-     "normalized": 61.1,
-     "contribution": 12.2
+     "normalized": 56.7,
+     "contribution": 11.3
     }
    }
   },
   "ONT": {
-   "score": 50.3,
+   "score": 49.9,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -12571,13 +12571,13 @@
     "growth": {
      "available": true,
      "raw": 5.116,
-     "normalized": 77.7,
-     "contribution": 15.5
+     "normalized": 75.6,
+     "contribution": 15.1
     }
    }
   },
   "OOK": {
-   "score": 16.1,
+   "score": 14.2,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -12602,13 +12602,13 @@
     "growth": {
      "available": true,
      "raw": -6.4728,
-     "normalized": 26.8,
-     "contribution": 5.4
+     "normalized": 17.6,
+     "contribution": 3.5
     }
    }
   },
   "ORD": {
-   "score": 69.2,
+   "score": 68,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -12633,13 +12633,13 @@
     "growth": {
      "available": true,
      "raw": -1.1494,
-     "normalized": 50.2,
-     "contribution": 10
+     "normalized": 44.3,
+     "contribution": 8.9
     }
    }
   },
   "ORF": {
-   "score": 45.8,
+   "score": 45.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -12664,13 +12664,13 @@
     "growth": {
      "available": true,
      "raw": 4.1943,
-     "normalized": 73.6,
-     "contribution": 14.7
+     "normalized": 71,
+     "contribution": 14.2
     }
    }
   },
   "ORH": {
-   "score": 35.7,
+   "score": 35,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -12695,13 +12695,13 @@
     "growth": {
      "available": true,
      "raw": 3.0582,
-     "normalized": 68.6,
-     "contribution": 13.7
+     "normalized": 65.3,
+     "contribution": 13.1
     }
    }
   },
   "ORS": {
-   "score": 58.1,
+   "score": 53.3,
    "coverage": 0.2,
    "missing": [
     "congestion",
@@ -12730,8 +12730,8 @@
     "growth": {
      "available": true,
      "raw": 0.6583,
-     "normalized": 58.1,
-     "contribution": 58.1
+     "normalized": 53.3,
+     "contribution": 53.3
     }
    }
   },
@@ -12761,13 +12761,13 @@
     "growth": {
      "available": true,
      "raw": 8.8815,
-     "normalized": 94.2,
-     "contribution": 18.8
+     "normalized": 94.4,
+     "contribution": 18.9
     }
    }
   },
   "OTZ": {
-   "score": 24.9,
+   "score": 23.6,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -12792,8 +12792,8 @@
     "growth": {
      "available": true,
      "raw": -2.2593,
-     "normalized": 45.3,
-     "contribution": 9.1
+     "normalized": 38.7,
+     "contribution": 7.7
     }
    }
   },
@@ -12829,7 +12829,7 @@
    }
   },
   "PAE": {
-   "score": 29.8,
+   "score": 27.9,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -12854,13 +12854,13 @@
     "growth": {
      "available": true,
      "raw": -6.6709,
-     "normalized": 25.9,
-     "contribution": 5.2
+     "normalized": 16.6,
+     "contribution": 3.3
     }
    }
   },
   "PAH": {
-   "score": 23.8,
+   "score": 22,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -12885,13 +12885,13 @@
     "growth": {
      "available": true,
      "raw": -5.634,
-     "normalized": 30.5,
-     "contribution": 6.1
+     "normalized": 21.8,
+     "contribution": 4.4
     }
    }
   },
   "PBG": {
-   "score": 30.7,
+   "score": 28.9,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -12916,13 +12916,13 @@
     "growth": {
      "available": true,
      "raw": -5.826,
-     "normalized": 29.6,
-     "contribution": 5.9
+     "normalized": 20.9,
+     "contribution": 4.2
     }
    }
   },
   "PBI": {
-   "score": 71,
+   "score": 67.9,
    "coverage": 0.2,
    "missing": [
     "congestion",
@@ -12951,8 +12951,8 @@
     "growth": {
      "available": true,
      "raw": 3.587,
-     "normalized": 71,
-     "contribution": 71
+     "normalized": 67.9,
+     "contribution": 67.9
     }
    }
   },
@@ -12990,7 +12990,7 @@
    }
   },
   "PDT": {
-   "score": 33.8,
+   "score": 32.7,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -13015,13 +13015,13 @@
     "growth": {
      "available": true,
      "raw": -0.7111,
-     "normalized": 52.1,
-     "contribution": 10.4
+     "normalized": 46.4,
+     "contribution": 9.3
     }
    }
   },
   "PDX": {
-   "score": 51.8,
+   "score": 50.4,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -13046,13 +13046,13 @@
     "growth": {
      "available": true,
      "raw": -2.485,
-     "normalized": 44.3,
-     "contribution": 8.9
+     "normalized": 37.6,
+     "contribution": 7.5
     }
    }
   },
   "PGA": {
-   "score": 17.7,
+   "score": 16.8,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -13077,13 +13077,13 @@
     "growth": {
      "available": true,
      "raw": -11.6361,
-     "normalized": 4.1,
-     "contribution": 0.8
+     "normalized": 0,
+     "contribution": 0
     }
    }
   },
   "PGD": {
-   "score": 41.4,
+   "score": 40.7,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -13108,13 +13108,13 @@
     "growth": {
      "available": true,
      "raw": 3.102,
-     "normalized": 68.8,
-     "contribution": 13.8
+     "normalized": 65.5,
+     "contribution": 13.1
     }
    }
   },
   "PGV": {
-   "score": 27.2,
+   "score": 25.5,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -13139,8 +13139,8 @@
     "growth": {
      "available": true,
      "raw": -4.8587,
-     "normalized": 33.9,
-     "contribution": 6.8
+     "normalized": 25.7,
+     "contribution": 5.1
     }
    }
   },
@@ -13176,7 +13176,7 @@
    }
   },
   "PHL": {
-   "score": 56.2,
+   "score": 55.1,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -13201,13 +13201,13 @@
     "growth": {
      "available": true,
      "raw": -1.1561,
-     "normalized": 50.1,
-     "contribution": 10
+     "normalized": 44.2,
+     "contribution": 8.8
     }
    }
   },
   "PHO": {
-   "score": 23.4,
+   "score": 22.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -13232,13 +13232,13 @@
     "growth": {
      "available": true,
      "raw": -0.7483,
-     "normalized": 51.9,
-     "contribution": 10.4
+     "normalized": 46.3,
+     "contribution": 9.3
     }
    }
   },
   "PHX": {
-   "score": 61.4,
+   "score": 60.7,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -13263,13 +13263,13 @@
     "growth": {
      "available": true,
      "raw": 2.6724,
-     "normalized": 66.9,
-     "contribution": 13.4
+     "normalized": 63.4,
+     "contribution": 12.7
     }
    }
   },
   "PIA": {
-   "score": 36.2,
+   "score": 35.1,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -13294,13 +13294,13 @@
     "growth": {
      "available": true,
      "raw": 0.1199,
-     "normalized": 55.7,
-     "contribution": 11.1
+     "normalized": 50.6,
+     "contribution": 10.1
     }
    }
   },
   "PIB": {
-   "score": 32.8,
+   "score": 32.5,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -13325,13 +13325,13 @@
     "growth": {
      "available": true,
      "raw": 6.001,
-     "normalized": 81.6,
-     "contribution": 16.3
+     "normalized": 80,
+     "contribution": 16
     }
    }
   },
   "PIE": {
-   "score": 40.3,
+   "score": 39.4,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -13356,13 +13356,13 @@
     "growth": {
      "available": true,
      "raw": 1.4372,
-     "normalized": 61.5,
-     "contribution": 12.3
+     "normalized": 57.2,
+     "contribution": 11.4
     }
    }
   },
   "PIH": {
-   "score": 16.9,
+   "score": 15.4,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -13387,13 +13387,13 @@
     "growth": {
      "available": true,
      "raw": -10.8188,
-     "normalized": 7.7,
-     "contribution": 1.5
+     "normalized": 0,
+     "contribution": 0
     }
    }
   },
   "PIR": {
-   "score": 28.6,
+   "score": 27.6,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -13418,13 +13418,13 @@
     "growth": {
      "available": true,
      "raw": 0.3873,
-     "normalized": 56.9,
-     "contribution": 11.4
+     "normalized": 51.9,
+     "contribution": 10.4
     }
    }
   },
   "PIT": {
-   "score": 41,
+   "score": 40.1,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -13449,13 +13449,13 @@
     "growth": {
      "available": true,
      "raw": 0.6134,
-     "normalized": 57.9,
-     "contribution": 11.6
+     "normalized": 53.1,
+     "contribution": 10.6
     }
    }
   },
   "PKB": {
-   "score": 18.6,
+   "score": 17.1,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -13480,13 +13480,13 @@
     "growth": {
      "available": true,
      "raw": -3.6536,
-     "normalized": 39.2,
-     "contribution": 7.8
+     "normalized": 31.7,
+     "contribution": 6.3
     }
    }
   },
   "PLN": {
-   "score": 33.8,
+   "score": 32.9,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -13511,13 +13511,13 @@
     "growth": {
      "available": true,
      "raw": 1.347,
-     "normalized": 61.1,
-     "contribution": 12.2
+     "normalized": 56.7,
+     "contribution": 11.3
     }
    }
   },
   "PNS": {
-   "score": 45,
+   "score": 44.8,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -13542,13 +13542,13 @@
     "growth": {
      "available": true,
      "raw": 6.8183,
-     "normalized": 85.2,
-     "contribution": 17
+     "normalized": 84.1,
+     "contribution": 16.8
     }
    }
   },
   "PPG": {
-   "score": 39.3,
+   "score": 37.6,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -13573,8 +13573,8 @@
     "growth": {
      "available": true,
      "raw": -5.4973,
-     "normalized": 31.1,
-     "contribution": 6.2
+     "normalized": 22.5,
+     "contribution": 4.5
     }
    }
   },
@@ -13610,7 +13610,7 @@
    }
   },
   "PRC": {
-   "score": 28.6,
+   "score": 27.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -13635,13 +13635,13 @@
     "growth": {
      "available": true,
      "raw": -1.8341,
-     "normalized": 47.2,
-     "contribution": 9.4
+     "normalized": 40.8,
+     "contribution": 8.2
     }
    }
   },
   "PSC": {
-   "score": 38.7,
+   "score": 37.9,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -13666,13 +13666,13 @@
     "growth": {
      "available": true,
      "raw": 1.7045,
-     "normalized": 62.7,
-     "contribution": 12.5
+     "normalized": 58.5,
+     "contribution": 11.7
     }
    }
   },
   "PSE": {
-   "score": 41,
+   "score": 40.7,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -13697,13 +13697,13 @@
     "growth": {
      "available": true,
      "raw": 5.9742,
-     "normalized": 81.4,
-     "contribution": 16.3
+     "normalized": 79.9,
+     "contribution": 16
     }
    }
   },
   "PSG": {
-   "score": 29.5,
+   "score": 28.6,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -13728,13 +13728,13 @@
     "growth": {
      "available": true,
      "raw": 1.4321,
-     "normalized": 61.5,
-     "contribution": 12.3
+     "normalized": 57.2,
+     "contribution": 11.4
     }
    }
   },
   "PSM": {
-   "score": 33.5,
+   "score": 32.1,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -13759,13 +13759,13 @@
     "growth": {
      "available": true,
      "raw": -3.0175,
-     "normalized": 42,
-     "contribution": 8.4
+     "normalized": 34.9,
+     "contribution": 7
     }
    }
   },
   "PSP": {
-   "score": 45.3,
+   "score": 44.8,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -13790,8 +13790,8 @@
     "growth": {
      "available": true,
      "raw": 4.3216,
-     "normalized": 74.2,
-     "contribution": 14.8
+     "normalized": 71.6,
+     "contribution": 14.3
     }
    }
   },
@@ -13862,7 +13862,7 @@
    }
   },
   "PUW": {
-   "score": 31.8,
+   "score": 30.6,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -13887,13 +13887,13 @@
     "growth": {
      "available": true,
      "raw": -1.7556,
-     "normalized": 47.5,
-     "contribution": 9.5
+     "normalized": 41.2,
+     "contribution": 8.2
     }
    }
   },
   "PVC": {
-   "score": 18.4,
+   "score": 16.4,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -13918,13 +13918,13 @@
     "growth": {
      "available": true,
      "raw": -7.8616,
-     "normalized": 20.7,
-     "contribution": 4.1
+     "normalized": 10.7,
+     "contribution": 2.1
     }
    }
   },
   "PVD": {
-   "score": 40.4,
+   "score": 39.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -13949,8 +13949,8 @@
     "growth": {
      "available": true,
      "raw": 0.1533,
-     "normalized": 55.9,
-     "contribution": 11.2
+     "normalized": 50.8,
+     "contribution": 10.2
     }
    }
   },
@@ -13986,7 +13986,7 @@
    }
   },
   "PWM": {
-   "score": 41.5,
+   "score": 40.7,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -14011,13 +14011,13 @@
     "growth": {
      "available": true,
      "raw": 2.335,
-     "normalized": 65.5,
-     "contribution": 13.1
+     "normalized": 61.7,
+     "contribution": 12.3
     }
    }
   },
   "RAP": {
-   "score": 41.1,
+   "score": 40.5,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -14042,8 +14042,8 @@
     "growth": {
      "available": true,
      "raw": 4.0559,
-     "normalized": 73,
-     "contribution": 14.6
+     "normalized": 70.3,
+     "contribution": 14.1
     }
    }
   },
@@ -14079,7 +14079,7 @@
    }
   },
   "RDM": {
-   "score": 39.9,
+   "score": 39.4,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -14104,13 +14104,13 @@
     "growth": {
      "available": true,
      "raw": 4.4878,
-     "normalized": 74.9,
-     "contribution": 15
+     "normalized": 72.4,
+     "contribution": 14.5
     }
    }
   },
   "RDU": {
-   "score": 51.6,
+   "score": 50.8,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -14135,13 +14135,13 @@
     "growth": {
      "available": true,
      "raw": 1.8521,
-     "normalized": 63.3,
-     "contribution": 12.7
+     "normalized": 59.3,
+     "contribution": 11.9
     }
    }
   },
   "RFD": {
-   "score": 42.1,
+   "score": 41.4,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -14166,13 +14166,13 @@
     "growth": {
      "available": true,
      "raw": 2.5066,
-     "normalized": 66.2,
-     "contribution": 13.2
+     "normalized": 62.5,
+     "contribution": 12.5
     }
    }
   },
   "RHI": {
-   "score": 30.4,
+   "score": 29.1,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -14197,13 +14197,13 @@
     "growth": {
      "available": true,
      "raw": -1.8121,
-     "normalized": 47.2,
-     "contribution": 9.4
+     "normalized": 40.9,
+     "contribution": 8.2
     }
    }
   },
   "RIC": {
-   "score": 44.2,
+   "score": 43.5,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -14228,8 +14228,8 @@
     "growth": {
      "available": true,
      "raw": 2.3142,
-     "normalized": 65.4,
-     "contribution": 13.1
+     "normalized": 61.6,
+     "contribution": 12.3
     }
    }
   },
@@ -14265,7 +14265,7 @@
    }
   },
   "RKD": {
-   "score": 23.2,
+   "score": 21.6,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -14290,13 +14290,13 @@
     "growth": {
      "available": true,
      "raw": -4.9624,
-     "normalized": 33.4,
-     "contribution": 6.7
+     "normalized": 25.2,
+     "contribution": 5
     }
    }
   },
   "RKS": {
-   "score": 29.6,
+   "score": 28.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -14321,13 +14321,13 @@
     "growth": {
      "available": true,
      "raw": -2.1843,
-     "normalized": 45.6,
-     "contribution": 9.1
+     "normalized": 39.1,
+     "contribution": 7.8
     }
    }
   },
   "RNO": {
-   "score": 42.5,
+   "score": 41.7,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -14352,8 +14352,8 @@
     "growth": {
      "available": true,
      "raw": 1.9185,
-     "normalized": 63.6,
-     "contribution": 12.7
+     "normalized": 59.6,
+     "contribution": 11.9
     }
    }
   },
@@ -14391,7 +14391,7 @@
    }
   },
   "ROA": {
-   "score": 37.7,
+   "score": 36.8,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -14416,13 +14416,13 @@
     "growth": {
      "available": true,
      "raw": 1.1354,
-     "normalized": 60.2,
-     "contribution": 12
+     "normalized": 55.7,
+     "contribution": 11.1
     }
    }
   },
   "ROC": {
-   "score": 40.2,
+   "score": 39.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -14447,13 +14447,13 @@
     "growth": {
      "available": true,
      "raw": 0.8501,
-     "normalized": 58.9,
-     "contribution": 11.8
+     "normalized": 54.3,
+     "contribution": 10.9
     }
    }
   },
   "ROW": {
-   "score": 26.8,
+   "score": 25.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -14478,13 +14478,13 @@
     "growth": {
      "available": true,
      "raw": -4.1409,
-     "normalized": 37,
-     "contribution": 7.4
+     "normalized": 29.3,
+     "contribution": 5.9
     }
    }
   },
   "RSH": {
-   "score": 19.3,
+   "score": 18.2,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -14509,13 +14509,13 @@
     "growth": {
      "available": true,
      "raw": -0.2054,
-     "normalized": 54.3,
-     "contribution": 10.9
+     "normalized": 49,
+     "contribution": 9.8
     }
    }
   },
   "RST": {
-   "score": 23.5,
+   "score": 22.7,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -14540,13 +14540,13 @@
     "growth": {
      "available": true,
      "raw": -11.6633,
-     "normalized": 4,
-     "contribution": 0.8
+     "normalized": 0,
+     "contribution": 0
     }
    }
   },
   "RSW": {
-   "score": 49.1,
+   "score": 48.2,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -14571,13 +14571,13 @@
     "growth": {
      "available": true,
      "raw": 1.468,
-     "normalized": 61.7,
-     "contribution": 12.3
+     "normalized": 57.3,
+     "contribution": 11.5
     }
    }
   },
   "RUT": {
-   "score": 23.5,
+   "score": 21.9,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -14602,13 +14602,13 @@
     "growth": {
      "available": true,
      "raw": -3.8109,
-     "normalized": 38.5,
-     "contribution": 7.7
+     "normalized": 30.9,
+     "contribution": 6.2
     }
    }
   },
   "RVR": {
-   "score": 37.6,
+   "score": 29.9,
    "coverage": 0.2,
    "missing": [
     "congestion",
@@ -14637,8 +14637,8 @@
     "growth": {
      "available": true,
      "raw": -4.0148,
-     "normalized": 37.6,
-     "contribution": 37.6
+     "normalized": 29.9,
+     "contribution": 29.9
     }
    }
   },
@@ -14679,7 +14679,7 @@
    }
   },
   "SAF": {
-   "score": 40,
+   "score": 39.5,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -14704,13 +14704,13 @@
     "growth": {
      "available": true,
      "raw": 4.7718,
-     "normalized": 76.2,
-     "contribution": 15.2
+     "normalized": 73.9,
+     "contribution": 14.8
     }
    }
   },
   "SAN": {
-   "score": 66.6,
+   "score": 65.6,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -14735,13 +14735,13 @@
     "growth": {
      "available": true,
      "raw": 0.2068,
-     "normalized": 56.1,
-     "contribution": 11.2
+     "normalized": 51,
+     "contribution": 10.2
     }
    }
   },
   "SAT": {
-   "score": 47.6,
+   "score": 46.7,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -14766,13 +14766,13 @@
     "growth": {
      "available": true,
      "raw": 1.7074,
-     "normalized": 62.7,
-     "contribution": 12.5
+     "normalized": 58.5,
+     "contribution": 11.7
     }
    }
   },
   "SAV": {
-   "score": 45.9,
+   "score": 45.7,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -14797,13 +14797,13 @@
     "growth": {
      "available": true,
      "raw": 6.6968,
-     "normalized": 84.6,
-     "contribution": 16.9
+     "normalized": 83.5,
+     "contribution": 16.7
     }
    }
   },
   "SAW": {
-   "score": 31.2,
+   "score": 22.6,
    "coverage": 0.2,
    "missing": [
     "congestion",
@@ -14832,13 +14832,13 @@
     "growth": {
      "available": true,
      "raw": -5.4713,
-     "normalized": 31.2,
-     "contribution": 31.2
+     "normalized": 22.6,
+     "contribution": 22.6
     }
    }
   },
   "SBA": {
-   "score": 40,
+   "score": 39.7,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -14863,8 +14863,8 @@
     "growth": {
      "available": true,
      "raw": 6.4224,
-     "normalized": 83.4,
-     "contribution": 16.7
+     "normalized": 82.1,
+     "contribution": 16.4
     }
    }
   },
@@ -14902,7 +14902,7 @@
    }
   },
   "SBN": {
-   "score": 36.8,
+   "score": 36,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -14927,13 +14927,13 @@
     "growth": {
      "available": true,
      "raw": 1.798,
-     "normalized": 63.1,
-     "contribution": 12.6
+     "normalized": 59,
+     "contribution": 11.8
     }
    }
   },
   "SBP": {
-   "score": 40.7,
+   "score": 40.5,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -14958,13 +14958,13 @@
     "growth": {
      "available": true,
      "raw": 6.4622,
-     "normalized": 83.6,
-     "contribution": 16.7
+     "normalized": 82.3,
+     "contribution": 16.5
     }
    }
   },
   "SBY": {
-   "score": 29.7,
+   "score": 28.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -14989,13 +14989,13 @@
     "growth": {
      "available": true,
      "raw": -2.9243,
-     "normalized": 42.4,
-     "contribution": 8.5
+     "normalized": 35.4,
+     "contribution": 7.1
     }
    }
   },
   "SCC": {
-   "score": 37.6,
+   "score": 37.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -15020,13 +15020,13 @@
     "growth": {
      "available": true,
      "raw": 6.1875,
-     "normalized": 82.4,
-     "contribution": 16.5
+     "normalized": 80.9,
+     "contribution": 16.2
     }
    }
   },
   "SCK": {
-   "score": 28.1,
+   "score": 26,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -15051,13 +15051,13 @@
     "growth": {
      "available": true,
      "raw": -8.8439,
-     "normalized": 16.4,
-     "contribution": 3.3
+     "normalized": 5.8,
+     "contribution": 1.2
     }
    }
   },
   "SCM": {
-   "score": 17.7,
+   "score": 16,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -15082,13 +15082,13 @@
     "growth": {
      "available": true,
      "raw": -5.8942,
-     "normalized": 29.3,
-     "contribution": 5.9
+     "normalized": 20.5,
+     "contribution": 4.1
     }
    }
   },
   "SDF": {
-   "score": 50.6,
+   "score": 49.9,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -15113,13 +15113,13 @@
     "growth": {
      "available": true,
      "raw": 2.7755,
-     "normalized": 67.4,
-     "contribution": 13.5
+     "normalized": 63.9,
+     "contribution": 12.8
     }
    }
   },
   "SDP": {
-   "score": 18.8,
+   "score": 16.9,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -15144,13 +15144,13 @@
     "growth": {
      "available": true,
      "raw": -6.8517,
-     "normalized": 25.1,
-     "contribution": 5
+     "normalized": 15.7,
+     "contribution": 3.1
     }
    }
   },
   "SDY": {
-   "score": 20,
+   "score": 18.2,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -15175,13 +15175,13 @@
     "growth": {
      "available": true,
      "raw": -6.3957,
-     "normalized": 27.1,
-     "contribution": 5.4
+     "normalized": 18,
+     "contribution": 3.6
     }
    }
   },
   "SEA": {
-   "score": 69.6,
+   "score": 68.6,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -15206,13 +15206,13 @@
     "growth": {
      "available": true,
      "raw": 0.3281,
-     "normalized": 56.6,
-     "contribution": 11.3
+     "normalized": 51.6,
+     "contribution": 10.3
     }
    }
   },
   "SFB": {
-   "score": 36.6,
+   "score": 35.2,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -15237,13 +15237,13 @@
     "growth": {
      "available": true,
      "raw": -2.4754,
-     "normalized": 44.3,
-     "contribution": 8.9
+     "normalized": 37.6,
+     "contribution": 7.5
     }
    }
   },
   "SFO": {
-   "score": 70.9,
+   "score": 69.6,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -15268,13 +15268,13 @@
     "growth": {
      "available": true,
      "raw": -2.0244,
-     "normalized": 46.3,
-     "contribution": 9.3
+     "normalized": 39.9,
+     "contribution": 8
     }
    }
   },
   "SGF": {
-   "score": 42.6,
+   "score": 42,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -15299,8 +15299,8 @@
     "growth": {
      "available": true,
      "raw": 3.7179,
-     "normalized": 71.5,
-     "contribution": 14.3
+     "normalized": 68.6,
+     "contribution": 13.7
     }
    }
   },
@@ -15341,7 +15341,7 @@
    }
   },
   "SGU": {
-   "score": 44.9,
+   "score": 45,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -15366,13 +15366,13 @@
     "growth": {
      "available": true,
      "raw": 9.5219,
-     "normalized": 97,
-     "contribution": 19.4
+     "normalized": 97.6,
+     "contribution": 19.5
     }
    }
   },
   "SGY": {
-   "score": 15.4,
+   "score": 13.6,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -15397,8 +15397,8 @@
     "growth": {
      "available": true,
      "raw": -10.5482,
-     "normalized": 8.9,
-     "contribution": 1.8
+     "normalized": 0,
+     "contribution": 0
     }
    }
   },
@@ -15467,7 +15467,7 @@
    }
   },
   "SHH": {
-   "score": 20.2,
+   "score": 18.7,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -15492,8 +15492,8 @@
     "growth": {
      "available": true,
      "raw": -4.2219,
-     "normalized": 36.7,
-     "contribution": 7.3
+     "normalized": 28.9,
+     "contribution": 5.8
     }
    }
   },
@@ -15529,7 +15529,7 @@
    }
   },
   "SHV": {
-   "score": 37.7,
+   "score": 36.8,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -15554,13 +15554,13 @@
     "growth": {
      "available": true,
      "raw": 1.6002,
-     "normalized": 62.2,
-     "contribution": 12.4
+     "normalized": 58,
+     "contribution": 11.6
     }
    }
   },
   "SIG": {
-   "score": 28.3,
+   "score": 27.4,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -15585,13 +15585,13 @@
     "growth": {
      "available": true,
      "raw": 0.6822,
-     "normalized": 58.2,
-     "contribution": 11.6
+     "normalized": 53.4,
+     "contribution": 10.7
     }
    }
   },
   "SIT": {
-   "score": 31.4,
+   "score": 30.5,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -15616,13 +15616,13 @@
     "growth": {
      "available": true,
      "raw": 1.5428,
-     "normalized": 62,
-     "contribution": 12.4
+     "normalized": 57.7,
+     "contribution": 11.5
     }
    }
   },
   "SJC": {
-   "score": 42.9,
+   "score": 41.2,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -15647,13 +15647,13 @@
     "growth": {
      "available": true,
      "raw": -5.4089,
-     "normalized": 31.5,
-     "contribution": 6.3
+     "normalized": 23,
+     "contribution": 4.6
     }
    }
   },
   "SJT": {
-   "score": 27.3,
+   "score": 25.6,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -15678,13 +15678,13 @@
     "growth": {
      "available": true,
      "raw": -5.7051,
-     "normalized": 30.2,
-     "contribution": 6
+     "normalized": 21.5,
+     "contribution": 4.3
     }
    }
   },
   "SJU": {
-   "score": 64.5,
+   "score": 64.4,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -15709,8 +15709,8 @@
     "growth": {
      "available": true,
      "raw": 7.1749,
-     "normalized": 86.7,
-     "contribution": 17.3
+     "normalized": 85.9,
+     "contribution": 17.2
     }
    }
   },
@@ -15751,7 +15751,7 @@
    }
   },
   "SLC": {
-   "score": 50.1,
+   "score": 49.2,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -15776,8 +15776,8 @@
     "growth": {
      "available": true,
      "raw": 1.0713,
-     "normalized": 59.9,
-     "contribution": 12
+     "normalized": 55.4,
+     "contribution": 11.1
     }
    }
   },
@@ -15815,7 +15815,7 @@
    }
   },
   "SLK": {
-   "score": 25.5,
+   "score": 24.6,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -15840,13 +15840,13 @@
     "growth": {
      "available": true,
      "raw": 0.4107,
-     "normalized": 57,
-     "contribution": 11.4
+     "normalized": 52.1,
+     "contribution": 10.4
     }
    }
   },
   "SLN": {
-   "score": 36.8,
+   "score": 36.7,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -15871,13 +15871,13 @@
     "growth": {
      "available": true,
      "raw": 7.916,
-     "normalized": 90,
-     "contribution": 18
+     "normalized": 89.6,
+     "contribution": 17.9
     }
    }
   },
   "SMF": {
-   "score": 47.4,
+   "score": 46.5,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -15902,8 +15902,8 @@
     "growth": {
      "available": true,
      "raw": 0.6877,
-     "normalized": 58.2,
-     "contribution": 11.6
+     "normalized": 53.4,
+     "contribution": 10.7
     }
    }
   },
@@ -15941,7 +15941,7 @@
    }
   },
   "SMX": {
-   "score": 17.3,
+   "score": 16,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -15966,13 +15966,13 @@
     "growth": {
      "available": true,
      "raw": -11.0332,
-     "normalized": 6.8,
-     "contribution": 1.4
+     "normalized": 0,
+     "contribution": 0
     }
    }
   },
   "SNA": {
-   "score": 50.6,
+   "score": 49.6,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -15997,8 +15997,8 @@
     "growth": {
      "available": true,
      "raw": 0.8283,
-     "normalized": 58.8,
-     "contribution": 11.8
+     "normalized": 54.1,
+     "contribution": 10.8
     }
    }
   },
@@ -16036,7 +16036,7 @@
    }
   },
   "SOV": {
-   "score": 22.3,
+   "score": 21.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -16061,13 +16061,13 @@
     "growth": {
      "available": true,
      "raw": 0.4659,
-     "normalized": 57.3,
-     "contribution": 11.5
+     "normalized": 52.3,
+     "contribution": 10.5
     }
    }
   },
   "SOW": {
-   "score": 25.2,
+   "score": 23.6,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -16092,13 +16092,13 @@
     "growth": {
      "available": true,
      "raw": -4.3867,
-     "normalized": 35.9,
-     "contribution": 7.2
+     "normalized": 28.1,
+     "contribution": 5.6
     }
    }
   },
   "SPI": {
-   "score": 23,
+   "score": 21.1,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -16123,13 +16123,13 @@
     "growth": {
      "available": true,
      "raw": -7.2408,
-     "normalized": 23.4,
-     "contribution": 4.7
+     "normalized": 13.8,
+     "contribution": 2.8
     }
    }
   },
   "SPS": {
-   "score": 26,
+   "score": 24.2,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -16154,8 +16154,8 @@
     "growth": {
      "available": true,
      "raw": -5.9753,
-     "normalized": 29,
-     "contribution": 5.8
+     "normalized": 20.1,
+     "contribution": 4
     }
    }
   },
@@ -16224,7 +16224,7 @@
    }
   },
   "STC": {
-   "score": 37.4,
+   "score": 36.6,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -16249,13 +16249,13 @@
     "growth": {
      "available": true,
      "raw": 1.8745,
-     "normalized": 63.4,
-     "contribution": 12.7
+     "normalized": 59.4,
+     "contribution": 11.9
     }
    }
   },
   "STL": {
-   "score": 47.2,
+   "score": 46.2,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -16280,13 +16280,13 @@
     "growth": {
      "available": true,
      "raw": 0.0863,
-     "normalized": 55.6,
-     "contribution": 11.1
+     "normalized": 50.4,
+     "contribution": 10.1
     }
    }
   },
   "STS": {
-   "score": 43.7,
+   "score": 43.8,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -16311,13 +16311,13 @@
     "growth": {
      "available": true,
      "raw": 9.7862,
-     "normalized": 98.2,
-     "contribution": 19.6
+     "normalized": 98.9,
+     "contribution": 19.8
     }
    }
   },
   "STT": {
-   "score": 46.9,
+   "score": 46.7,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -16342,13 +16342,13 @@
     "growth": {
      "available": true,
      "raw": 6.7994,
-     "normalized": 85.1,
-     "contribution": 17
+     "normalized": 84,
+     "contribution": 16.8
     }
    }
   },
   "STX": {
-   "score": 40.5,
+   "score": 39.9,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -16373,13 +16373,13 @@
     "growth": {
      "available": true,
      "raw": 3.2647,
-     "normalized": 69.5,
-     "contribution": 13.9
+     "normalized": 66.3,
+     "contribution": 13.3
     }
    }
   },
   "SUN": {
-   "score": 37.6,
+   "score": 37.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -16404,13 +16404,13 @@
     "growth": {
      "available": true,
      "raw": 6.2817,
-     "normalized": 82.8,
-     "contribution": 16.6
+     "normalized": 81.4,
+     "contribution": 16.3
     }
    }
   },
   "SUX": {
-   "score": 23.5,
+   "score": 21.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -16435,13 +16435,13 @@
     "growth": {
      "available": true,
      "raw": -9.6932,
-     "normalized": 12.6,
-     "contribution": 2.5
+     "normalized": 1.5,
+     "contribution": 0.3
     }
    }
   },
   "SVA": {
-   "score": 24,
+   "score": 22.4,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -16466,13 +16466,13 @@
     "growth": {
      "available": true,
      "raw": -4.125,
-     "normalized": 37.1,
-     "contribution": 7.4
+     "normalized": 29.4,
+     "contribution": 5.9
     }
    }
   },
   "SVC": {
-   "score": 31.4,
+   "score": 30.7,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -16497,13 +16497,13 @@
     "growth": {
      "available": true,
      "raw": 2.9894,
-     "normalized": 68.3,
-     "contribution": 13.7
+     "normalized": 64.9,
+     "contribution": 13
     }
    }
   },
   "SWF": {
-   "score": 27,
+   "score": 26.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -16528,13 +16528,13 @@
     "growth": {
      "available": true,
      "raw": -11.773,
-     "normalized": 3.5,
-     "contribution": 0.7
+     "normalized": 0,
+     "contribution": 0
     }
    }
   },
   "SWO": {
-   "score": 31.1,
+   "score": 30.5,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -16559,13 +16559,13 @@
     "growth": {
      "available": true,
      "raw": 3.2051,
-     "normalized": 69.3,
-     "contribution": 13.9
+     "normalized": 66,
+     "contribution": 13.2
     }
    }
   },
   "SYR": {
-   "score": 42.7,
+   "score": 42,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -16590,8 +16590,8 @@
     "growth": {
      "available": true,
      "raw": 3.1686,
-     "normalized": 69.1,
-     "contribution": 13.8
+     "normalized": 65.8,
+     "contribution": 13.2
     }
    }
   },
@@ -16724,7 +16724,7 @@
    }
   },
   "TLH": {
-   "score": 39.3,
+   "score": 38.6,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -16749,13 +16749,13 @@
     "growth": {
      "available": true,
      "raw": 2.4771,
-     "normalized": 66.1,
-     "contribution": 13.2
+     "normalized": 62.4,
+     "contribution": 12.5
     }
    }
   },
   "TLT": {
-   "score": 18.6,
+   "score": 17.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -16780,13 +16780,13 @@
     "growth": {
      "available": true,
      "raw": -2.0516,
-     "normalized": 46.2,
-     "contribution": 9.2
+     "normalized": 39.7,
+     "contribution": 7.9
     }
    }
   },
   "TNI": {
-   "score": 29.6,
+   "score": 20.8,
    "coverage": 0.2,
    "missing": [
     "congestion",
@@ -16815,8 +16815,8 @@
     "growth": {
      "available": true,
      "raw": -5.8382,
-     "normalized": 29.6,
-     "contribution": 29.6
+     "normalized": 20.8,
+     "contribution": 20.8
     }
    }
   },
@@ -16854,7 +16854,7 @@
    }
   },
   "TOL": {
-   "score": 26.2,
+   "score": 25.4,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -16879,13 +16879,13 @@
     "growth": {
      "available": true,
      "raw": -11.7162,
-     "normalized": 3.8,
-     "contribution": 0.8
+     "normalized": 0,
+     "contribution": 0
     }
    }
   },
   "TPA": {
-   "score": 50.5,
+   "score": 49.7,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -16910,13 +16910,13 @@
     "growth": {
      "available": true,
      "raw": 1.9227,
-     "normalized": 63.7,
-     "contribution": 12.7
+     "normalized": 59.6,
+     "contribution": 11.9
     }
    }
   },
   "TRI": {
-   "score": 36.6,
+   "score": 35.6,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -16941,13 +16941,13 @@
     "growth": {
      "available": true,
      "raw": 0.805,
-     "normalized": 58.7,
-     "contribution": 11.7
+     "normalized": 54,
+     "contribution": 10.8
     }
    }
   },
   "TTN": {
-   "score": 23.8,
+   "score": 23.4,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -16972,13 +16972,13 @@
     "growth": {
      "available": true,
      "raw": -12.1414,
-     "normalized": 1.9,
-     "contribution": 0.4
+     "normalized": 0,
+     "contribution": 0
     }
    }
   },
   "TUL": {
-   "score": 37.9,
+   "score": 37,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -17003,13 +17003,13 @@
     "growth": {
      "available": true,
      "raw": 1.5362,
-     "normalized": 62,
-     "contribution": 12.4
+     "normalized": 57.7,
+     "contribution": 11.5
     }
    }
   },
   "TUP": {
-   "score": 31,
+   "score": 30.1,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -17034,13 +17034,13 @@
     "growth": {
      "available": true,
      "raw": 1.1806,
-     "normalized": 60.4,
-     "contribution": 12.1
+     "normalized": 55.9,
+     "contribution": 11.2
     }
    }
   },
   "TUS": {
-   "score": 40.1,
+   "score": 39.2,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -17065,13 +17065,13 @@
     "growth": {
      "available": true,
      "raw": 1.1697,
-     "normalized": 60.3,
-     "contribution": 12.1
+     "normalized": 55.8,
+     "contribution": 11.2
     }
    }
   },
   "TVC": {
-   "score": 42.3,
+   "score": 42,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -17096,8 +17096,8 @@
     "growth": {
      "available": true,
      "raw": 6.4933,
-     "normalized": 83.7,
-     "contribution": 16.7
+     "normalized": 82.5,
+     "contribution": 16.5
     }
    }
   },
@@ -17133,7 +17133,7 @@
    }
   },
   "TWF": {
-   "score": 23.2,
+   "score": 21.1,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -17158,13 +17158,13 @@
     "growth": {
      "available": true,
      "raw": -9.1966,
-     "normalized": 14.8,
-     "contribution": 3
+     "normalized": 4,
+     "contribution": 0.8
     }
    }
   },
   "TXK": {
-   "score": 31.5,
+   "score": 30.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -17189,13 +17189,13 @@
     "growth": {
      "available": true,
      "raw": -0.6403,
-     "normalized": 52.4,
-     "contribution": 10.5
+     "normalized": 46.8,
+     "contribution": 9.4
     }
    }
   },
   "TYR": {
-   "score": 29.6,
+   "score": 28.2,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -17220,13 +17220,13 @@
     "growth": {
      "available": true,
      "raw": -3.0235,
-     "normalized": 41.9,
-     "contribution": 8.4
+     "normalized": 34.9,
+     "contribution": 7
     }
    }
   },
   "TYS": {
-   "score": 45.1,
+   "score": 44.8,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -17251,8 +17251,8 @@
     "growth": {
      "available": true,
      "raw": 5.7338,
-     "normalized": 80.4,
-     "contribution": 16.1
+     "normalized": 78.7,
+     "contribution": 15.7
     }
    }
   },
@@ -17319,7 +17319,7 @@
    }
   },
   "UNV": {
-   "score": 24.2,
+   "score": 14.6,
    "coverage": 0.2,
    "missing": [
     "congestion",
@@ -17348,8 +17348,8 @@
     "growth": {
      "available": true,
      "raw": -7.0707,
-     "normalized": 24.2,
-     "contribution": 24.2
+     "normalized": 14.6,
+     "contribution": 14.6
     }
    }
   },
@@ -17390,7 +17390,7 @@
    }
   },
   "VAK": {
-   "score": 21.5,
+   "score": 20.2,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -17415,8 +17415,8 @@
     "growth": {
      "available": true,
      "raw": -1.942,
-     "normalized": 46.7,
-     "contribution": 9.3
+     "normalized": 40.3,
+     "contribution": 8.1
     }
    }
   },
@@ -17483,7 +17483,7 @@
    }
   },
   "VEL": {
-   "score": 27.9,
+   "score": 26.5,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -17508,8 +17508,8 @@
     "growth": {
      "available": true,
      "raw": -3.5251,
-     "normalized": 39.7,
-     "contribution": 7.9
+     "normalized": 32.4,
+     "contribution": 6.5
     }
    }
   },
@@ -17580,7 +17580,7 @@
    }
   },
   "VLD": {
-   "score": 35,
+   "score": 34.1,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -17605,13 +17605,13 @@
     "growth": {
      "available": true,
      "raw": 1.1347,
-     "normalized": 60.2,
-     "contribution": 12
+     "normalized": 55.7,
+     "contribution": 11.1
     }
    }
   },
   "VPS": {
-   "score": 43.9,
+   "score": 43.8,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -17636,13 +17636,13 @@
     "growth": {
      "available": true,
      "raw": 7.442,
-     "normalized": 87.9,
-     "contribution": 17.6
+     "normalized": 87.2,
+     "contribution": 17.4
     }
    }
   },
   "VQS": {
-   "score": 26.9,
+   "score": 25.9,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -17667,8 +17667,8 @@
     "growth": {
      "available": true,
      "raw": 0.4026,
-     "normalized": 57,
-     "contribution": 11.4
+     "normalized": 52,
+     "contribution": 10.4
     }
    }
   },
@@ -17773,7 +17773,7 @@
    }
   },
   "WLK": {
-   "score": 19.6,
+   "score": 18,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -17798,13 +17798,13 @@
     "growth": {
      "available": true,
      "raw": -4.2928,
-     "normalized": 36.4,
-     "contribution": 7.3
+     "normalized": 28.5,
+     "contribution": 5.7
     }
    }
   },
   "WRG": {
-   "score": 27.7,
+   "score": 26.6,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -17829,13 +17829,13 @@
     "growth": {
      "available": true,
      "raw": -0.2941,
-     "normalized": 53.9,
-     "contribution": 10.8
+     "normalized": 48.5,
+     "contribution": 9.7
     }
    }
   },
   "WST": {
-   "score": 19.2,
+   "score": 17.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -17860,13 +17860,13 @@
     "growth": {
      "available": true,
      "raw": -7.6015,
-     "normalized": 21.8,
-     "contribution": 4.4
+     "normalized": 12,
+     "contribution": 2.4
     }
    }
   },
   "WTK": {
-   "score": 19.1,
+   "score": 17.3,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -17891,13 +17891,13 @@
     "growth": {
      "available": true,
      "raw": -6.3998,
-     "normalized": 27.1,
-     "contribution": 5.4
+     "normalized": 18,
+     "contribution": 3.6
     }
    }
   },
   "WYS": {
-   "score": 31.5,
+   "score": 30.6,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -17922,13 +17922,13 @@
     "growth": {
      "available": true,
      "raw": 1.2606,
-     "normalized": 60.7,
-     "contribution": 12.1
+     "normalized": 56.3,
+     "contribution": 11.3
     }
    }
   },
   "XNA": {
-   "score": 44.1,
+   "score": 43.7,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -17953,13 +17953,13 @@
     "growth": {
      "available": true,
      "raw": 4.7335,
-     "normalized": 76,
-     "contribution": 15.2
+     "normalized": 73.7,
+     "contribution": 14.7
     }
    }
   },
   "XWA": {
-   "score": 35.9,
+   "score": 35.1,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -17984,13 +17984,13 @@
     "growth": {
      "available": true,
      "raw": 2.2945,
-     "normalized": 65.3,
-     "contribution": 13.1
+     "normalized": 61.5,
+     "contribution": 12.3
     }
    }
   },
   "YAK": {
-   "score": 17.8,
+   "score": 16.6,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -18015,8 +18015,8 @@
     "growth": {
      "available": true,
      "raw": -1.4218,
-     "normalized": 49,
-     "contribution": 9.8
+     "normalized": 42.9,
+     "contribution": 8.6
     }
    }
   },
@@ -18054,7 +18054,7 @@
    }
   },
   "YKM": {
-   "score": 25.8,
+   "score": 23.6,
    "coverage": 1,
    "missing": [],
    "kpis": {
@@ -18079,8 +18079,8 @@
     "growth": {
      "available": true,
      "raw": -9.7846,
-     "normalized": 12.2,
-     "contribution": 2.4
+     "normalized": 1.1,
+     "contribution": 0.2
     }
    }
   },
@@ -18118,7 +18118,7 @@
    }
   },
   "Z09": {
-   "score": 45.5,
+   "score": 39,
    "coverage": 0.2,
    "missing": [
     "congestion",
@@ -18147,13 +18147,13 @@
     "growth": {
      "available": true,
      "raw": -2.2048,
-     "normalized": 45.5,
-     "contribution": 45.5
+     "normalized": 39,
+     "contribution": 39
     }
    }
   },
   "Z13": {
-   "score": 49,
+   "score": 42.9,
    "coverage": 0.2,
    "missing": [
     "congestion",
@@ -18182,8 +18182,8 @@
     "growth": {
      "available": true,
      "raw": -1.4168,
-     "normalized": 49,
-     "contribution": 49
+     "normalized": 42.9,
+     "contribution": 42.9
     }
    }
   }

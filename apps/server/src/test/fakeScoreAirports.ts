@@ -12,7 +12,7 @@ export interface FakeScoreAirports {
 const inputSchema = z.object({ airport_codes: z.array(z.string().trim().min(1)).min(1) }).strict();
 
 /**
- * Scores the codes 90, 80, 70, ... in input order (relative for 2+, absolute for 1), with one category each.
+ * Scores the codes 90, 80, 70, ... in input order, with one category each.
  * `failWith` makes every call fail with that message instead.
  */
 export function fakeScoreAirports(failWith?: string): FakeScoreAirports {
@@ -27,7 +27,6 @@ export function fakeScoreAirports(failWith?: string): FakeScoreAirports {
       if (failWith !== undefined) return Promise.resolve(fail("unavailable", failWith));
       return Promise.resolve(
         ok({
-          mode: input.airport_codes.length >= 2 ? "relative" : "absolute",
           ranking: input.airport_codes.map((airportCode, i) => ({
             airportCode,
             name: `${airportCode} airport`,

@@ -3,7 +3,7 @@ import "./score.css";
 import { ScoreCompare } from "./ScoreCompare";
 import { ScoreReport } from "./ScoreReport";
 import { ScoreTable } from "./ScoreTable";
-import { MAX_SHOWN, MODE_TEXT, sortByScore, type ScoreResult } from "./spec";
+import { MAX_SHOWN, SCALE_TEXT, sortByScore, type ScoreResult } from "./spec";
 
 /** The layout follows the number of airports: 1 is a report, 2 side by side, 3 or more a table. */
 function Body({ result }: { result: ScoreResult }) {
@@ -25,7 +25,7 @@ function Body({ result }: { result: ScoreResult }) {
 export function ScoreView({ result }: { result: ScoreResult }) {
   return (
     <div className="score-view" data-testid="score-view">
-      <p className="score-view__mode">{MODE_TEXT[result.mode]}</p>
+      <p className="score-view__mode">{SCALE_TEXT}</p>
       <Body result={result} />
       {result.notFound.length > 0 ? (
         <p className="score-view__not-found">Not found: {result.notFound.join(", ")}</p>

@@ -14,7 +14,6 @@ const A = asConversationId("chat-a");
 const B = asConversationId("chat-b");
 const enplanements = (code: string): JsonValue => ({ airportCode: code, latestYear: 2024, enplanements: 1000 });
 const score = (...codes: string[]): JsonValue => ({
-  mode: codes.length >= 2 ? "relative" : "absolute",
   ranking: codes.map((airportCode, i) => ({ airportCode, score: 90 - 10 * i })),
   notFound: [],
 });
@@ -88,7 +87,7 @@ describe("ConversationMemory", () => {
     const s = new ConversationMemory().session(A);
     expect(s.record("score_airports", { airport_codes: ["LAX", "SNA"] }, score("LAX", "SNA"))).toEqual(["LAX", "SNA"]);
 
-    expect(s.state().workingSet.get("SNA")?.score).toMatchObject({ mode: "relative", score: 80 });
+    expect(s.state().workingSet.get("SNA")?.score).toMatchObject({ airportCode: "SNA", score: 80 });
     expect(s.cached("score_airports", { airport_codes: ["sna", " lax "] })).toEqual(score("LAX", "SNA"));
     expect(s.cached("score_airports", { airport_codes: ["LAX"] })).toBeUndefined();
   });

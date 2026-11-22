@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { findAirport } from "../../data/enplanements/dataset.ts";
+import { getGrowthTool } from "./categoryTools.ts";
 import { MAX_AIRPORT_CODES, scoreAirportsTool } from "./scoreAirports.ts";
 
 const ctx = { signal: new AbortController().signal };
@@ -21,7 +23,7 @@ interface Ranked {
 async function rank(codes: string[]) {
   const r = await scoreAirportsTool.run({ airport_codes: codes }, ctx);
   if (!r.ok) throw new Error("expected ok");
-  return r.output as unknown as { mode: string; ranking: Ranked[]; notFound: string[] };
+  return r.output as unknown as { ranking: Ranked[]; notFound: string[] };
 }
 
 describe("score_airports tool", () => {
@@ -30,9 +32,8 @@ describe("score_airports tool", () => {
     expect(scoreAirportsTool.exampleInput).toEqual({ airport_codes: ["LAX", "SFO", "DEN"] });
   });
 
-  it("returns final score, all four sub-scores, and evidence for one code (absolute mode)", async () => {
-    const { mode, ranking } = await rank(["LAX"]);
-    expect(mode).toBe("absolute");
+  it("returns final score, all four sub-scores, and evidence for one code", async () => {
+    const { ranking } = await rank(["LAX"]);
     const lax = ranking[0]!;
     expect(lax.airportCode).toBe("LAX");
     expect(lax.score).toBeGreaterThan(0);
@@ -60,9 +61,10 @@ describe("score_airports tool", () => {
     expect(den.breakdown.congestion!.evidence.inputs).toHaveProperty("departures");
   });
 
-  it("ranks multiple codes relative to each other, high-to-low, with notFound", async () => {
-    const { mode, ranking, notFound } = await rank(["LAX", "DEN", "ZZZ"]);
-    expect(mode).toBe("relative");
+  it("ranks multiple codes high-to-low, with notFound, and no `mode` field (#75)", async () => {
+    const out = await rank(["LAX", "DEN", "ZZZ"]);
+    const { ranking, notFound } = out;
+    expect(out).not.toHaveProperty("mode");
     expect(notFound).toEqual(["ZZZ"]);
     expect(ranking.map((r) => r.airportCode)).toHaveLength(2);
     expect(ranking[0]!.score).toBeGreaterThanOrEqual(ranking[1]!.score);
@@ -81,9 +83,8 @@ describe("score_airports tool", () => {
   });
 
   it("upper-cases and dedupes the codes: LAX and lax are one row", async () => {
-    const { mode, ranking, notFound } = await rank(["LAX", "lax", " Lax ", "zzz", "ZZZ"]);
+    const { ranking, notFound } = await rank(["LAX", "lax", " Lax ", "zzz", "ZZZ"]);
     expect(ranking.map((r) => r.airportCode)).toEqual(["LAX"]);
-    expect(mode).toBe("absolute");
     expect(notFound).toEqual(["ZZZ"]);
   });
 
@@ -97,4 +98,26 @@ describe("score_airports tool", () => {
     // exactly 50 is allowed (all unknown here, so the tool says not_found, not invalid_input)
     expect(await scoreAirportsTool.run({ airport_codes: codes(50) }, ctx)).toMatchObject({ ok: false, error: { code: "not_found" } });
   });
+
+  it("#75: LAX growth in a 5-hub comparison equals LAX alone and get_growth([LAX]): 50 + 5 x CAGR, never a relative 0", async () => {
+    const HUBS = ["LAX", "DEN", "DFW", "ORD", "ATL"];
+    const five = await rank(HUBS);
+    const growthOf = (out: { ranking: Ranked[] }, code: string) => out.ranking.find((r) => r.airportCode === code)!.breakdown.growth!.subScore;
+    const tool = await getGrowthTool.run({ airport_codes: ["LAX"] }, ctx);
+    if (!tool.ok) throw new Error("expected ok");
+    const viaTool = (tool.output as unknown as { airports: { subScore: number | null }[] }).airports[0]!.subScore;
+    expect(growthOf(five, "LAX")).toBe(GOLDEN_GROWTH.LAX);
+    expect(growthOf(await rank(["LAX"]), "LAX")).toBe(GOLDEN_GROWTH.LAX);
+    expect(viaTool).toBe(GOLDEN_GROWTH.LAX);
+    // Golden for all five: the growth sub-score, each the same alone as in the set.
+    for (const code of HUBS) {
+      expect(growthOf(five, code), code).toBe(GOLDEN_GROWTH[code as keyof typeof GOLDEN_GROWTH]);
+      expect(growthOf(await rank([code]), code), code).toBe(GOLDEN_GROWTH[code as keyof typeof GOLDEN_GROWTH]);
+      const cagr = findAirport(code)!.trend.cagr5yr!;
+      expect(GOLDEN_GROWTH[code as keyof typeof GOLDEN_GROWTH]).toBe(Math.round(Math.min(100, Math.max(0, 50 + 5 * cagr)) * 10) / 10);
+    }
+  });
 });
+
+/** #75 golden: growth sub-score = 50 + 5 x the real 5-year CAGR (LAX -2.5375 %/yr -> 37.3, DEN 3.5596 -> 67.8; the issue rounds them to -2.5 -> 37.5 and 3.6 -> 68). */
+const GOLDEN_GROWTH = { LAX: 37.3, DEN: 67.8, DFW: 67.2, ORD: 44.3, ATL: 48.1 } as const;

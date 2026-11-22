@@ -17,18 +17,20 @@ describe("the grading skill (#43)", () => {
     for (const line of kept) expect(GRADING_SKILL.split("\n"), line).toContain(line);
   });
 
-  it("has the formula, the weights, the method, coverage renormalization and the two modes", () => {
+  it("has the formula, the weights, the method (fixed scales, #75) and coverage renormalization", () => {
     for (const text of [
       "Score = 0.30·Congestion + 0.30·Unmet demand + 0.20·Long-haul + 0.20·Growth",
       "**Need 0.60**",
       "**Quality 0.40**",
-      "winsorized at the 5th and 95th percentile",
-      "min-max scaled to 0–100",
+      "fixed scale on the airport's own number",
+      "growth is 50 + 5 × the growth rate in % per year, capped to 0–100",
       "Coverage renormalization",
-      "Relative mode vs. absolute mode",
+      "One scale for every question",
     ]) {
       expect(GRADING_SKILL).toContain(text);
     }
+    // #75: no relative scoring is described anywhere in the skill.
+    expect(GRADING_SKILL).not.toMatch(/relative|best of (this|the compared) set|min-max|winsor|absolute mode/i);
   });
 
   it("its How and Status lines match INVESTMENT_KPIS (every KPI computed, same source, same weight)", () => {

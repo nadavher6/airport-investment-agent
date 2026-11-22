@@ -54,8 +54,8 @@ const ranked = z.object({
   breakdown,
 });
 
+// #75: no `mode` any more (every score is a fixed scale); an older output that still has one parses (unknown keys are stripped).
 export const scoreResult = z.object({
-  mode: z.enum(["relative", "absolute"]),
   // 0 airports is not a case the issue covers (#38 returns an error then): the generic view shows it.
   ranking: z.array(ranked).check(z.minLength(1)),
   notFound: z.array(z.string()),
@@ -85,10 +85,8 @@ export function sortByScore(ranking: readonly RankedAirport[]): RankedAirport[] 
   return [...ranking].sort((a, b) => b.score - a.score);
 }
 
-export const MODE_TEXT: Record<ScoreResult["mode"], string> = {
-  relative: "Scored relative to each other",
-  absolute: "Scored against all US airports",
-};
+/** How every score reads (#75): a fixed scale on the airport's own numbers, the same alone or in any comparison. */
+export const SCALE_TEXT = "Fixed scales on each airport's own numbers";
 
 const oneDecimal = new Intl.NumberFormat("en-US", { maximumFractionDigits: 1 });
 

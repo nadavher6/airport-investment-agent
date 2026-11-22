@@ -2,7 +2,7 @@
 import { z } from "zod";
 import { findAirport } from "../../data/enplanements/dataset.ts";
 import type { AirportRecord } from "../../data/enplanements/types.ts";
-import { rankAirports, rankAirportsRelative } from "../../scoring/investmentScore.ts";
+import { rankAirports } from "../../scoring/investmentScore.ts";
 import { defineTool, fail, ok } from "./tool.ts";
 
 /** Most codes one call may score; more is almost surely a mistake, and the output would be huge. */
@@ -24,8 +24,8 @@ export const scoreAirportsTool = defineTool<ScoreAirportsInput, unknown>({
   description:
     "Rank US airports by the deterministic Investment Attractiveness Score (0-100): a weighted blend of " +
     "congestion (runway utilization = operations ÷ FAA runway capacity: the FAA's published capacity profile for the 30 Core airports, else the FAA AC 150/5060-5 estimate for the runway layout), unmet demand (load factor), long-haul share " +
-    "(international seats) and growth (enplanement CAGR), from FAA + BTS T-100 data. With 2+ codes it ranks them RELATIVE to each other " +
-    "(for the min-max category, growth, 100 = best of the compared set; for the three percentage categories the score does not depend on the compared set: congestion is the runway utilization % itself (72.6% = 72.6) and unmet demand the load factor % itself, both capped at 100, and long-haul is the international seat share out of 50%, so 50% international = 100 and 40% = 80, capped at 100); with 1 code it scores ABSOLUTELY vs all US airports. Each " +
+    "(international seats) and growth (enplanement CAGR), from FAA + BTS T-100 data. Every sub-score is a FIXED scale on the airport's own numbers, so an " +
+    "airport gets the same scores alone or in any set of codes: congestion is the runway utilization % itself (72.6% = 72.6) and unmet demand the load factor % itself, both capped at 100; long-haul is the international seat share out of 50% (50% international = 100, 40% = 80, capped at 100); growth is 50 + 5 × the 5-year CAGR in %/yr, clamped (−10%/yr = 0, 0%/yr = 50, +10%/yr = 100). Each " +
     "result gives the final score, a per-category subScore + contribution, and evidence (formula, inputs, " +
     "explanation) so the ranking can be explained; the long-haul evidence also gives the number of international flights (`internationalDepartures` of `departures`) and `internationalPassengers`, shown but not scored. `coverage`/`missing` flag any category without data; " +
     "unknown codes are returned in `notFound`. Codes are case-insensitive and deduplicated; at most " +
@@ -45,9 +45,8 @@ export const scoreAirportsTool = defineTool<ScoreAirportsInput, unknown>({
     if (found.length === 0) {
       return Promise.resolve(fail("not_found", `None of the airport codes were found: ${codes.join(", ")}.`));
     }
-    // 2+ airports: rank relative to each other (differentiates). 1 airport: absolute vs all US airports.
-    const mode = found.length >= 2 ? "relative" : "absolute";
-    const scored = mode === "relative" ? rankAirportsRelative(found) : rankAirports(found);
+    // Every sub-score is a fixed scale on the airport's own numbers (#75), so 1 code and 2+ codes score the same.
+    const scored = rankAirports(found);
     const ranking = scored.map((s) => ({
       airportCode: s.item.airportCode,
       name: s.item.name,
@@ -68,6 +67,6 @@ export const scoreAirportsTool = defineTool<ScoreAirportsInput, unknown>({
         ]),
       ),
     }));
-    return Promise.resolve(ok({ mode, ranking, notFound }));
+    return Promise.resolve(ok({ ranking, notFound }));
   },
 });

@@ -37,10 +37,10 @@ async function expectGeneric(output: JsonValue) {
 describe("score_airports: 1 airport is a report", () => {
   const lax = checked(SCORE_ONE).ranking[0] as RankedAirport;
 
-  it("shows the final score tile with coverage, the mode, and all 4 categories incl. the missing one", () => {
+  it("shows the final score tile with coverage, the fixed-scale label (#75), and all 4 categories incl. the missing one", () => {
     render(<ToolUseBlockView block={block(SCORE_ONE)} />);
     const report = screen.getByRole("article", { name: "Score report: LAX" });
-    expect(screen.getByText("Scored against all US airports")).toBeInTheDocument();
+    expect(screen.getByText("Fixed scales on each airport's own numbers")).toBeInTheDocument();
     expect(within(report).getByLabelText(`Final score, ${formatScore(lax.score)}, / 100`)).toHaveClass("viz-kpi__tile");
     expect(within(report).getByLabelText("Coverage, 80%")).toHaveClass("viz-kpi__tile");
     const cats = within(report).getAllByTestId("score-category");
@@ -174,7 +174,7 @@ describe("score_airports: 2 airports side by side", () => {
         expect(c.querySelector(".score-cat__value")?.textContent).toBe(String(airport.breakdown[k].subScore));
       });
     });
-    expect(screen.getByText("Scored relative to each other")).toBeInTheDocument();
+    expect(screen.getByText("Fixed scales on each airport's own numbers")).toBeInTheDocument(); // #75: the same label for 2+ airports
     expect(screen.getByText("Not found: ZZZ")).toBeInTheDocument();
   });
 });
@@ -243,9 +243,9 @@ describe("score_airports: 3-5 airports are a table by final score", () => {
 
 describe("score_airports: anything else is the generic JSON view", () => {
   it.each<[string, JsonValue]>([
-    ["a bad shape", { mode: "relative", ranking: "LAX" }],
-    ["a partial result (no breakdown)", { mode: "absolute", ranking: [{ airportCode: "LAX", name: "x", score: 1, coverage: 1, missing: [] }], notFound: [] }],
-    ["0 airports", { mode: "relative", ranking: [], notFound: ["ZZZ"] }],
+    ["a bad shape", { ranking: "LAX" }],
+    ["a partial result (no breakdown)", { ranking: [{ airportCode: "LAX", name: "x", score: 1, coverage: 1, missing: [] }], notFound: [] }],
+    ["0 airports", { ranking: [], notFound: ["ZZZ"] }],
     ["null", null],
     ["a string", "88"],
   ])("%s: no throw, the raw JSON under Output", async (_name, output) => {

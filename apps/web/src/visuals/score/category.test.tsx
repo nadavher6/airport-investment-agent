@@ -50,7 +50,7 @@ describe("category view: 1 airport is a card", () => {
     const lax = checked(CATEGORY_ONE).airports[0]!;
     render(<ToolUseBlockView block={block(CATEGORY_ONE, "get_unmet_demand")} />);
     const card = screen.getByRole("article", { name: "Unmet demand (load factor): LAX" });
-    expect(screen.getByText(/Unmet demand \(load factor\) · 30% of the final score · Scored against all US airports/)).toBeInTheDocument();
+    expect(screen.getByText(/Unmet demand \(load factor\) · 30% of the final score · Fixed scales on each airport's own numbers/)).toBeInTheDocument();
     expect(within(card).getByLabelText("Raw value, 81.9%")).toHaveClass("viz-kpi__tile");
     expect(within(card).getByLabelText("Sub-score, 81.9, / 100")).toHaveClass("viz-kpi__tile");
     expect(within(card).getByRole("meter")).toHaveAttribute("aria-valuenow", "81.9");

@@ -1,15 +1,14 @@
 /**
  * Fixtures in the score_airports output shape (#41; shape from PR #38's scoreAirports.ts).
  * Built from the real BTS T-100 and FAA inputs PR #38 uses (departures, load factor,
- * international share, 5-year CAGR) with #38's formulas: min-max to 0-100 within the set for
- * "relative", weights renormalized over the computed categories, contributions and scores to
- * 1 decimal. LAX's growth is left out on purpose in SCORE_ONE and SNA's in SCORE_FIVE, to show
+ * international share, 5-year CAGR) with #38's formulas (the sub-scores predate the fixed scales of
+ * #57 / #62 / #75; the view only draws them), weights renormalized over the computed categories,
+ * contributions and scores to 1 decimal. LAX's growth is left out on purpose in SCORE_ONE and SNA's in SCORE_FIVE, to show
  * a missing category. Plain JSON, as the tool_result carries it.
  */
 import type { JsonValue } from "@airport/shared";
 
 export const SCORE_ONE = {
-  "mode": "absolute",
   "ranking": [
     {
       "airportCode": "LAX",
@@ -94,7 +93,6 @@ export const SCORE_ONE = {
 } satisfies JsonValue;
 
 export const SCORE_TWO = {
-  "mode": "relative",
   "ranking": [
     {
       "airportCode": "JFK",
@@ -255,7 +253,6 @@ export const SCORE_TWO = {
 } satisfies JsonValue;
 
 export const SCORE_THREE = {
-  "mode": "relative",
   "ranking": [
     {
       "airportCode": "LAX",
@@ -490,7 +487,6 @@ export const SCORE_THREE = {
 } satisfies JsonValue;
 
 export const SCORE_FIVE = {
-  "mode": "relative",
   "ranking": [
     {
       "airportCode": "JFK",
