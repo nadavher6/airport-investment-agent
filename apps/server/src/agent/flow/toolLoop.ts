@@ -1,9 +1,11 @@
 import { randomUUID } from "node:crypto";
 import { asToolCallId, type AgentEvent, type JsonValue, type MessageId, type StopReason } from "@airport/shared";
 import type { LlmClient, LlmMessage } from "../../llm/llmClient.ts";
-import { EMPTY_ANSWER, stepLimitAnswer } from "../prompts/toolLoop.ts";
+import { stepLimitAnswer } from "../prompts/toolLoop.ts";
 import type { RegisteredTool } from "../tools/tool.ts";
 import { parseModelStep, type ParsedToolCall } from "../toolCall.ts";
+import { finalAnswerStep, type FinalStep } from "./finalAnswerStep.ts";
+import { FinalAnswerStream } from "../finalAnswerStream.ts";
 import {
   GRACEFUL_FALLBACK,
   MAX_TOOL_STEPS,
@@ -46,10 +48,9 @@ export interface ToolLoopInput {
   readonly tools: readonly RegisteredTool[];
   /** Called with every successful tool output (a hook for the memory follow-up; unused by the agent for now). */
   readonly onToolResult?: (name: string, output: JsonValue) => void;
+  /** Does an `airports` code of the final answer exist (#63)? Default: the airport data (get_airport_by_code). */
+  readonly knownAirport?: (code: string) => boolean;
 }
-
-/** A step's text is held from its first "{" or "`" on, so tool-call JSON is never streamed to the user. */
-const HOLD_FROM = /[{`]/;
 
 /**
  * The agent's ReAct loop (#48) over the text-only LlmClient, with the tool-call guardrails (#49).
@@ -90,39 +91,27 @@ export async function* runToolLoop(input: ToolLoopInput): AsyncGenerator<AgentEv
     yield { type: "text_delta", messageId, delta };
   }
 
-  /** One model call: streams thinking and the live prose prefix, returns the whole text and the stop reason. */
-  async function* step(): AsyncGenerator<AgentEvent, { text: string; held: string; live: string; stopReason: StopReason }> {
+  /**
+   * One model call: streams thinking, and the final answer's summary/markdown as they arrive (#63,
+   * FinalAnswerStream). Nothing else of the reply is shown live: a tool call or invalid JSON never reaches the user.
+   */
+  async function* step(): AsyncGenerator<AgentEvent, { text: string; emitted: string; stopReason: StopReason }> {
     signal.throwIfAborted();
-    const before = shown.length;
-    let text = "";
-    let held = "";
-    let live = true;
+    const live = new FinalAnswerStream(input.knownAirport);
     let stopReason: StopReason = "end_turn";
     for await (const ev of client.stream({ system, messages: convo, model, signal })) {
       if (ev.type === "thinking_delta") {
         thinkingSince ??= Date.now();
         yield { type: "thinking_delta", messageId, delta: ev.text };
       } else if (ev.type === "text_delta") {
-        text += ev.text;
-        if (!live) {
-          held += ev.text;
-          continue;
-        }
-        const cut = ev.text.search(HOLD_FROM);
-        if (cut === -1) {
-          yield* show(ev.text);
-        } else {
-          yield* show(ev.text.slice(0, cut));
-          held = ev.text.slice(cut);
-          live = false;
-        }
+        yield* show(live.push(ev.text));
       } else {
         stopReason = ev.stopReason === "max_tokens" ? "max_tokens" : "end_turn";
         break;
       }
     }
     signal.throwIfAborted();
-    return { text, held, live: shown.slice(before), stopReason };
+    return { text: live.text, emitted: live.emitted, stopReason };
   }
 
   /** Ends the turn; `fallback` (a plain sentence, set apart from any lead-in shown) when there is no answer text. */
@@ -135,14 +124,29 @@ export async function* runToolLoop(input: ToolLoopInput): AsyncGenerator<AgentEv
     return stopReason;
   }
 
-  let toolsOff: ToolsOffReason = "step_cap";
-  for (let attempt = 0; attempt < MAX_TOOL_STEPS; attempt++) {
-    const { text, held, live, stopReason } = yield* step();
-    const parsed = parseModelStep(text);
-    if (parsed.kind === "answer") {
-      yield* show(held);
-      return yield* finish(stopReason, `${live}${held}`.trim() === "" ? EMPTY_ANSWER : undefined);
+  /** A final-answer step (#63): show the rest of a valid answer, or feed the error back; null = retry. */
+  function* settle(outcome: FinalStep, stopReason: StopReason): Generator<AgentEvent, StopReason | null> {
+    if (outcome.kind === "retry") {
+      convo.push({ role: "assistant", content: outcome.reply }, { role: "user", content: outcome.feedback });
+      return null;
     }
+    yield* show(outcome.rest);
+    return yield* finish(stopReason, outcome.fallback);
+  }
+
+  let toolsOff: ToolsOffReason = "step_cap";
+  let invalidFinals = 0;
+  for (let attempt = 0; attempt < MAX_TOOL_STEPS; attempt++) {
+    const { text, emitted, stopReason } = yield* step();
+    const parsed = parseModelStep(text);
+    const final = finalAnswerStep(text, emitted, parsed, invalidFinals, input.knownAirport);
+    if (final !== null) {
+      if (final.kind === "retry") invalidFinals++;
+      const done = yield* settle(final, stopReason);
+      if (done !== null) return done;
+      continue;
+    }
+    if (parsed.kind === "answer") continue; // never: a prose step is a final-answer step
 
     // An attempted call, good or bad: one tool card, and one observation for the model.
     yield* endThinking();
@@ -182,9 +186,10 @@ export async function* runToolLoop(input: ToolLoopInput): AsyncGenerator<AgentEv
   const last = convo.at(-1);
   if (last !== undefined && last.role === "user") convo[convo.length - 1] = { role: "user", content: `${last.content}\n\n${renderToolsOff(toolsOff)}` };
   else convo.push({ role: "user", content: renderToolsOff(toolsOff) });
-  const final = yield* step();
-  const answered = parseModelStep(final.text).kind === "answer" && `${final.live}${final.held}`.trim() !== "";
-  if (answered) yield* show(final.held);
-  const fallback = toolsOff === "retries_exhausted" ? GRACEFUL_FALLBACK : stepLimitAnswer(MAX_TOOL_STEPS);
-  return yield* finish(final.stopReason, answered ? undefined : fallback);
+  const lastStep = yield* step();
+  const plain = toolsOff === "retries_exhausted" ? GRACEFUL_FALLBACK : stepLimitAnswer(MAX_TOOL_STEPS);
+  const outcome = finalAnswerStep(lastStep.text, lastStep.emitted, parseModelStep(lastStep.text), Number.POSITIVE_INFINITY, input.knownAirport, plain);
+  if (outcome === null || outcome.kind === "retry") return yield* finish(lastStep.stopReason, plain);
+  yield* show(outcome.rest);
+  return yield* finish(lastStep.stopReason, outcome.fallback);
 }

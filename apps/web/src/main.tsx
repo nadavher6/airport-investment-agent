@@ -5,9 +5,11 @@ import "./styles/tokens.css";
 import "./styles/base.css";
 import { registerVisuals } from "./visuals/registerVisuals";
 import { registerCompare } from "./visuals/compare/registerCompare";
+import { registerCaveats } from "./components/markdown/caveats";
 
 registerVisuals();
 registerCompare();
+registerCaveats();
 
 const root = document.getElementById("root");
 if (!root) throw new Error("#root element missing from index.html");

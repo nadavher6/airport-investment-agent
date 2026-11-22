@@ -6,7 +6,7 @@ import { getFenceRenderer, type FenceRenderer } from "./fences";
 import "./markdown.css";
 
 /** Languages that may become visuals. Anything else is always a plain code block. */
-const VISUAL_FENCES: ReadonlySet<string> = new Set(["chart", "table", "kpi", "compare"]);
+const VISUAL_FENCES: ReadonlySet<string> = new Set(["chart", "table", "kpi", "compare", "caveats"]);
 
 const CLOSING_FENCE = /^ {0,3}(`{3,}|~{3,})\s*$/;
 

@@ -22,7 +22,7 @@ const score100 = finite.check(z.gte(0), z.lte(100));
 const nullable = <T extends z.core.SomeType>(t: T) => z.union([t, z.null()]);
 
 /** #38 KpiEvidence: inputs are named numbers or strings, null when the source has no record. */
-const evidence = z.object({
+export const evidence = z.object({
   formula: z.string(),
   inputs: z.record(z.string(), z.union([finite, z.string(), z.null()])),
   value: nullable(finite),

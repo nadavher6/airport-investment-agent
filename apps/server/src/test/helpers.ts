@@ -85,3 +85,15 @@ export async function collect<T>(iterable: AsyncIterable<T>): Promise<T[]> {
   for await (const item of iterable) items.push(item);
   return items;
 }
+
+/** The summary `finalAnswerJson` uses when none is given (#63). */
+export const TEST_SUMMARY = "Answer.";
+
+/** A valid final-answer reply (#63) for fake main models: `markdown` as the body. */
+export function finalAnswerJson(markdown: string, extra: { summary?: string; airports?: string[]; caveats?: string[] } = {}): string {
+  const { summary = TEST_SUMMARY, ...rest } = extra;
+  return JSON.stringify({ kind: "final_answer", answer: { ...rest, summary, markdown } });
+}
+
+/** What the user sees for `finalAnswerJson(markdown)` with no caveats: the bold summary, then the body. */
+export const shownAnswer = (markdown: string, summary: string = TEST_SUMMARY): string => `**${summary}**\n\n${markdown}`;

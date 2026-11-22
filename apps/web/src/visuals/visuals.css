@@ -120,6 +120,17 @@
   stroke-width: 1;
 }
 
+/* Line annotations (#67, e.g. 2019 baseline / 2020 COVID low): a solid hairline one step off the grid, muted text. */
+.viz-marker line {
+  stroke: var(--line-strong);
+  stroke-width: 1;
+}
+
+.viz-marker__label {
+  fill: var(--ink-3);
+  font-size: 11px;
+}
+
 .viz-hit {
   fill: transparent;
 }

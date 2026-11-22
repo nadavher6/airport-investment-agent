@@ -5,7 +5,7 @@ import { renderToolsForPrompt } from "./tool.ts";
 const ctx = { signal: new AbortController().signal };
 
 describe("tool registry", () => {
-  it("holds the five tools with unique names", () => {
+  it("holds the nine tools (five + the four per-category tools, #61) with unique names", () => {
     const names = TOOLS.map((t) => t.name);
     expect(names).toEqual([
       "get_airport_by_code",
@@ -13,6 +13,10 @@ describe("tool registry", () => {
       "find_airports_by_region",
       "get_enplanements",
       "score_airports",
+      "get_congestion",
+      "get_unmet_demand",
+      "get_long_haul_share",
+      "get_growth",
     ]);
     expect(new Set(names).size).toBe(names.length);
   });

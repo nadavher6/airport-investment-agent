@@ -2,7 +2,7 @@ import { asModelId, type ModelInfo, type ModelProvider } from "@airport/shared";
 import { describe, expect, it, vi } from "vitest";
 import { HttpError } from "../http/errors.ts";
 import { LlmError, type LlmClient, type LlmRequest, type LlmStreamEvent } from "../llm/llmClient.ts";
-import { collect } from "../test/helpers.ts";
+import { collect, finalAnswerJson, shownAnswer } from "../test/helpers.ts";
 import { CLASSIFIER_PROMPT } from "./classifier/prompt.ts";
 import { fakeScoreAirports } from "../test/fakeScoreAirports.ts";
 import { LlmPassthroughAgent } from "./llmPassthroughAgent.ts";
@@ -84,12 +84,13 @@ describe("LlmPassthroughAgent", () => {
     const { client, seen } = fakeClient([
       { type: "thinking_delta", text: "Hmm. " },
       { type: "thinking_delta", text: "Yes." },
-      { type: "text_delta", text: "LAX " },
-      { type: "text_delta", text: "too." },
+      // A final answer (#63) in two chunks: the summary and the markdown body stream as they arrive.
+      { type: "text_delta", text: '{"kind":"final_answer","answer":{"summary":"LAX too.","markdown":"LAX ' },
+      { type: "text_delta", text: 'too."}}' },
       { type: "done", stopReason: "end_turn" },
     ]);
     const events = await runWith(client);
-    // classify_message, then the tool loop's stream (#48): a prose reply is the answer.
+    // classify_message, then the tool loop's stream (#48): a final-answer reply is the answer.
     expect(events.map((e) => e.type)).toEqual([
       "message_start",
       "tool_call",
@@ -109,6 +110,8 @@ describe("LlmPassthroughAgent", () => {
     // The whole history goes to the client, with the tool loop's system prompt (#48).
     expect(seen[0]!.messages).toHaveLength(3);
     expect(seen[0]!.system).toContain("## How to use tools");
+    const text = events.flatMap((e) => (e.type === "text_delta" ? [e.delta] : [])).join("");
+    expect(text).toBe(shownAnswer("LAX too.", "LAX too."));
   });
 
   it("passes max_tokens through and maps other stop reasons to end_turn", async () => {
@@ -125,7 +128,7 @@ describe("LlmPassthroughAgent", () => {
   });
 
   it("turns an LlmError after output started into an error event", async () => {
-    const events = await runWith(fakeClient([{ type: "text_delta", text: "Half" }], new LlmError("internal", "Claude crashed.")).client);
+    const events = await runWith(fakeClient([{ type: "text_delta", text: '{"kind":"final_answer","answer":{"summary":"Half.","markdown":"Half' }], new LlmError("internal", "Claude crashed.")).client);
     expect(events.map((e) => e.type)).toEqual(["message_start", "tool_call", "tool_result", "text_delta", "error"]);
     expect(events.at(-1)).toEqual({ type: "error", error: { code: "internal", message: "Claude crashed." } });
   });
@@ -205,18 +208,18 @@ describe("LlmPassthroughAgent", () => {
 
   it.each(["in_scope"])("still calls the main LLM for the %s label (#21)", async (label) => {
     const { client, seen } = fakeClient(
-      [{ type: "text_delta", text: "From the LLM." }, { type: "done", stopReason: "end_turn" }],
+      [{ type: "text_delta", text: finalAnswerJson("From the LLM.") }, { type: "done", stopReason: "end_turn" }],
       undefined,
       `{"label":"${label}","reason":"x"}`,
     );
     const events = await runWith(client);
     expect(seen).toHaveLength(1);
-    expect(events.filter((e) => e.type === "text_delta")).toEqual([expect.objectContaining({ delta: "From the LLM." })]);
+    expect(events.filter((e) => e.type === "text_delta")).toEqual([expect.objectContaining({ delta: shownAnswer("From the LLM.") })]);
   });
 
   it("runs the classifier first and shows it as classify_message, then streams the answer as before (#13)", async () => {
     const { client, seen, classified } = fakeClient(
-      [{ type: "text_delta", text: "LAX is busy." }, { type: "done", stopReason: "end_turn" }],
+      [{ type: "text_delta", text: finalAnswerJson("LAX is busy.") }, { type: "done", stopReason: "end_turn" }],
       undefined,
       '{"label":"in_scope","reason":"Asks about LAX."}',
     );
@@ -237,7 +240,7 @@ describe("LlmPassthroughAgent", () => {
 
   it("shows in_scope and still answers when the classifier reply is unclear", async () => {
     vi.spyOn(console, "warn").mockImplementation(() => {});
-    const { client, seen } = fakeClient([{ type: "text_delta", text: "a" }, { type: "done", stopReason: "end_turn" }], undefined, "not json");
+    const { client, seen } = fakeClient([{ type: "text_delta", text: finalAnswerJson("a") }, { type: "done", stopReason: "end_turn" }], undefined, "not json");
     const events = await runWith(client);
     expect(events[2]).toMatchObject({ type: "tool_result", result: { ok: true, output: { label: "in_scope" } } });
     expect(seen).toHaveLength(1);
@@ -285,7 +288,7 @@ describe("LlmPassthroughAgent", () => {
   });
 
   it.each(["gemini", "claude-headless"] as const)("sends a %s model's turn to that provider's client", async (provider) => {
-    const { client, seen } = fakeClient([{ type: "text_delta", text: "Hi" }, { type: "done", stopReason: "end_turn" }]);
+    const { client, seen } = fakeClient([{ type: "text_delta", text: finalAnswerJson("Hi") }, { type: "done", stopReason: "end_turn" }]);
     const events = await runWith(client, provider);
     expect(events.map((e) => e.type)).toEqual(["message_start", "tool_call", "tool_result", "text_delta", "message_end"]);
     expect(seen).toHaveLength(1);

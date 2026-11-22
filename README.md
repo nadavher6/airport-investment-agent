@@ -76,19 +76,35 @@ message `greeting`, `capabilities`, `off_topic`, `in_scope` (the fallback) or `g
 
 - `greeting`, `capabilities` and `off_topic`: the agent streams one fixed answer (`apps/server/src/agent/responses/greeting.ts`, `capabilities.ts`, `offTopic.ts`) as a single `text_delta` and does not call the main model (off_topic covers prompt injection). The off_topic answer suggests one of the 15 `OFF_TOPIC_SUGGESTIONS`, picked at random.
 - `in_scope` and `grading`: the agent runs a ReAct tool loop (`agent/flow/toolLoop.ts`, #48) with every registry
-  tool: `get_airport_by_code`, `find_airports_by_city`, `find_airports_by_region`, `get_enplanements` and
-  `score_airports`. The model calls one tool per step as a JSON object in its text; each call is shown as a
+  tool: `get_airport_by_code`, `find_airports_by_city`, `find_airports_by_region`, `get_enplanements`,
+  `score_airports` and the four per-category tools `get_congestion`, `get_unmet_demand`, `get_long_haul_share` and
+  `get_growth` (#61: one category of the score for 1-5 airports, always scored against all US airports, so equal to `score_airports` with one code; with 2+ codes `score_airports` rescales growth relative to the set). The model calls one tool per step as a JSON object in its text; each call is shown as a
   `tool_call`/`tool_result` pair, at most 6, then the model answers. Each step may start with thinking and a short
   lead-in, hence the repeat group in the order above. Tool JSON is never streamed. `score_airports` with more than
   5 codes does not run: the model gets the error "max 5 airports; pick the 5 most relevant" back. The loop's system
   prompt (`agent/prompts/toolLoop.ts`) holds the owner's scoring rule (score with `score_airports`, never rank from
-  memory), the compare skill (`agent/skills/compare.md`) and, for `grading`, the grading skill
+  memory), the answer-scope rule (#64, with #61: a question about ONE factor goes to that factor's tool, not
+  `score_airports`, and is answered about that factor only),
+  the compare skill (`agent/skills/compare.md`) and, for `grading`, the grading skill
   (`agent/skills/grading.md`). A failed tool is a `tool_result` with `ok: false`.
   Guardrails (#49): a call that cannot be read, has the wrong shape, names an unknown tool, has invalid input, fails
   in the tool or repeats an earlier call is never thrown. It is a `tool_call` + `tool_result` with `ok: false` and a
   short `errorMessage` ending with the code, e.g. `(invalid_input)`, so the UI shows a failed tool card (no contract
   change). The model gets the error with the tool's input JSON Schema and may retry at most 2 times in a row;
-  attempts count toward the 6. Then it answers in prose without tools.
+  attempts count toward the 6. Then tools are switched off and it gives its final answer.
+  Final answer (#63, `agent/finalAnswer.ts`): the model's final reply must be exactly one JSON object
+  `{"kind": "final_answer", "answer": {"summary", "markdown", "airports"?, "caveats"?}}` (zod, strict: no extra keys,
+  summary at most 400 characters, markdown at most 12k, at most 6 caveats, every airport code in the data). The user
+  never sees that JSON: the server streams the summary in bold, then the markdown body, as `text_delta`s while the
+  JSON arrives (incrementally, `agent/finalAnswerStream.ts`), then the caveats as a ```` ```caveats ```` fence the
+  web app draws as a small muted list. No contract change, and the event order above is unchanged. Nothing else of
+  a step's text is streamed (a lead-in before a tool call is not shown). An invalid final answer (prose, bad JSON, a
+  missing or extra key, the wrong `kind`, an over-limit field, an unknown airport, text around the object) gets a
+  delimited `FINAL_ANSWER_ERROR` block with the JSON Schema and is retried at most 2 times; after that the user gets
+  the reply as Markdown (prose, or the text the broken JSON holds, never raw JSON) with a short "Unformatted answer"
+  note, or a plain sentence when nothing safe is left. A failure found after text was already streamed (a cut-off
+  reply, or an extra key after the markdown) is not retried, so the answer is never shown twice: the text stays and
+  the note is added.
 
 The classify step is held until the main model's first event, so a main model that fails to start is still a normal pre-stream error. If the classifier's LLM call itself fails (an API or transport error, not a bad label), it is tried up to 3 times in total with a 0.5 s then 1 s backoff (an abort stops it at once); after the 3rd failure the turn ends with a pre-stream `503 model_unavailable` error ("The classifier is unavailable right now. Please try again.") and the main model is not called. There is no silent `in_scope` fallback for a failed call.
 
