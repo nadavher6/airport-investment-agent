@@ -16,6 +16,8 @@ export const LIMITS = {
   label: 60,
   unit: 30,
   cell: 200,
+  /** Largest |number| accepted: keeps axis maths exact and ticks bounded. */
+  magnitude: 1e15,
   /** Characters of fence body we even try to parse. */
   body: 100_000,
 } as const;
@@ -24,7 +26,10 @@ export type FenceLang = "chart" | "table" | "kpi";
 export const FENCE_LANGS: readonly FenceLang[] = ["chart", "table", "kpi"];
 
 /** z.number() already rejects NaN and ±Infinity in zod 4; the message says so. */
-const finite = z.number({ error: "must be a finite number" });
+const finite = z.number({ error: "must be a finite number" }).check(
+  z.gte(-LIMITS.magnitude, { error: `must be at least -${LIMITS.magnitude}` }),
+  z.lte(LIMITS.magnitude, { error: `must be at most ${LIMITS.magnitude}` }),
+);
 const text = (max: number) => z.string().check(z.trim(), z.minLength(1), z.maxLength(max));
 const list = <T extends z.core.SomeType>(item: T, max: number, min = 1) =>
   z.array(item).check(z.minLength(min), z.maxLength(max));
@@ -36,7 +41,9 @@ const point = z.tuple([xValue, finite]);
 
 const lineSeries = z.object({
   name: text(LIMITS.label),
-  points: list(point, LIMITS.points),
+  points: list(point, LIMITS.points).check(
+    z.refine((pts) => new Set(pts.map((p) => p[0])).size === pts.length, { error: "has duplicate x values" }),
+  ),
 });
 
 export const lineSpec = z.object({

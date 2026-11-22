@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { LIMITS, parseVisual, validateSpec } from "./spec";
-import { formatCompact, formatX, niceScale } from "./format";
+import { MAX_TICKS, formatCompact, formatX, niceScale } from "./format";
 import { DEMO_FENCES } from "./demo/faaDemo";
 
 const line = { type: "line", title: "LAX", x: "year", unit: "passengers", series: [{ name: "LAX", points: [[2015, 36351272], [2024, 37760834]] }] };
@@ -92,5 +92,55 @@ describe("format", () => {
     expect(s.max).toBeGreaterThanOrEqual(53505795);
     expect(s.ticks[0]).toBe(0);
     expect(niceScale([5, 5], 5, false).max).toBeGreaterThan(5);
+  });
+});
+
+describe("niceScale is bounded", () => {
+  const cases: Array<[string, number[]]> = [
+    ["1e17 to 1e17+16", Array.from({ length: 17 }, (_, i) => 1e17 + i)],
+    ["1e17 and 1e17+16", [1e17, 1e17 + 16]],
+    ["-1e308 and 1e308", [-1e308, 1e308]],
+    ["all equal", [7, 7, 7]],
+    ["all equal zero", [0, 0]],
+    ["a single point", [42]],
+    ["a single huge point", [1e300]],
+    ["empty", []],
+  ];
+  it.each(cases)("%s: quick, bounded ticks, finite numbers, no throw", (_name, values) => {
+    for (const includeZero of [true, false]) {
+      const t0 = Date.now();
+      const s = niceScale(values, 5, includeZero);
+      expect(Date.now() - t0).toBeLessThan(200);
+      expect(s.ticks.length).toBeGreaterThan(0);
+      expect(s.ticks.length).toBeLessThanOrEqual(MAX_TICKS);
+      expect([s.min, s.max, ...s.ticks].every(Number.isFinite)).toBe(true);
+      expect(s.min).toBeLessThan(s.max);
+    }
+  });
+
+  it("caps the tick count even when asked for more", () => {
+    expect(niceScale([0, 1e6], 500, true).ticks.length).toBeLessThanOrEqual(MAX_TICKS);
+  });
+
+  it("ignores NaN and Infinity instead of looping", () => {
+    expect(niceScale([NaN, Infinity, 3], 5, true).ticks.length).toBeLessThanOrEqual(MAX_TICKS);
+  });
+});
+
+describe("spec magnitude and duplicate x", () => {
+  const withValue = (v: number) => JSON.stringify({ ...line, series: [{ name: "A", points: [[2020, v], [2021, 1]] }] });
+  it("rejects |value| above 1e15 with a reason, and accepts exactly 1e15", () => {
+    const r = parseVisual("chart", withValue(1e17));
+    expect(r.ok).toBe(false);
+    expect(r.ok ? "" : r.reason).toMatch(/at most/);
+    expect(parseVisual("chart", withValue(-1e308)).ok).toBe(false);
+    expect(parseVisual("chart", withValue(1e15)).ok).toBe(true);
+  });
+
+  it("rejects a line series with duplicate x values, with a reason", () => {
+    const dup = { ...line, series: [{ name: "A", points: [[2020, 1], [2020, 2], [2021, 3]] }] };
+    const r = parseVisual("chart", JSON.stringify(dup));
+    expect(r.ok).toBe(false);
+    expect(r.ok ? "" : r.reason).toMatch(/duplicate x/);
   });
 });
