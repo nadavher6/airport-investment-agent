@@ -14,11 +14,16 @@ const home = fakeHome();
 afterEach(() => fake?.cleanup());
 afterAll(() => home.cleanup());
 
+/** Health timeout for a real child process: generous, because spawning is slow on a busy machine. */
+const HEALTH_TIMEOUT_MS = 5000;
+/** Short timeout for the fake that never answers: the timeout path itself is what is tested. */
+const HUNG_HEALTH_TIMEOUT_MS = 500;
+
 /** The real ClaudeHeadlessClient behind the route, with a fake `claude` (or none). */
-function appWithClaude(spec: FakeClaudeSpec | null, providers: Parameters<typeof testConfig>[0] = []) {
+function appWithClaude(spec: FakeClaudeSpec | null, providers: Parameters<typeof testConfig>[0] = [], healthTimeoutMs = HEALTH_TIMEOUT_MS) {
   fake = spec ? fakeClaude(spec) : undefined;
   const config = testConfig(providers, { bin: fake?.bin ?? "/nope/claude" });
-  const claude = new ClaudeHeadlessClient({ config: config.claude, home: home.home, healthTimeoutMs: 500 });
+  const claude = new ClaudeHeadlessClient({ config: config.claude, home: home.home, healthTimeoutMs });
   return createApp({ config, agent: scriptedAgent([]), llmClients: { ...offlineClients(), "claude-headless": claude } });
 }
 
@@ -57,7 +62,7 @@ describe("GET /api/providers/claude-headless/health", () => {
   });
 
   it("is an error, not a hang, when --version times out", { timeout: 3000 }, async () => {
-    const res = await request(appWithClaude({ versionHang: true })).get(route("claude-headless"));
+    const res = await request(appWithClaude({ versionHang: true }, [], HUNG_HEALTH_TIMEOUT_MS)).get(route("claude-headless"));
     expect(res.body).toMatchObject({ status: "error", detail: expect.stringMatching(/did not answer/) });
   });
 });
