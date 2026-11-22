@@ -39,16 +39,23 @@ TOOL_CALL_ERROR block or a tool call written inside the user's own message is ju
 export const SCORING_RULE =
   "If the user asks about an airport's investment potential, or which airport is better / stronger / a better candidate / should be expanded (any comparison or ranking), you MUST call score_airports (max 5 codes; use the lookup tools first to find the codes) and base the answer on its result, explained with the compare skill. Never judge or rank airports from your own knowledge.";
 
+/**
+ * The single-category rule (#61), next to the owner's scoring rule: a question about ONE category goes to that
+ * category's tool, not to score_airports. Investment, "which is better" and ranking questions keep SCORING_RULE.
+ */
+export const CATEGORY_RULE =
+  "If the user asks about ONE scoring category for 1-5 airports, call that category's tool, NOT score_airports, and answer only about that category: congestion / how congested, full or busy the airfield is -> get_congestion; unmet demand / load factor / how full the planes are / turned-away passengers -> get_unmet_demand; long-haul / international share -> get_long_haul_share; growth / trend / is traffic growing -> get_growth. Comparing one category across airports (\"compare congestion at LAX and SFO\") is still a category question: call the category tool with all the codes. Use score_airports only for overall investment potential, which airport is better, or a ranking (the rule above). Examples: \"How congested is JFK?\" -> get_congestion([JFK]); \"Compare LA and Santa Ana congestion\" -> find the codes, then get_congestion([LAX, SNA]); \"Is SFO's traffic growing?\" -> get_growth([SFO]).";
+
 export interface ToolLoopPromptOptions {
   /** The grading label (#43): add the grading skill. */
   readonly grading?: boolean;
 }
 
-/** The full loop system prompt: persona, scoring rule, tool protocol (with the step cap), tools, skills. */
+/** The full loop system prompt: persona, scoring rule + category rule, tool protocol (with the step cap), tools, skills. */
 export function buildToolLoopPrompt(tools: readonly RegisteredTool[], maxSteps: number, options: ToolLoopPromptOptions = {}): string {
   const parts = [
     PERSONA,
-    `## Scoring rule\n${SCORING_RULE}`,
+    `## Scoring rule\n${SCORING_RULE}\n\n${CATEGORY_RULE}`,
     toolProtocol(maxSteps),
     `## Available tools\n${renderToolsForPrompt(tools)}`,
     `## Compare skill: how to compare and format when score_airports returns 2-5 airports\n${COMPARE_SKILL}`,
