@@ -1,4 +1,16 @@
-import { asModelId, MAX_CONTENT_LENGTH, MAX_TURNS, type ChatRequest, type ChatTurn, type Role } from "@airport/shared";
+import {
+  asConversationId,
+  asModelId,
+  CONVERSATION_ID_PATTERN,
+  MAX_CONTENT_LENGTH,
+  MAX_CONVERSATION_ID_LENGTH,
+  MAX_TURNS,
+  MIN_CONVERSATION_ID_LENGTH,
+  type ChatRequest,
+  type ChatTurn,
+  type ConversationId,
+  type Role,
+} from "@airport/shared";
 import { HttpError } from "./errors.ts";
 
 const ROLES: readonly Role[] = ["user", "assistant"];
@@ -27,10 +39,22 @@ function parseTurn(value: unknown, index: number): ChatTurn {
   return { role, content };
 }
 
+/** The optional conversationId (#50): absent, or an unguessable string (16-64 letters, digits, "-" or "_"). */
+function parseConversationId(value: unknown): ConversationId | undefined {
+  if (value === undefined) return undefined;
+  if (typeof value !== "string" || value.length < MIN_CONVERSATION_ID_LENGTH || value.length > MAX_CONVERSATION_ID_LENGTH || !CONVERSATION_ID_PATTERN.test(value)) {
+    throw new HttpError(
+      "bad_request",
+      `conversationId must be ${MIN_CONVERSATION_ID_LENGTH}-${MAX_CONVERSATION_ID_LENGTH} characters of letters, digits, "-" or "_"`,
+    );
+  }
+  return asConversationId(value);
+}
+
 /** Narrows an untrusted JSON body to a ChatRequest, or throws a 400. */
 export function validateChatRequest(body: unknown): ChatRequest {
   if (!isRecord(body)) throw new HttpError("bad_request", "Body must be a JSON object");
-  const { modelId, messages } = body;
+  const { modelId, messages, conversationId: rawConversationId } = body;
 
   if (typeof modelId !== "string" || modelId === "") {
     throw new HttpError("bad_request", "modelId must be a non-empty string");
@@ -46,5 +70,6 @@ export function validateChatRequest(body: unknown): ChatRequest {
   if (turns.at(-1)?.role !== "user") {
     throw new HttpError("bad_request", "The last message must have role \"user\"");
   }
-  return { modelId: asModelId(modelId), messages: turns };
+  const conversationId = parseConversationId(rawConversationId);
+  return { modelId: asModelId(modelId), messages: turns, ...(conversationId !== undefined ? { conversationId } : {}) };
 }

@@ -100,7 +100,16 @@ of both saturating at 100); a **single** airport is scored *absolute* vs. all US
      are switched off (`TOOLS_DISABLED`) and the model answers in prose, or a plain sentence is shown.
    - **Step cap:** at most 6 tool attempts (invalid ones and retries count), then one call that must answer in prose;
      if it still does not, a plain "limit reached" sentence. The answer is never empty. An abort stops at once.
-   - **Memory** is not wired in yet (#50: it needs a conversation id in the contract).
+   - **Memory (#50)** is keyed ONLY by the optional `conversationId` in `ChatRequest` (the web app mints one per
+     chat with `crypto.randomUUID()`, or a UUID v4 from `crypto.getRandomValues` over plain http; the server requires 16-64 characters of `[A-Za-z0-9_-]`, so the id is an unguessable bearer secret); never by message content, so two chats that start with the same text never
+     share data. With no id there is no memory at all (no reads, no writes). Per chat it keeps the tool results by
+     airport code (`get_enplanements`, `get_airport_by_code`, the per-airport `score_airports` entries), a focus
+     stack and the last ranked list (`agent/memory/conversationMemory.ts`). Each turn, `resolveFocus` +
+     `selectFocusedRecords` pick at most 4 records (the codes named or referred to, then the recent focus) and
+     they go into the loop's system prompt as "Airport data in focus". A `get_enplanements` or `score_airports`
+     call with the same airport codes as an earlier one in the chat returns the cached output without running
+     the tool (no re-fetch). **Bounds:** at most 200 chats (least recently used evicted), 1 hour TTL since the
+     chat's last turn, 50 airport records and 20 cached outputs per chat. It is in-process: a restart forgets it. The cache sits INSIDE the guard (it wraps `tool.run`, which `runGuarded` calls last), so a cached call is still checked for `unknown_tool`, `repeat_call` and `invalid_input` first, and a cache hit is an ordinary success: it is recorded in the turn's `seen` set once, so asking for it again in the same turn is a `repeat_call`, while the same call in a later turn (new `seen`) is served from the cache with no error and no retry.
 
 This replaced #42's fixed candidates -> resolve -> score pipeline: the owner chose one model-driven loop, with
 the 5-airport cap and the scoring rule as the guardrails.

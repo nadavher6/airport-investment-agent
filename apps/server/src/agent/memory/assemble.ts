@@ -62,7 +62,7 @@ export function buildMemorySystemBlock(systemPrompt: string, parts: MemoryBlockP
   if (parts.focusedRecords && parts.focusedRecords.length > 0) {
     const byId: Record<string, AirportRecord> = {};
     for (const r of parts.focusedRecords) byId[r.airportCode] = r;
-    sections.push(`## Airport data in focus (use only this data; do not fabricate)\n${JSON.stringify(byId)}`);
+    sections.push(`## Airport data in focus (earlier tool results in this conversation: use them instead of calling the same tool again; do not fabricate)\n${JSON.stringify(byId)}`);
   }
   return sections.length > 0 ? `${systemPrompt}\n\n${sections.join("\n\n")}` : systemPrompt;
 }
