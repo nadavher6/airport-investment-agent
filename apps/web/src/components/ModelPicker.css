@@ -57,6 +57,9 @@
 .provider-dot[data-provider="openrouter"] {
   background: var(--provider-openrouter);
 }
+.provider-dot[data-provider="claude-headless"] {
+  background: var(--provider-claude-headless);
+}
 
 /* Opens upward: the picker lives in the composer at the bottom of the screen. */
 .model-picker__list {

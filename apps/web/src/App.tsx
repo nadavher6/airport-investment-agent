@@ -18,6 +18,7 @@ export function App() {
   const connection = useHealth();
   const models = useModels();
   const chat = useChat(models.selected?.id ?? null);
+  const checkingModel = models.check.status === "checking";
   const composerRef = useRef<ComposerHandle>(null);
   const isEmpty = chat.messages.length === 0;
   // The empty state is a landing page: don't pin it to the bottom.
@@ -51,6 +52,8 @@ export function App() {
     <div className="app">
       <TopBar
         connection={connection}
+        selectedModel={models.selected}
+        modelCheck={models.check}
         theme={theme}
         onToggleTheme={toggleTheme}
         canReset={!isEmpty}
@@ -78,8 +81,16 @@ export function App() {
           {models.noneAvailable && (
             <div className="notice notice--info" role="status">
               <span className="notice__code">setup</span>
-              No model is available. Set GEMINI_API_KEY, GROQ_API_KEY or OPENROUTER_API_KEY in .env and restart the
-              server.
+              No model is available. Set GEMINI_API_KEY, GROQ_API_KEY or OPENROUTER_API_KEY in .env, or install
+              Claude Code (or set CLAUDE_BIN), and restart the server.
+            </div>
+          )}
+
+          {models.check.status === "failed" && (
+            <div className="notice notice--error" role="alert">
+              <span className="notice__code">{models.check.model.provider}</span>
+              Couldn't switch to {models.check.model.label}: {models.check.message}
+              {models.selected ? ` Still using ${models.selected.label}.` : ""}
             </div>
           )}
 
@@ -95,7 +106,7 @@ export function App() {
       <Composer
         ref={composerRef}
         isStreaming={chat.isStreaming}
-        canSend={models.selected !== null}
+        canSend={models.selected !== null && !checkingModel}
         onSend={send}
         onStop={chat.stop}
         toolbar={
@@ -103,7 +114,7 @@ export function App() {
             state={models.state}
             selected={models.selected}
             onSelect={models.select}
-            disabled={chat.isStreaming}
+            disabled={chat.isStreaming || checkingModel}
           />
         }
       />
