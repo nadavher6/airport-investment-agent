@@ -101,6 +101,25 @@ describe("chatReducer", () => {
     expect(state.lastError).toEqual(error);
   });
 
+  it("marks the user's message unsent when the request fails before any reply", () => {
+    const error = { code: "bad_request" as const, message: "Bad" };
+    const state = chatReducer(chatReducer(initialChatState, sent), { type: "stream_failed", error });
+    expect(state.messages[0]!.status).toBe("error");
+  });
+
+  it("leaves the user's message sent when the failure comes after the reply started", () => {
+    const error = { code: "internal" as const, message: "The agent failed mid-response" };
+    const state = run([fullRun[0]!, { type: "error", error }]);
+    expect(state.messages[0]!.status).toBe("complete");
+    expect(assistant(state).status).toBe("error");
+  });
+
+  it("ignores an event type it doesn't know instead of crashing", () => {
+    const before = run(fullRun.slice(0, 2));
+    const unknown = { type: "usage", messageId: MSG, tokens: 12 } as unknown as AgentEvent;
+    expect(chatReducer(before, { type: "agent_event", event: unknown })).toBe(before);
+  });
+
   it("stream_ended is a no-op after a proper message_end", () => {
     const done = run(fullRun);
     expect(chatReducer(done, { type: "stream_ended" })).toBe(done);

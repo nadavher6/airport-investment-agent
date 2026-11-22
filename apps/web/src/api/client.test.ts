@@ -63,6 +63,25 @@ describe("api client", () => {
     expect(init).toMatchObject({ method: "POST", body: JSON.stringify(request) });
   });
 
+  it("streamChat skips event types it doesn't know, with a warning, and keeps streaming", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const unknown = { type: "usage", tokens: 12 } as unknown as AgentEvent;
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(sse([fullRun[0]!, unknown, ...fullRun.slice(1)]));
+
+    expect(await drain(api.streamChat(request, new AbortController().signal))).toEqual(fullRun);
+    expect(warn).toHaveBeenCalledOnce();
+  });
+
+  it("streamChat reports a malformed frame as a bad response, not a connection problem", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(`data: ${JSON.stringify(fullRun[0])}\n\ndata: {not json\n\n`, {
+        headers: { "Content-Type": "text/event-stream" },
+      }),
+    );
+    const err = await caught(drain(api.streamChat(request, new AbortController().signal)));
+    expect(err.apiError).toEqual({ code: "internal", message: "The server sent a malformed response." });
+  });
+
   it("streamChat throws before yielding when the server rejects the request", async () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValue(json({ error: { code: "bad_request", message: "Bad" } }, 400));
     const err = await caught(drain(api.streamChat(request, new AbortController().signal)));
