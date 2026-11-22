@@ -13,6 +13,11 @@ const textLine = (text: string) =>
   JSON.stringify({ type: "stream_event", event: { type: "content_block_delta", delta: { type: "text_delta", text } } });
 const authError = JSON.stringify({ type: "result", subtype: "success", is_error: true, result: "Not logged in · Please run /login" });
 
+/** Health timeout for a real child process: generous, because spawning is slow on a busy machine. */
+const HEALTH_TIMEOUT_MS = 5000;
+/** Short timeout for the fake that never answers: the timeout path itself is what is tested. */
+const HUNG_HEALTH_TIMEOUT_MS = 500;
+
 let cleanups: (() => void)[] = [];
 afterEach(() => {
   for (const cleanup of cleanups) cleanup();
@@ -24,14 +29,14 @@ afterEach(() => {
 function clientWith(
   spec: FakeClaudeSpec | null,
   claude: Parameters<typeof testConfig>[1] = {},
-  options: Partial<Pick<ClaudeHeadlessOptions, "idleTimeoutMs">> = {},
+  options: Partial<Pick<ClaudeHeadlessOptions, "idleTimeoutMs" | "healthTimeoutMs">> = {},
 ) {
   const home = fakeHome();
   cleanups.push(home.cleanup);
   const fake = spec ? fakeClaude({ projectsRoot: home.projectsRoot, ...spec }) : undefined;
   if (fake) cleanups.push(fake.cleanup);
   const config = testConfig([], { bin: fake?.bin ?? "/nope/claude", ...claude }).claude;
-  const client = new ClaudeHeadlessClient({ config, home: home.home, killGraceMs: 200, healthTimeoutMs: 500, ...options });
+  const client = new ClaudeHeadlessClient({ config, home: home.home, killGraceMs: 200, healthTimeoutMs: HEALTH_TIMEOUT_MS, ...options });
   return { fake: fake!, client, home };
 }
 
@@ -261,7 +266,7 @@ describe("ClaudeHeadlessClient", () => {
     });
 
     it("is an error, not a hang, when --version times out", { timeout: 3000 }, async () => {
-      const health = await clientWith({ versionHang: true }).client.health();
+      const health = await clientWith({ versionHang: true }, {}, { healthTimeoutMs: HUNG_HEALTH_TIMEOUT_MS }).client.health();
       expect(health).toMatchObject({ status: "error", detail: expect.stringMatching(/did not answer/) });
     });
   });
