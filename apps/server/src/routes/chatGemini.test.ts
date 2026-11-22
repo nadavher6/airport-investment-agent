@@ -29,11 +29,14 @@ describe("POST /api/chat with gemini", () => {
     const { app, urls } = wiredApp(200, sse(["Good candidates ", "are congested."]));
     const res = await request(app).post(API_ROUTES.chat).send(body).expect(200);
     const events = parseSse(res.text);
-    expect(events.map((e) => e.type)).toEqual(["message_start", "tool_call", "tool_result", "text_delta", "text_delta", "message_end"]);
+    // classify_message, then pick_candidates (#42), then the answer.
+    expect(events.map((e) => e.type)).toEqual(["message_start", "tool_call", "tool_result", "tool_call", "tool_result", "text_delta", "text_delta", "message_end"]);
     expect(events.flatMap((e) => (e.type === "text_delta" ? [e.delta] : [])).join("")).toBe("Good candidates are congested.");
-    // The fake replies plain text, so the classify step (#13, fast model) retries once (#19), then the answer (main model) (#17).
+    // The fake replies plain text, so the classify step (#13, fast model) retries once (#19), the candidate step (#42,
+    // fast model) retries once and falls back to no candidates, then the answer (main model) (#17).
     const url = (model: string) => `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse`;
-    expect(urls).toEqual([url("gemini-flash-lite-latest"), url("gemini-flash-lite-latest"), url("gemini-3.5-flash")]);
+    const fast = url("gemini-flash-lite-latest");
+    expect(urls).toEqual([fast, fast, fast, fast, url("gemini-3.5-flash")]);
   });
 
   // #22: the classifier call fails first, is tried 3 times (real 0.5 s + 1 s backoff here), and the turn ends with
