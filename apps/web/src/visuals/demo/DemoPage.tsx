@@ -13,9 +13,11 @@ export function DemoPage() {
       body: JSON.stringify({ type: "pie", title: "Share, CY2024", items: [{ label: "ATL", value: 52511402 }, { label: "LAX", value: 37760834 }] }),
     },
   ];
+  // ?only=compare shows just the #39 comparison (for screenshots).
+  const onlyCompare = new URLSearchParams(location.search).get("only") === "compare";
   return (
     <main style={{ maxWidth: "var(--column)", margin: "0 auto", padding: "var(--space-5)" }}>
-      {[...DEMO_FENCES, ...broken].map((f) => (
+      {(onlyCompare ? [] : [...DEMO_FENCES, ...broken]).map((f) => (
         <section key={f.title}>
           <h2 style={{ fontSize: "var(--text-sm)", color: "var(--ink-3)", fontWeight: 500 }}>{f.title}</h2>
           {renderVisual(f.lang)(f.body)}

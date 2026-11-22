@@ -158,13 +158,18 @@ describe("compare.css", () => {
     expect(css).not.toMatch(/#[0-9a-f]{3,8}\b/i);
   });
 
-  it("is two equal columns when wide, and stacks below 720px of its own width", () => {
-    expect(rule(".viz-compare")).toMatch(/container-type: inline-size/);
-    expect(rule(".viz-compare__grid")).toMatch(/repeat\(var\(--cmp-cols, 2\), minmax\(0, 1fr\)\)/);
-    const narrow = css.slice(css.indexOf("@container (max-width: 719px)"));
-    expect(narrow.length).toBeLessThan(css.length);
-    expect(rule(".viz-compare__grid", narrow)).toMatch(/grid-template-columns: minmax\(0, 1fr\)/);
-    expect(rule(".viz-compare__grid > *", narrow)).toMatch(/order: var\(--cmp-order\)/);
-    expect(rule(".viz-compare__cell-label", narrow)).toMatch(/display: block/);
-  });
+  it.each(["@media (max-width: 719px)", "@container (max-width: 559px)"])(
+    "is two equal columns when wide, and stacks under %s",
+    (query) => {
+      expect(rule(".viz-compare")).toMatch(/container-type: inline-size/);
+      expect(rule(".viz-compare__grid")).toMatch(/repeat\(var\(--cmp-cols, 2\), minmax\(0, 1fr\)\)/);
+      const at = css.indexOf(query);
+      expect(at).toBeGreaterThan(0);
+      const narrow = css.slice(at);
+      expect(rule(".viz-compare__grid", narrow)).toMatch(/grid-template-columns: minmax\(0, 1fr\)/);
+      expect(rule(".viz-compare__grid > *", narrow)).toMatch(/order: var\(--cmp-order\)/);
+      expect(rule(".viz-compare__label", narrow)).toMatch(/display: none/);
+      expect(rule(".viz-compare__cell-label", narrow)).toMatch(/display: block/);
+    },
+  );
 });

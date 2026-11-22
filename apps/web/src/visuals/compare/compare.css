@@ -67,8 +67,36 @@
   margin-bottom: 0;
 }
 
-/* Narrow: stack the columns (all of A, then all of B) and repeat the row label in each cell. */
-@container (max-width: 719px) {
+/*
+ * Narrow: stack the columns (all of A, then all of B) and repeat the row label in each cell.
+ * Two triggers with the same rules: a narrow screen (< 720px, the issue's breakpoint), or a
+ * comparison box under 560px wide (each column would be under ~260px), wherever it sits.
+ */
+@media (max-width: 719px) {
+  .viz-compare__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .viz-compare__grid > * {
+    grid-row: auto;
+    grid-column: 1;
+    order: var(--cmp-order);
+  }
+
+  .viz-compare__label {
+    display: none;
+  }
+
+  .viz-compare__cell-label {
+    display: block;
+  }
+
+  .viz-compare__head:not(:first-child) {
+    margin-top: var(--space-6);
+  }
+}
+
+@container (max-width: 559px) {
   .viz-compare__grid {
     grid-template-columns: minmax(0, 1fr);
   }
