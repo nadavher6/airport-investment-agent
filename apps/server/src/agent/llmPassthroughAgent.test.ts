@@ -6,7 +6,13 @@ import { collect } from "../test/helpers.ts";
 import { CLASSIFIER_PROMPT } from "./classifier/prompt.ts";
 import { LlmPassthroughAgent } from "./llmPassthroughAgent.ts";
 import { CAPABILITIES_ANSWER } from "./responses/capabilities.ts";
-import { OFF_TOPIC_ANSWER } from "./responses/offTopic.ts";
+import { GREETING_ANSWER } from "./responses/greeting.ts";
+import { OFF_TOPIC_INTRO, OFF_TOPIC_SUGGESTIONS, offTopicAnswer } from "./responses/offTopic.ts";
+
+/** A fixed rng that picks suggestion `i` of OFF_TOPIC_SUGGESTIONS (#44). */
+const rngFor = (i: number) => () => (i + 0.5) / OFF_TOPIC_SUGGESTIONS.length;
+/** The off_topic answer with the tests' default rng (suggestion 0). */
+const OFF_TOPIC_ANSWER = offTopicAnswer(rngFor(0));
 
 const modelOf = (provider: ModelProvider): ModelInfo => ({
   id: asModelId(`${provider}-model`),
@@ -53,10 +59,10 @@ const unused: LlmClient = {
   },
 };
 
-const runWith = (client: LlmClient, provider: ModelProvider = "claude-headless", signal = new AbortController().signal) => {
+const runWith = (client: LlmClient, provider: ModelProvider = "claude-headless", signal = new AbortController().signal, rng = rngFor(0)) => {
   const clients: Record<ModelProvider, LlmClient> = { "claude-headless": unused, gemini: unused };
   clients[provider] = client;
-  const agent = new LlmPassthroughAgent(clients);
+  const agent = new LlmPassthroughAgent(clients, undefined, { rng });
   const history = [
     { role: "user" as const, content: "Rank SFO" },
     { role: "assistant" as const, content: "It is busy." },
@@ -159,11 +165,36 @@ describe("LlmPassthroughAgent", () => {
         signal: new AbortController().signal,
       }),
     );
-    expect(events.flatMap((e) => (e.type === "text_delta" ? [e.delta] : [])).join("")).toBe(OFF_TOPIC_ANSWER);
+    // The default rng is Math.random: the answer is the fixed intro plus one of the listed suggestions.
+    const text = events.flatMap((e) => (e.type === "text_delta" ? [e.delta] : [])).join("");
+    expect(text.startsWith(OFF_TOPIC_INTRO)).toBe(true);
+    expect(OFF_TOPIC_SUGGESTIONS.some((s) => text === `${OFF_TOPIC_INTRO}\nTry something like *"${s}"*`)).toBe(true);
     expect(seen).toHaveLength(0);
   });
 
-  it.each(["greeting", "in_scope"])("still calls the main LLM for the %s label (#21)", async (label) => {
+  it("answers a greeting with exactly the fixed text, like the other static answers, and never calls the main LLM (#44)", async () => {
+    const { client, seen, classified } = fakeClient(
+      [{ type: "text_delta", text: "Hiiii! What can I help you with today?" }, { type: "done", stopReason: "end_turn" }],
+      new LlmError("internal", "the main LLM must not be called"),
+      '{"label":"greeting","reason":"Says hello."}',
+    );
+    const events = await runWith(client);
+    expect(events.map((e) => e.type)).toEqual(["message_start", "tool_call", "tool_result", "text_delta", "message_end"]);
+    expect(events[2]).toMatchObject({ type: "tool_result", result: { ok: true, output: { label: "greeting" } } });
+    expect(events.flatMap((e) => (e.type === "text_delta" ? [e.delta] : [])).join("")).toBe(GREETING_ANSWER);
+    expect(classified).toHaveLength(1);
+    expect(seen).toHaveLength(0);
+  });
+
+  it.each(OFF_TOPIC_SUGGESTIONS.map((s, i) => [i, s] as const))("off_topic with a fixed rng picks suggestion %i (#44)", async (i, suggestion) => {
+    const { client, seen } = fakeClient([{ type: "text_delta", text: "x" }, { type: "done", stopReason: "end_turn" }], undefined, '{"label":"off_topic","reason":"Weather."}');
+    const events = await runWith(client, "claude-headless", new AbortController().signal, rngFor(i));
+    const text = events.flatMap((e) => (e.type === "text_delta" ? [e.delta] : [])).join("");
+    expect(text).toBe(`${OFF_TOPIC_INTRO}\nTry something like *"${suggestion}"*`);
+    expect(seen).toHaveLength(0);
+  });
+
+  it.each(["in_scope"])("still calls the main LLM for the %s label (#21)", async (label) => {
     const { client, seen } = fakeClient(
       [{ type: "text_delta", text: "From the LLM." }, { type: "done", stopReason: "end_turn" }],
       undefined,
@@ -178,13 +209,13 @@ describe("LlmPassthroughAgent", () => {
     const { client, seen, classified } = fakeClient(
       [{ type: "text_delta", text: "LAX is busy." }, { type: "done", stopReason: "end_turn" }],
       undefined,
-      '{"label":"greeting","reason":"Says hello."}',
+      '{"label":"in_scope","reason":"Asks about LAX."}',
     );
     const events = await runWith(client);
     expect(events.map((e) => e.type)).toEqual(["message_start", "tool_call", "tool_result", "text_delta", "message_end"]);
     const [, call, result] = events;
     expect(call).toMatchObject({ type: "tool_call", name: "classify_message", input: { message: "And LAX?" } });
-    expect(result).toMatchObject({ type: "tool_result", result: { ok: true, output: { label: "greeting", reason: "Says hello.", attempts: 1 } } });
+    expect(result).toMatchObject({ type: "tool_result", result: { ok: true, output: { label: "in_scope", reason: "Asks about LAX.", attempts: 1 } } });
     expect(call && "toolCallId" in call && result && "toolCallId" in result && call.toolCallId === result.toolCallId).toBe(true);
 
     // One classifier call that sees the recent turns; the label changes nothing about the main call.

@@ -7,12 +7,17 @@ import type { Agent, AgentRunInput } from "./agent.ts";
 import { classifyMessage, type Classification, type ClassificationLabel } from "./classifier/classifier.ts";
 import { classificationToolEvents } from "./classifier/toolEvents.ts";
 import { CAPABILITIES_ANSWER } from "./responses/capabilities.ts";
-import { OFF_TOPIC_ANSWER } from "./responses/offTopic.ts";
+import { GREETING_ANSWER } from "./responses/greeting.ts";
+import { offTopicAnswer, type Rng } from "./responses/offTopic.ts";
 
-/** Labels answered with one fixed text and no main LLM call (#21). greeting and in_scope go to the LLM. */
-const STATIC_ANSWERS: Readonly<Partial<Record<ClassificationLabel, string>>> = {
-  capabilities: CAPABILITIES_ANSWER,
-  off_topic: OFF_TOPIC_ANSWER,
+/**
+ * Labels answered with one fixed text and no main LLM call (#21; greeting #44). off_topic picks its suggested
+ * question with the agent's rng (#44). in_scope goes to the LLM.
+ */
+const STATIC_ANSWERS: Readonly<Partial<Record<ClassificationLabel, (rng: Rng) => string>>> = {
+  greeting: () => GREETING_ANSWER,
+  capabilities: () => CAPABILITIES_ANSWER,
+  off_topic: (rng) => offTopicAnswer(rng),
 };
 
 const API_CODE: Record<LlmError["code"], ApiErrorCode> = {
@@ -23,6 +28,12 @@ const API_CODE: Record<LlmError["code"], ApiErrorCode> = {
   internal: "internal",
 };
 
+/** Optional agent dependencies, injectable for tests. */
+export interface AgentOptions {
+  /** The random source for the off_topic suggestion (#44). Default Math.random. */
+  readonly rng?: Rng;
+}
+
 /**
  * Placeholder agent until the owner's agent replaces it: classifies the user's message (shown as a
  * classify_message tool_call/tool_result), then sends the conversation to the LlmClient for the
@@ -30,11 +41,16 @@ const API_CODE: Record<LlmError["code"], ApiErrorCode> = {
  * An LlmError before the first event becomes an HttpError (normal 4xx/5xx); after it, an `error` event.
  */
 export class LlmPassthroughAgent implements Agent {
+  private readonly rng: Rng;
+
   constructor(
     private readonly clients: Readonly<Record<ModelProvider, LlmClient>>,
     /** CLAUDE_MODEL: replaces the Claude main model only. */
     private readonly claudeMainModel?: string,
-  ) {}
+    options: AgentOptions = {},
+  ) {
+    this.rng = options.rng ?? Math.random;
+  }
 
   async *run(input: AgentRunInput): AsyncGenerator<AgentEvent> {
     const client = this.clients[input.model.provider];
@@ -43,8 +59,8 @@ export class LlmPassthroughAgent implements Agent {
     const { messages } = input.request;
     // First agent step (#13): classify the latest user message. A bad label falls back to in_scope (#19); a
     // failed call is retried, and after the last try it throws an LlmError (#22): nothing has streamed yet, so it
-    // becomes an HttpError and the main LLM is never called. `capabilities` and `off_topic` get a fixed answer
-    // (no main LLM call); the other labels continue to the LLM.
+    // becomes an HttpError and the main LLM is never called. `greeting`, `capabilities` and `off_topic` get a fixed
+    // answer (no main LLM call); the other labels continue to the LLM.
     let classification: Classification;
     try {
       classification = await classifyMessage(client, messages, input.signal);
@@ -54,12 +70,12 @@ export class LlmPassthroughAgent implements Agent {
     }
     const lastUserMessage = [...messages].reverse().find((m) => m.role === "user")?.content ?? "";
     const classified = classificationToolEvents(messageId, lastUserMessage, classification);
-    // #21: capabilities and off_topic (which covers prompt injection) get one fixed answer; the main LLM is not called.
+    // #21/#44: greeting, capabilities and off_topic (which covers prompt injection) get one fixed answer; the main LLM is not called.
     const staticAnswer = STATIC_ANSWERS[classification.label];
     if (staticAnswer !== undefined) {
       yield { type: "message_start", messageId, modelId: input.model.id };
       yield* classified;
-      yield { type: "text_delta", messageId, delta: staticAnswer };
+      yield { type: "text_delta", messageId, delta: staticAnswer(this.rng) };
       yield { type: "message_end", messageId, stopReason: "end_turn" };
       return;
     }

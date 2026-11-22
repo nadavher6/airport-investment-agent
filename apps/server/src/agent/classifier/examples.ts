@@ -1,4 +1,5 @@
 import type { LlmMessage } from "../../llm/llmClient.ts";
+import { OFF_TOPIC_SUGGESTIONS } from "../responses/offTopic.ts";
 import type { ClassificationLabel } from "./classifier.ts";
 
 export interface LabelledExample {
@@ -82,4 +83,8 @@ export const CLASSIFIER_EXAMPLES: readonly LabelledExample[] = [
   { message: "score LAX", expected: "in_scope" },
   { message: "Rank the New England airports by investment score", expected: "in_scope" },
   { message: "Why did DEN score higher than LAX?", expected: "in_scope" },
+  // #44: the off_topic answer suggests these; a suggestion must never itself be refused.
+  ...OFF_TOPIC_SUGGESTIONS.map(
+    (message): LabelledExample => ({ message, expected: message.startsWith("What does unmet demand mean") ? "grading" : "in_scope" }),
+  ),
 ];
