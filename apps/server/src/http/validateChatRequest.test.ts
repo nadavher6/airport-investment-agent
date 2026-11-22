@@ -28,6 +28,19 @@ describe("validateChatRequest", () => {
     expect(validateChatRequest(history)).toEqual(history);
   });
 
+  // Regression: a reply cancelled before any text flattens to "" and used to wedge the chat with 400s.
+  it("accepts an empty assistant turn in the history", () => {
+    const history = {
+      modelId: "m",
+      messages: [
+        { role: "user", content: "rank airports" },
+        { role: "assistant", content: "" },
+        { role: "user", content: "continue" },
+      ],
+    };
+    expect(validateChatRequest(history)).toEqual(history);
+  });
+
   it("drops unknown fields from turns", () => {
     const result = validateChatRequest({
       modelId: "m",
@@ -46,7 +59,12 @@ describe("validateChatRequest", () => {
     ["turn not an object", { modelId: "m", messages: ["hi"] }, "messages[0] must be an object"],
     ["bad role", { modelId: "m", messages: [{ role: "system", content: "x" }] }, 'messages[0].role must be "user" or "assistant"'],
     ["blank content", { modelId: "m", messages: [{ role: "user", content: "   " }] }, "messages[0].content must be a non-empty string"],
-    ["non-string content", { modelId: "m", messages: [{ role: "user", content: 42 }] }, "messages[0].content must be a non-empty string"],
+    ["non-string content", { modelId: "m", messages: [{ role: "user", content: 42 }] }, "messages[0].content must be a string"],
+    [
+      "non-string assistant content",
+      { modelId: "m", messages: [{ role: "assistant", content: null }, { role: "user", content: "q" }] },
+      "messages[0].content must be a string",
+    ],
     [
       "last turn from assistant",
       { modelId: "m", messages: [{ role: "user", content: "q" }, { role: "assistant", content: "a" }] },
