@@ -199,7 +199,7 @@ describe("the description and unit the model sees (#61 review)", () => {
   });
 
   it("every category returns its unit; percent-scale categories are in %", async () => {
-    expect(CATEGORY_UNITS).toEqual({ congestion: "departures/yr", unmet_demand: "%", long_haul: "%", growth: "% per year" });
+    expect(CATEGORY_UNITS).toEqual({ congestion: "%", unmet_demand: "%", long_haul: "%", growth: "% per year" });
     for (const [tool, key] of TOOL_KEYS) {
       const out = await call(tool, ["LAX"]);
       expect(out.unit).toBe(CATEGORY_UNITS[key]);
