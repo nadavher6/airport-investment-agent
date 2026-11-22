@@ -5,7 +5,7 @@ import { Legend, SrTable, VisualFrame, seriesColor } from "./parts";
 
 const W = 640;
 const H = 260;
-const M = { top: 16, right: 72, bottom: 32, left: 56 };
+const M = { top: 16, right: 72, bottom: 44, left: 56 };
 const LABEL_GAP = 14;
 
 type X = number | string;
@@ -58,7 +58,10 @@ export function LineChart({ spec }: { spec: LineSpec }) {
   const endsClear = sortedEndY.every((v, i) => i === 0 || v - (sortedEndY[i - 1] ?? 0) >= LABEL_GAP);
   const directLabels = spec.series.length <= 4 && endsClear;
 
-  const xTicks = sampleIndexes(xs.length, 7).map((i) => xs[i] as X);
+  // Numeric x gets round, evenly spaced ticks (2016, 2018, ...); text x gets every k-th label.
+  const xTicks: X[] = numeric
+    ? niceScale(xNums, 6, false).ticks.filter((t) => t >= xMin && t <= xMax && (xMax - xMin > 10 || Number.isInteger(t)))
+    : sampleIndexes(xs.length, 7).map((i) => xs[i] as X);
   const label = summariseLine(spec, xs);
   const activeX = active === null ? undefined : xs[active];
 
@@ -104,7 +107,7 @@ export function LineChart({ spec }: { spec: LineSpec }) {
             </text>
           ))}
           {spec.x ? (
-            <text className="viz-axis-title" x={plotR} y={H - 2} textAnchor="end">
+            <text className="viz-axis-title" x={(plotL + plotR) / 2} y={H - 4} textAnchor="middle">
               {spec.x}
             </text>
           ) : null}

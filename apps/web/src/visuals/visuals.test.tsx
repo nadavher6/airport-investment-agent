@@ -25,7 +25,7 @@ describe("LineChart", () => {
     expect(screen.getByText("in passengers")).toBeInTheDocument();
     const svg = container.querySelector("svg") as SVGSVGElement;
     const ticks = [...svg.querySelectorAll(".viz-tick")].map((t) => t.textContent);
-    expect(ticks).toEqual(expect.arrayContaining(["0", "60M", "2015", "2024"]));
+    expect(ticks).toEqual(expect.arrayContaining(["0", "60M", "2016", "2018", "2024"]));
     expect(svg.querySelector(".viz-axis-title")).toHaveTextContent("year");
     const legend = container.querySelector(".viz-legend") as HTMLElement;
     expect(within(legend).getByText("ATL")).toBeInTheDocument();
