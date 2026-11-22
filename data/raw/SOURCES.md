@@ -264,4 +264,5 @@ So any cut-off between 9.5° and 17° gives the same groups.
 **Operations** are not in `data/capacity.json`: they are T-100 departures × 2 from `data/t100.json` (above), computed
 when scoring, as issue #54 specifies. The issue allows FAA OPSNET/ATADS tower counts (which include general
 aviation) instead if they are freely downloadable; this PR did not find or use a public file download of them, so
-utilization leaves general-aviation and military operations out (a lower bound on that side; see DESIGN.md §4).
+utilization leaves general-aviation and military operations out. **Operations = T-100 departures × 2 is therefore a
+LOWER BOUND** on an airport's real operations, and so is the utilization (accepted by the owner; see DESIGN.md §1 and §4).

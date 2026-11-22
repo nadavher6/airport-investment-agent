@@ -100,7 +100,7 @@ function utilizationSentence(departures: number | null, c: CapacityAirport | nul
     `${fmt(u.operations)} operations a year (${fmt(departures)} T-100 departures × 2) against an estimated ` +
     `${fmt(cfg.asv)} (FAA AC 150/5060-5 Figure 2-1 configuration ${cfg.figure21No}, ${cfg.label}): ` +
     `at ${u.utilizationPct}% of its estimated capacity, ${triggerPhrase(u.utilizationPct)}.${cap}${more} ` +
-    "General-aviation and military flights are not in T-100, so on that side the real figure is higher."
+    "Operations are a lower bound: T-100 has no general-aviation or military flights, so the real utilization is higher."
   );
 }
 

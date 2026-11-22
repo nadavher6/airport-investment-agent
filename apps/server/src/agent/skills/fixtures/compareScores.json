@@ -27,7 +27,7 @@
                 "runways": "06L/24R, 06R/24L, 07L/25R, 07R/25L"
               },
               "value": 86.8,
-              "explanation": "533,640 operations a year (266,820 T-100 departures × 2) against an estimated 615,000 (FAA AC 150/5060-5 Figure 2-1 configuration 8, four parallel runways: two close pairs (700-2,499 ft) 4,300 ft or more apart): at 86.8% of its estimated capacity, past the FAA's 80% trigger to start building more capacity. General-aviation and military flights are not in T-100, so on that side the real figure is higher."
+              "explanation": "533,640 operations a year (266,820 T-100 departures × 2) against an estimated 615,000 (FAA AC 150/5060-5 Figure 2-1 configuration 8, four parallel runways: two close pairs (700-2,499 ft) 4,300 ft or more apart): at 86.8% of its estimated capacity, past the FAA's 80% trigger to start building more capacity. Operations are a lower bound: T-100 has no general-aviation or military flights, so the real utilization is higher."
             }
           },
           "unmet_demand": {
@@ -109,7 +109,7 @@
                 "runways": "02L/20R, 02R/20L"
               },
               "value": 47.3,
-              "explanation": "102,894 operations a year (51,447 T-100 departures × 2) against an estimated 217,500 (FAA AC 150/5060-5 Figure 2-1 configuration 1, single runway): at 47.3% of its estimated capacity, below the FAA's 60% planning trigger. General-aviation and military flights are not in T-100, so on that side the real figure is higher."
+              "explanation": "102,894 operations a year (51,447 T-100 departures × 2) against an estimated 217,500 (FAA AC 150/5060-5 Figure 2-1 configuration 1, single runway): at 47.3% of its estimated capacity, below the FAA's 60% planning trigger. Operations are a lower bound: T-100 has no general-aviation or military flights, so the real utilization is higher."
             }
           },
           "unmet_demand": {
@@ -197,7 +197,7 @@
                 "runways": "13L/31R, 13R/31L, 17C/35C, 17L/35R, 17R/35L, 18L/36R, 18R/36L"
               },
               "value": 117,
-              "explanation": "719,264 operations a year (359,632 T-100 departures × 2) against an estimated 615,000 (FAA AC 150/5060-5 Figure 2-1 configuration 8, four parallel runways: two close pairs (700-2,499 ft) 4,300 ft or more apart): at 117% of its estimated capacity, past the FAA's 80% trigger to start building more capacity. The sub-score is capped at 100. The airport has 7 runways but the closest Figure 2-1 configuration has 4, so the ASV is likely understated and the utilization overstated. General-aviation and military flights are not in T-100, so on that side the real figure is higher."
+              "explanation": "719,264 operations a year (359,632 T-100 departures × 2) against an estimated 615,000 (FAA AC 150/5060-5 Figure 2-1 configuration 8, four parallel runways: two close pairs (700-2,499 ft) 4,300 ft or more apart): at 117% of its estimated capacity, past the FAA's 80% trigger to start building more capacity. The sub-score is capped at 100. The airport has 7 runways but the closest Figure 2-1 configuration has 4, so the ASV is likely understated and the utilization overstated. Operations are a lower bound: T-100 has no general-aviation or military flights, so the real utilization is higher."
             }
           },
           "unmet_demand": {
@@ -279,7 +279,7 @@
                 "runways": "07/25, 08/26, 16L/34R, 16R/34L, 17L/35R, 17R/35L"
               },
               "value": 205,
-              "explanation": "691,784 operations a year (345,892 T-100 departures × 2) against an estimated 337,500 (FAA AC 150/5060-5 Figure 2-1 configuration 4, two parallel runways 4,300 ft or more apart): at 205% of its estimated capacity, past the FAA's 80% trigger to start building more capacity. The sub-score is capped at 100. The airport has 6 runways but the closest Figure 2-1 configuration has 2, so the ASV is likely understated and the utilization overstated. General-aviation and military flights are not in T-100, so on that side the real figure is higher."
+              "explanation": "691,784 operations a year (345,892 T-100 departures × 2) against an estimated 337,500 (FAA AC 150/5060-5 Figure 2-1 configuration 4, two parallel runways 4,300 ft or more apart): at 205% of its estimated capacity, past the FAA's 80% trigger to start building more capacity. The sub-score is capped at 100. The airport has 6 runways but the closest Figure 2-1 configuration has 2, so the ASV is likely understated and the utilization overstated. Operations are a lower bound: T-100 has no general-aviation or military flights, so the real utilization is higher."
             }
           },
           "unmet_demand": {
@@ -361,7 +361,7 @@
                 "runways": "08L/26R, 08R/26L, 09L/27R, 09R/27L, 10/28"
               },
               "value": 127.9,
-              "explanation": "786,702 operations a year (393,351 T-100 departures × 2) against an estimated 615,000 (FAA AC 150/5060-5 Figure 2-1 configuration 8, four parallel runways: two close pairs (700-2,499 ft) 4,300 ft or more apart): at 127.9% of its estimated capacity, past the FAA's 80% trigger to start building more capacity. The sub-score is capped at 100. The airport has 5 runways but the closest Figure 2-1 configuration has 4, so the ASV is likely understated and the utilization overstated. General-aviation and military flights are not in T-100, so on that side the real figure is higher."
+              "explanation": "786,702 operations a year (393,351 T-100 departures × 2) against an estimated 615,000 (FAA AC 150/5060-5 Figure 2-1 configuration 8, four parallel runways: two close pairs (700-2,499 ft) 4,300 ft or more apart): at 127.9% of its estimated capacity, past the FAA's 80% trigger to start building more capacity. The sub-score is capped at 100. The airport has 5 runways but the closest Figure 2-1 configuration has 4, so the ASV is likely understated and the utilization overstated. Operations are a lower bound: T-100 has no general-aviation or military flights, so the real utilization is higher."
             }
           },
           "unmet_demand": {
@@ -443,7 +443,7 @@
                 "runways": "04L/22R, 04R/22L, 09C/27C, 09L/27R, 09R/27L, 10C/28C, 10L/28R, 10R/28L"
               },
               "value": 145.3,
-              "explanation": "893,672 operations a year (446,836 T-100 departures × 2) against an estimated 615,000 (FAA AC 150/5060-5 Figure 2-1 configuration 8, four parallel runways: two close pairs (700-2,499 ft) 4,300 ft or more apart): at 145.3% of its estimated capacity, past the FAA's 80% trigger to start building more capacity. The sub-score is capped at 100. The airport has 8 runways but the closest Figure 2-1 configuration has 4, so the ASV is likely understated and the utilization overstated. General-aviation and military flights are not in T-100, so on that side the real figure is higher."
+              "explanation": "893,672 operations a year (446,836 T-100 departures × 2) against an estimated 615,000 (FAA AC 150/5060-5 Figure 2-1 configuration 8, four parallel runways: two close pairs (700-2,499 ft) 4,300 ft or more apart): at 145.3% of its estimated capacity, past the FAA's 80% trigger to start building more capacity. The sub-score is capped at 100. The airport has 8 runways but the closest Figure 2-1 configuration has 4, so the ASV is likely understated and the utilization overstated. Operations are a lower bound: T-100 has no general-aviation or military flights, so the real utilization is higher."
             }
           },
           "unmet_demand": {
