@@ -1,39 +1,22 @@
-import { asModelId, type AgentEvent, type AgentEventType, type ChatRequest, type ModelInfo } from "@airport/shared";
 import { describe, expect, it } from "vitest";
 import { collect } from "../test/helpers.ts";
-import { GeminiAgent, toGeminiContents, type FetchLike } from "./geminiAgent.ts";
-import { GeminiApiError } from "./geminiErrors.ts";
+import { GeminiClient, toGeminiContents, type FetchLike } from "./geminiClient.ts";
+import { LlmError, type LlmRequest, type LlmStreamEvent } from "./llmClient.ts";
 
 // A fake key: these tests never call the real Gemini API.
 const KEY = "test-key-not-real";
-
-const request: ChatRequest = {
-  modelId: asModelId("gemini-2.5-flash"),
-  messages: [{ role: "user", content: "What makes an airport a good expansion candidate?" }],
-};
-
-function model(thinking = true): ModelInfo {
-  return {
-    id: asModelId("gemini-2.5-flash"),
-    label: "Gemini 2.5 Flash",
-    provider: "gemini",
-    description: "",
-    capabilities: { thinking, toolUse: false },
-    available: true,
-  };
-}
 
 interface Call {
   readonly url: string;
   readonly init: RequestInit;
 }
 
-/** Text as SSE frames the way Gemini sends them (CRLF line endings). */
+/** Chunks as SSE frames the way Gemini sends them (CRLF line endings). */
 function sse(chunks: readonly unknown[]): string {
   return chunks.map((c) => `data: ${JSON.stringify(c)}\r\n\r\n`).join("");
 }
 
-function textChunk(text: string, extra: Record<string, unknown> = {}, thought = false): unknown {
+function part(text: string, extra: Record<string, unknown> = {}, thought = false): unknown {
   return { candidates: [{ content: { role: "model", parts: [{ text, ...(thought ? { thought: true } : {}) }] }, ...extra }] };
 }
 
@@ -41,44 +24,44 @@ function textChunk(text: string, extra: Record<string, unknown> = {}, thought = 
 function fakeFetch(status: number, body: string, calls: Call[] = []): FetchLike {
   return async (url, init) => {
     calls.push({ url, init });
-    return new Response(body, { status, headers: { "Content-Type": "text/event-stream" } });
+    return new Response(body, { status });
   };
 }
 
-function run(fetch: FetchLike, thinking = true): Promise<AgentEvent[]> {
-  const agent = new GeminiAgent({ apiKey: KEY, fetch });
-  return collect(agent.run({ request, model: model(thinking), signal: new AbortController().signal }));
+function req(extra: Partial<LlmRequest> = {}): LlmRequest {
+  return {
+    messages: [{ role: "user", content: "What makes an airport a good expansion candidate?" }],
+    signal: new AbortController().signal,
+    ...extra,
+  };
 }
 
-const shape = (events: AgentEvent[]): AgentEventType[] =>
-  events.map((e) => e.type).filter((t, i, all) => t !== all[i - 1]);
+const client = (fetch: FetchLike, apiKey: string | undefined = KEY) => new GeminiClient({ apiKey, fetch });
 
-describe("GeminiAgent streaming", () => {
-  it("maps thought summaries and text to events in protocol order", async () => {
+describe("GeminiClient.stream", () => {
+  it("maps thought summaries and text to LlmStreamEvents in order, then done", async () => {
     const body = sse([
-      textChunk("Weighing congestion ", {}, true),
-      textChunk("and capacity.", {}, true),
-      textChunk("Good candidates have "),
-      textChunk("high demand.", { finishReason: "STOP" }),
+      part("Weighing congestion.", {}, true),
+      part("Good candidates have "),
+      part("high demand.", { finishReason: "STOP" }),
     ]);
-    const events = await run(fakeFetch(200, body));
-
-    expect(shape(events)).toEqual(["message_start", "thinking_delta", "thinking_end", "text_delta", "message_end"]);
-    const text = events.flatMap((e) => (e.type === "text_delta" ? [e.delta] : [])).join("");
-    expect(text).toBe("Good candidates have high demand.");
-    expect(events.at(-1)).toMatchObject({ type: "message_end", stopReason: "end_turn" });
-    expect(new Set(events.map((e) => ("messageId" in e ? e.messageId : ""))).size).toBe(1);
+    const events = await collect(client(fakeFetch(200, body)).stream(req()));
+    expect(events).toEqual<LlmStreamEvent[]>([
+      { type: "thinking_delta", text: "Weighing congestion." },
+      { type: "text_delta", text: "Good candidates have " },
+      { type: "text_delta", text: "high demand." },
+      { type: "done", stopReason: "end_turn" },
+    ]);
   });
 
-  it("reports max_tokens and closes thinking even when no text follows", async () => {
-    const events = await run(fakeFetch(200, sse([textChunk("hmm", { finishReason: "MAX_TOKENS" }, true)])));
-    expect(shape(events)).toEqual(["message_start", "thinking_delta", "thinking_end", "message_end"]);
-    expect(events.at(-1)).toMatchObject({ stopReason: "max_tokens" });
+  it("reports max_tokens as the stop reason", async () => {
+    const events = await collect(client(fakeFetch(200, sse([part("x", { finishReason: "MAX_TOKENS" })]))).stream(req()));
+    expect(events.at(-1)).toEqual({ type: "done", stopReason: "max_tokens" });
   });
 
   it("sends the key only in the x-goog-api-key header, with the full history", async () => {
     const calls: Call[] = [];
-    await run(fakeFetch(200, sse([textChunk("ok", { finishReason: "STOP" })]), calls));
+    await collect(client(fakeFetch(200, sse([part("ok")]), calls)).stream(req()));
 
     expect(calls).toHaveLength(1);
     const [call] = calls;
@@ -87,31 +70,30 @@ describe("GeminiAgent streaming", () => {
     );
     expect(call?.url).not.toContain(KEY);
     expect(new Headers(call?.init.headers).get("x-goog-api-key")).toBe(KEY);
+    expect(String(call?.init.body)).not.toContain(KEY);
     const sent = JSON.parse(String(call?.init.body)) as Record<string, unknown>;
-    expect(JSON.stringify(sent)).not.toContain(KEY);
-    expect(sent).toMatchObject({
-      contents: [{ role: "user", parts: [{ text: request.messages[0]?.content }] }],
+    expect(sent).toEqual({
+      contents: [{ role: "user", parts: [{ text: "What makes an airport a good expansion candidate?" }] }],
       generationConfig: { thinkingConfig: { includeThoughts: true } },
     });
   });
 
-  it("does not ask for thoughts when the model has no thinking capability", async () => {
+  it("passes `system` through only when given", async () => {
     const calls: Call[] = [];
-    await run(fakeFetch(200, sse([textChunk("ok")]), calls), false);
-    expect(JSON.parse(String(calls[0]?.init.body))).not.toHaveProperty("generationConfig");
+    await collect(client(fakeFetch(200, sse([part("ok")]), calls)).stream(req({ system: "Be brief." })));
+    expect(JSON.parse(String(calls[0]?.init.body))).toMatchObject({ systemInstruction: { parts: [{ text: "Be brief." }] } });
   });
 
-  it("turns a block or a mid-stream error into an error event", async () => {
-    const blocked = await run(fakeFetch(200, sse([textChunk("par"), textChunk("", { finishReason: "SAFETY" })])));
-    expect(shape(blocked)).toEqual(["message_start", "text_delta", "error"]);
-    expect(blocked.at(-1)).toMatchObject({ error: { message: expect.stringContaining("SAFETY") } });
+  it("throws an LlmError for a block or a broken stream after it started", async () => {
+    const blocked = client(fakeFetch(200, sse([part("par"), part("", { finishReason: "SAFETY" })]))).stream(req());
+    await expect(collect(blocked)).rejects.toMatchObject({ code: "bad_request", message: expect.stringContaining("SAFETY") });
 
-    const broken = await run(fakeFetch(200, "data: {not json\n\n"));
-    expect(shape(broken)).toEqual(["message_start", "error"]);
+    const broken = client(fakeFetch(200, "data: {not json\n\n")).stream(req());
+    await expect(collect(broken)).rejects.toMatchObject({ code: "internal" });
   });
 });
 
-describe("GeminiAgent errors before the stream", () => {
+describe("GeminiClient errors before the stream", () => {
   const badKeyBody = JSON.stringify({
     error: { code: 400, message: "API key not valid.", status: "INVALID_ARGUMENT", details: [{ reason: "API_KEY_INVALID" }] },
   });
@@ -120,92 +102,126 @@ describe("GeminiAgent errors before the stream", () => {
     [400, badKeyBody],
     [401, "{}"],
     [403, "{}"],
-  ])("a bad key (HTTP %i) throws a clear auth error and yields no event", async (status, body) => {
-    const agent = new GeminiAgent({ apiKey: KEY, fetch: fakeFetch(status, body) });
-    const seen: AgentEvent[] = [];
+  ])("a bad key (HTTP %i) throws a clear auth error before any event", async (status, body) => {
+    const seen: LlmStreamEvent[] = [];
     const error = await (async () => {
-      for await (const event of agent.run({ request, model: model(), signal: new AbortController().signal })) {
-        seen.push(event);
-      }
+      for await (const event of client(fakeFetch(status, body)).stream(req())) seen.push(event);
     })().catch((err: unknown) => err);
 
     expect(seen).toEqual([]);
-    expect(error).toBeInstanceOf(GeminiApiError);
-    expect(error).toMatchObject({ kind: "auth", status: 401, message: expect.stringContaining("rejected the API key") });
-    expect(String((error as Error).message)).not.toContain(KEY);
+    expect(error).toBeInstanceOf(LlmError);
+    expect(error).toMatchObject({ code: "auth", message: expect.stringContaining("Gemini rejected the API key") });
+    expect((error as Error).message).not.toContain(KEY);
   });
 
   it("429 throws the free-tier quota message", async () => {
-    await expect(run(fakeFetch(429, '{"error":{"code":429,"status":"RESOURCE_EXHAUSTED"}}'))).rejects.toMatchObject({
-      kind: "quota",
-      status: 429,
+    const stream = client(fakeFetch(429, '{"error":{"code":429,"status":"RESOURCE_EXHAUSTED"}}')).stream(req());
+    await expect(collect(stream)).rejects.toMatchObject({
+      code: "rate_limit",
       message: expect.stringContaining("Gemini free-tier quota reached"),
     });
   });
 
-  it("other failures throw readable upstream or network errors", async () => {
-    await expect(run(fakeFetch(500, "oops"))).rejects.toMatchObject({ kind: "upstream", status: 502 });
+  it("a missing key, a 5xx and a network failure throw readable errors without calling out", async () => {
+    const calls: Call[] = [];
+    await expect(collect(client(fakeFetch(200, "", calls), "  ").stream(req()))).rejects.toMatchObject({
+      code: "unavailable",
+      message: expect.stringContaining("GEMINI_API_KEY"),
+    });
+    expect(calls).toEqual([]);
+
+    await expect(collect(client(fakeFetch(500, "oops")).stream(req()))).rejects.toMatchObject({ code: "unavailable" });
     const offline: FetchLike = async () => {
       throw new TypeError("fetch failed");
     };
-    await expect(run(offline)).rejects.toMatchObject({ kind: "network", message: expect.stringContaining("Could not reach") });
+    await expect(collect(client(offline).stream(req()))).rejects.toMatchObject({
+      code: "unavailable",
+      message: expect.stringContaining("Could not reach"),
+    });
   });
 });
 
-describe("GeminiAgent abort", () => {
-  it("passes the signal to fetch, so an abort cancels the request and ends the run", async () => {
+describe("GeminiClient abort", () => {
+  it("passes the signal to fetch, so an abort cancels the request and ends the stream", async () => {
     const controller = new AbortController();
     let fetchSignal: AbortSignal | undefined;
-    const encoder = new TextEncoder();
     const fetch: FetchLike = async (_url, init) => {
       fetchSignal = init.signal ?? undefined;
-      const stream = new ReadableStream<Uint8Array>({
+      const body = new ReadableStream<Uint8Array>({
         start(c) {
-          c.enqueue(encoder.encode(sse([textChunk("first ")])));
+          c.enqueue(new TextEncoder().encode(sse([part("first ")])));
           // Like real fetch: an abort errors the body. The stream never ends on its own.
           init.signal?.addEventListener("abort", () => c.error(init.signal?.reason));
         },
       });
-      return new Response(stream, { status: 200 });
+      return new Response(body, { status: 200 });
     };
 
-    const agent = new GeminiAgent({ apiKey: KEY, fetch });
-    const seen: AgentEventType[] = [];
+    const seen: string[] = [];
     const consume = (async () => {
-      for await (const event of agent.run({ request, model: model(), signal: controller.signal })) {
+      for await (const event of client(fetch).stream(req({ signal: controller.signal }))) {
         seen.push(event.type);
-        if (event.type === "text_delta") controller.abort();
+        controller.abort();
       }
     })();
 
     await expect(consume).rejects.toThrow(/abort/i);
     expect(fetchSignal).toBe(controller.signal);
     expect(fetchSignal?.aborted).toBe(true);
-    expect(seen).toEqual(["message_start", "text_delta"]);
+    expect(seen).toEqual(["text_delta"]);
   });
 
-  it("cancels the response stream when the consumer stops early", async () => {
+  it("cancels the response body when the consumer stops early", async () => {
     let cancelled = false;
     const fetch: FetchLike = async () =>
       new Response(
         new ReadableStream<Uint8Array>({
           start(c) {
-            c.enqueue(new TextEncoder().encode(sse([textChunk("a"), textChunk("b")])));
+            c.enqueue(new TextEncoder().encode(sse([part("a"), part("b")])));
           },
           cancel() {
             cancelled = true;
           },
         }),
       );
-    const agent = new GeminiAgent({ apiKey: KEY, fetch });
-    for await (const event of agent.run({ request, model: model(), signal: new AbortController().signal })) {
+    for await (const event of client(fetch).stream(req())) {
       if (event.type === "text_delta") break;
     }
     expect(cancelled).toBe(true);
   });
 });
 
-describe("Gemini request helpers", () => {
+describe("GeminiClient.health", () => {
+  it("is unavailable without a key and makes no call", async () => {
+    const calls: Call[] = [];
+    await expect(client(fakeFetch(200, "{}", calls), "").health()).resolves.toEqual({
+      status: "unavailable",
+      detail: "GEMINI_API_KEY is not set in .env",
+    });
+    expect(calls).toEqual([]);
+  });
+
+  it("lists one model with the key in the header and reports ok", async () => {
+    const calls: Call[] = [];
+    await expect(client(fakeFetch(200, '{"models":[]}', calls)).health()).resolves.toEqual({
+      status: "ok",
+      detail: "Gemini connected",
+    });
+    expect(calls[0]?.url).toBe("https://generativelanguage.googleapis.com/v1beta/models?pageSize=1");
+    expect(new Headers(calls[0]?.init.headers).get("x-goog-api-key")).toBe(KEY);
+  });
+
+  it("reports an invalid key, and gives up after the timeout instead of hanging", async () => {
+    await expect(client(fakeFetch(403, "{}")).health()).resolves.toEqual({ status: "error", detail: "Gemini: invalid API key" });
+
+    const hanging: FetchLike = (_url, init) =>
+      new Promise((_resolve, reject) => init.signal?.addEventListener("abort", () => reject(init.signal?.reason)));
+    const slow = new GeminiClient({ apiKey: KEY, fetch: hanging, healthTimeoutMs: 20 });
+    await expect(slow.health()).resolves.toMatchObject({ status: "error", detail: expect.stringContaining("did not answer") });
+  });
+});
+
+describe("toGeminiContents", () => {
   it("drops empty turns, maps assistant to model and merges same-role neighbours", () => {
     expect(
       toGeminiContents([

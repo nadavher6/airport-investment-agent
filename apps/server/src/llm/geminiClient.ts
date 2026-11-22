@@ -1,19 +1,21 @@
-import { randomUUID } from "node:crypto";
-import { asMessageId, type AgentEvent, type ChatTurn, type MessageId, type StopReason } from "@airport/shared";
-import type { Agent, AgentRunInput } from "./agent.ts";
-import { GeminiApiError, geminiErrorFromResponse, geminiNetworkError } from "./geminiErrors.ts";
+import { geminiErrorFromResponse, geminiNetworkError, GEMINI_QUOTA_MESSAGE } from "./geminiErrors.ts";
 import { readGeminiSse, type GeminiChunk } from "./geminiSse.ts";
+import { LlmError, type LlmClient, type LlmMessage, type LlmRequest, type LlmStreamEvent } from "./llmClient.ts";
 
 export const GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta";
+/** The catalog's existing Gemini model. */
+export const GEMINI_MODEL = "gemini-2.5-flash";
 
 export type FetchLike = (input: string, init: RequestInit) => Promise<Response>;
 
-export interface GeminiAgentOptions {
-  /** From GEMINI_API_KEY, trimmed. Never log it. */
-  readonly apiKey: string;
+export interface GeminiClientOptions {
+  /** GEMINI_API_KEY from .env. Trimmed here; never logged. Unset or blank = unavailable. */
+  readonly apiKey: string | undefined;
   /** Injected in tests so no real API call is made. */
   readonly fetch?: FetchLike;
   readonly baseUrl?: string;
+  /** Health check timeout; 5 s by default. */
+  readonly healthTimeoutMs?: number;
 }
 
 interface GeminiContent {
@@ -21,8 +23,8 @@ interface GeminiContent {
   readonly parts: { text: string }[];
 }
 
-/** The chat history as Gemini `contents`: empty turns dropped, same-role neighbours merged. */
-export function toGeminiContents(messages: readonly ChatTurn[]): GeminiContent[] {
+/** The history as Gemini `contents`: empty turns dropped, same-role neighbours merged. */
+export function toGeminiContents(messages: readonly LlmMessage[]): GeminiContent[] {
   const contents: GeminiContent[] = [];
   for (const turn of messages) {
     if (!turn.content.trim()) continue;
@@ -34,130 +36,118 @@ export function toGeminiContents(messages: readonly ChatTurn[]): GeminiContent[]
   return contents;
 }
 
-export function buildGeminiRequestBody(messages: readonly ChatTurn[], thinking: boolean): Record<string, unknown> {
+function requestBody(request: LlmRequest): Record<string, unknown> {
   return {
-    contents: toGeminiContents(messages),
-    ...(thinking ? { generationConfig: { thinkingConfig: { includeThoughts: true } } } : {}),
+    // Passed through only if given; nothing in this app sets it.
+    ...(request.system ? { systemInstruction: { parts: [{ text: request.system }] } } : {}),
+    contents: toGeminiContents(request.messages),
+    generationConfig: { thinkingConfig: { includeThoughts: true } },
   };
 }
 
-const STOP_REASONS: Readonly<Record<string, StopReason>> = { STOP: "end_turn", MAX_TOKENS: "max_tokens" };
+const STOP_REASONS: Readonly<Record<string, string>> = { STOP: "end_turn", MAX_TOKENS: "max_tokens" };
 
-function streamError(message: string): AgentEvent {
-  return { type: "error", error: { code: "internal", message } };
+function stopReasonOf(finishReason: string | undefined): string | undefined {
+  return finishReason && Object.hasOwn(STOP_REASONS, finishReason) ? STOP_REASONS[finishReason] : undefined;
+}
+
+/** An LlmError when a chunk ends the answer badly (error, block), else undefined. */
+function chunkError(chunk: GeminiChunk): LlmError | undefined {
+  if (chunk.error) {
+    return chunk.error.code === 429
+      ? new LlmError("rate_limit", GEMINI_QUOTA_MESSAGE)
+      : new LlmError("internal", `Gemini failed mid-answer (${chunk.error.status ?? chunk.error.code ?? "unknown error"}).`);
+  }
+  if (chunk.promptFeedback?.blockReason) {
+    return new LlmError("bad_request", `Gemini blocked this question (${chunk.promptFeedback.blockReason}).`);
+  }
+  const reason = chunk.candidates?.[0]?.finishReason;
+  if (reason && !stopReasonOf(reason)) {
+    return new LlmError("bad_request", `Gemini stopped the answer early (${reason}).`);
+  }
+  return undefined;
 }
 
 /**
- * Calls the Gemini API with streaming and maps the reply to AgentEvents:
- * message_start -> (thinking_delta* thinking_end)? -> text_delta* -> message_end.
- *
- * Errors before the stream (bad key, quota, network) are thrown as GeminiApiError before
- * any event is yielded, so the route can answer with a normal HTTP error. Errors after
- * that become an `error` event. The request's AbortSignal cancels the HTTP request.
+ * Google Gemini over its REST API (`streamGenerateContent?alt=sse`) with plain fetch.
+ * The key goes in the x-goog-api-key header, never in the URL. The request's signal
+ * cancels the HTTP call. Every failure is thrown as an LlmError.
  */
-export class GeminiAgent implements Agent {
+export class GeminiClient implements LlmClient {
+  readonly provider = "gemini" as const;
+  private readonly apiKey: string | undefined;
   private readonly fetchFn: FetchLike;
+  private readonly baseUrl: string;
+  private readonly healthTimeoutMs: number;
 
-  constructor(private readonly options: GeminiAgentOptions) {
+  constructor(options: GeminiClientOptions) {
+    this.apiKey = options.apiKey?.trim() || undefined;
     this.fetchFn = options.fetch ?? ((input, init) => fetch(input, init));
+    this.baseUrl = options.baseUrl ?? GEMINI_API_BASE;
+    this.healthTimeoutMs = options.healthTimeoutMs ?? 5000;
   }
 
-  async *run({ request, model, signal }: AgentRunInput): AsyncGenerator<AgentEvent> {
-    // The catalog's model id is the Gemini model name (e.g. "gemini-2.5-flash").
-    // The key goes in the x-goog-api-key header, never in the URL.
-    const url = `${this.options.baseUrl ?? GEMINI_API_BASE}/models/${encodeURIComponent(model.id)}:streamGenerateContent?alt=sse`;
-    const body = buildGeminiRequestBody(request.messages, model.capabilities.thinking);
-    const stream = await this.send(url, body, signal);
-
-    const messageId = asMessageId(randomUUID());
-    yield { type: "message_start", messageId, modelId: model.id };
-    yield* this.mapStream(stream, messageId, signal);
-  }
-
-  /** Everything here happens before the first event, so failures are thrown, not streamed. */
-  private async send(url: string, body: Record<string, unknown>, signal: AbortSignal): Promise<ReadableStream<Uint8Array>> {
-    let response: Response;
+  /** A cheap, free check that the key works: list one model. Never hangs (timeout). */
+  async health(): Promise<{ status: "ok" | "unavailable" | "error"; detail: string }> {
+    if (!this.apiKey) return { status: "unavailable", detail: "GEMINI_API_KEY is not set in .env" };
     try {
-      response = await this.fetchFn(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "x-goog-api-key": this.options.apiKey },
-        body: JSON.stringify(body),
-        signal,
+      const response = await this.fetchFn(`${this.baseUrl}/models?pageSize=1`, {
+        method: "GET",
+        headers: { "x-goog-api-key": this.apiKey },
+        signal: AbortSignal.timeout(this.healthTimeoutMs),
       });
+      if (response.ok) {
+        await response.body?.cancel();
+        return { status: "ok", detail: "Gemini connected" };
+      }
+      const error = geminiErrorFromResponse(response.status, await response.text().catch(() => ""));
+      return { status: "error", detail: error.code === "auth" ? "Gemini: invalid API key" : error.message };
     } catch (err) {
-      if (signal.aborted) throw err;
-      throw geminiNetworkError();
+      const timedOut = err instanceof Error && err.name === "TimeoutError";
+      const detail = timedOut
+        ? `Gemini did not answer within ${this.healthTimeoutMs / 1000} s`
+        : "Could not reach the Gemini API";
+      return { status: "error", detail };
     }
-    if (!response.ok) {
-      const text = await response.text().catch(() => "");
-      throw geminiErrorFromResponse(response.status, text);
-    }
-    if (!response.body) throw new GeminiApiError("upstream", "Gemini sent an empty response.", response.status);
-    return response.body;
   }
 
-  private async *mapStream(
-    body: ReadableStream<Uint8Array>,
-    messageId: MessageId,
-    signal: AbortSignal,
-  ): AsyncGenerator<AgentEvent> {
-    let thinkingSince: number | undefined;
-    let stopReason: StopReason = "end_turn";
-    const endThinking = (): AgentEvent | undefined => {
-      if (thinkingSince === undefined) return undefined;
-      const event: AgentEvent = { type: "thinking_end", messageId, durationMs: Date.now() - thinkingSince };
-      thinkingSince = undefined;
-      return event;
-    };
-
+  async *stream(request: LlmRequest): AsyncGenerator<LlmStreamEvent> {
+    const body = await this.send(request);
+    let stopReason = "end_turn";
     try {
       for await (const chunk of readGeminiSse(body)) {
-        const problem = chunkProblem(chunk);
-        if (problem) {
-          const end = endThinking();
-          if (end) yield end;
-          yield streamError(problem);
-          return;
-        }
+        const error = chunkError(chunk);
+        if (error) throw error;
         const candidate = chunk.candidates?.[0];
         for (const part of candidate?.content?.parts ?? []) {
-          if (!part.text) continue;
-          if (part.thought) {
-            thinkingSince ??= Date.now();
-            yield { type: "thinking_delta", messageId, delta: part.text };
-          } else {
-            const end = endThinking();
-            if (end) yield end;
-            yield { type: "text_delta", messageId, delta: part.text };
-          }
+          if (part.text) yield { type: part.thought ? "thinking_delta" : "text_delta", text: part.text };
         }
-        if (candidate?.finishReason) stopReason = (Object.hasOwn(STOP_REASONS, candidate.finishReason) ? STOP_REASONS[candidate.finishReason] : undefined) ?? stopReason;
+        stopReason = stopReasonOf(candidate?.finishReason) ?? stopReason;
       }
     } catch (err) {
-      if (signal.aborted) throw err;
-      yield streamError("The connection to Gemini broke off mid-answer.");
-      return;
+      if (request.signal.aborted || err instanceof LlmError) throw err;
+      throw new LlmError("internal", "The connection to Gemini broke off mid-answer.");
     }
+    yield { type: "done", stopReason };
+  }
 
-    const end = endThinking();
-    if (end) yield end;
-    yield { type: "message_end", messageId, stopReason };
+  /** Opens the HTTP stream. A failure here happens before any event is yielded. */
+  private async send(request: LlmRequest): Promise<ReadableStream<Uint8Array>> {
+    if (!this.apiKey) throw new LlmError("unavailable", "GEMINI_API_KEY is not set in .env");
+    let response: Response;
+    try {
+      response = await this.fetchFn(`${this.baseUrl}/models/${GEMINI_MODEL}:streamGenerateContent?alt=sse`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-goog-api-key": this.apiKey },
+        body: JSON.stringify(requestBody(request)),
+        signal: request.signal,
+      });
+    } catch (err) {
+      if (request.signal.aborted) throw err;
+      throw geminiNetworkError();
+    }
+    if (!response.ok) throw geminiErrorFromResponse(response.status, await response.text().catch(() => ""));
+    if (!response.body) throw new LlmError("internal", "Gemini sent an empty response.");
+    return response.body;
   }
-}
-
-/** A plain-English reason when a chunk ends the answer badly (blocked, error), else undefined. */
-function chunkProblem(chunk: GeminiChunk): string | undefined {
-  if (chunk.error) {
-    return chunk.error.code === 429
-      ? "Gemini free-tier quota reached (rate limit). Wait a minute and try again."
-      : `Gemini failed mid-answer (${chunk.error.status ?? chunk.error.code ?? "unknown error"}).`;
-  }
-  if (chunk.promptFeedback?.blockReason) {
-    return `Gemini blocked this question (${chunk.promptFeedback.blockReason}).`;
-  }
-  const reason = chunk.candidates?.[0]?.finishReason;
-  if (reason && !Object.hasOwn(STOP_REASONS, reason)) {
-    return `Gemini stopped the answer early (${reason}).`;
-  }
-  return undefined;
 }
