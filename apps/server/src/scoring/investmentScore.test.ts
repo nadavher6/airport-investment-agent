@@ -2,8 +2,13 @@ import { describe, expect, it } from "vitest";
 import { findAirport } from "../data/enplanements/dataset.ts";
 import { enplanementsDataset } from "../data/enplanements/dataset.ts";
 import type { AirportRecord } from "../data/enplanements/types.ts";
+import { buildScorer } from "./engine.ts";
 import { INVESTMENT_KPIS, growthPctPerYear, rankAirports, rankAirportsRelative, scoreAirport } from "./investmentScore.ts";
 
+import { getT100 } from "../data/t100/dataset.ts";
+import golden from "./fixtures/kpi-golden-main.json" with { type: "json" };
+
+const findShare = (code: string): number => getT100(code)!.internationalShare;
 const records = (...codes: string[]) =>
   codes.map((c) => findAirport(c)).filter((r): r is NonNullable<typeof r> => r !== null);
 
@@ -43,8 +48,8 @@ describe("investment score", () => {
     const lh = (s: typeof jfk) => s.kpis.find((k) => k.key === "long_haul")!.normalized!;
     // JFK (~56% international) must out-score DEN (~6%) on long-haul, not both saturate at 100.
     expect(lh(jfk)).toBeGreaterThan(lh(den));
-    expect(lh(jfk)).toBe(100);
-    expect(lh(den)).toBe(0);
+    expect(lh(jfk)).toBe(100); // above 50% international: capped
+    expect(lh(den)).toBeCloseTo(findShare("DEN") / 0.5, 1); // share ÷ 50%, no longer 0
   });
 
   it("evidence exposes the real T-100 inputs", () => {
@@ -96,8 +101,8 @@ describe("unmet demand sub-score = load factor as a percentage (#53)", () => {
   const sub = (s: ReturnType<typeof scoreAirport>, key: string) => s.kpis.find((k) => k.key === key)!;
   const lf = (code: string) => sub(scoreAirport(findAirport(code)!), "unmet_demand").raw!;
 
-  it("declares the percent scale on unmet_demand only", () => {
-    expect(INVESTMENT_KPIS.filter((k) => k.scale === "percent").map((k) => k.key)).toEqual(["unmet_demand"]);
+  it("declares the percent scale on unmet_demand and long_haul only", () => {
+    expect(INVESTMENT_KPIS.filter((k) => k.scale?.kind === "percent").map((k) => k.key)).toEqual(["unmet_demand", "long_haul"]);
   });
 
   it("LAX and SNA: the sub-score equals the load factor, in both modes", () => {
@@ -124,22 +129,84 @@ describe("unmet demand sub-score = load factor as a percentage (#53)", () => {
     expect(kpi.extract({ airportCode: "ZZZ" } as AirportRecord)).toBeNull();
   });
 
-  it("golden: the other KPIs are unchanged (values recorded from main before #53)", () => {
+  it("golden: the other KPIs are unchanged (values recorded from main before #53; long_haul updated for #57)", () => {
     const line = (s: ReturnType<typeof scoreAirport>) =>
       `${s.item.airportCode} ` +
       s.kpis.filter((k) => k.key !== "unmet_demand").map((k) => `${k.key}:${k.raw}:${k.normalized}`).join(" ");
     const codes = ["LAX", "SNA", "ATL", "JFK"];
     expect(rankAirports(records(...codes)).map(line).sort()).toEqual([
-      "ATL congestion:393351:100 long_haul:13.6:100 growth:-0.3745:53.6",
+      "ATL congestion:393351:100 long_haul:13.6:27.2 growth:-0.3745:53.6",
       "JFK congestion:212209:100 long_haul:52.9:100 growth:0.2752:56.4",
-      "LAX congestion:266820:100 long_haul:30.8:100 growth:-2.5375:44.1",
-      "SNA congestion:51447:50.3 long_haul:2.1:20 growth:0.8283:58.8",
+      "LAX congestion:266820:100 long_haul:30.8:61.6 growth:-2.5375:44.1",
+      "SNA congestion:51447:50.3 long_haul:2.1:4.2 growth:0.8283:58.8",
     ]);
     expect(rankAirportsRelative(records(...codes)).map(line).sort()).toEqual([
-      "ATL congestion:393351:100 long_haul:13.6:22.6 growth:-0.3745:64.3",
+      "ATL congestion:393351:100 long_haul:13.6:27.2 growth:-0.3745:64.3",
       "JFK congestion:212209:47 long_haul:52.9:100 growth:0.2752:83.6",
-      "LAX congestion:266820:63 long_haul:30.8:56.5 growth:-2.5375:0",
-      "SNA congestion:51447:0 long_haul:2.1:0 growth:0.8283:100",
+      "LAX congestion:266820:63 long_haul:30.8:61.6 growth:-2.5375:0",
+      "SNA congestion:51447:0 long_haul:2.1:4.2 growth:0.8283:100",
     ]);
+  });
+});
+
+describe("long-haul as a percentage out of 50% (#57)", () => {
+  const lh = (code: string, rank: typeof rankAirports) =>
+    rank(records("LAX", "SNA", code)).find((s) => s.item.airportCode === code)!.kpis.find((k) => k.key === "long_haul")!;
+
+  it("declares fullAt 0.5 for long_haul and fullAt 1.0 for unmet demand", () => {
+    const scale = (key: string) => INVESTMENT_KPIS.find((k) => k.key === key)!.scale;
+    expect(scale("long_haul")).toEqual({ kind: "percent", fullAt: 0.5 });
+    expect(scale("unmet_demand")).toEqual({ kind: "percent", fullAt: 1.0 });
+    expect(scale("congestion")).toBeUndefined();
+    expect(scale("growth")).toBeUndefined();
+  });
+
+  it("LAX 30.8% -> 61.6 and SNA 2.1% -> 4.2, in both modes", () => {
+    for (const rank of [rankAirports, rankAirportsRelative]) {
+      const set = rank(records("LAX", "SNA"));
+      const sub = (code: string) => set.find((s) => s.item.airportCode === code)!.kpis.find((k) => k.key === "long_haul")!.normalized;
+      expect(sub("LAX")).toBe(61.6);
+      expect(sub("SNA")).toBe(4.2);
+    }
+  });
+
+  it("evidence names the 50% benchmark and the result; contribution = sub-score x renormalized weight", () => {
+    const k = lh("LAX", rankAirports);
+    expect(k.evidence!.explanation).toContain("scored against a 50% benchmark (50% international = 100) → 61.6");
+    expect(k.contribution).toBe(12.3); // 61.6 x 0.2
+  });
+
+  it("long_haul KPI: 0% scores 0 and exactly 50% scores 100 (its own scale, no cap note at 50)", () => {
+    const def = INVESTMENT_KPIS.find((k) => k.key === "long_haul")!;
+    const only = buildScorer([{ share: 0 }, { share: 50 }], [{ key: def.key, label: def.label, weight: 1, direction: def.direction, ...(def.scale ? { scale: def.scale } : {}), extract: (r: { share: number }) => r.share }]);
+    expect(only.score({ share: 0 }).kpis[0]!.normalized).toBe(0);
+    expect(only.score({ share: 50 }).kpis[0]!.normalized).toBe(100);
+  });
+
+  it("notes the cap above 50% (JFK)", () => {
+    const k = scoreAirport(findAirport("JFK")!).kpis.find((x) => x.key === "long_haul")!;
+    expect(k.normalized).toBe(100);
+    expect(k.evidence!.explanation).toContain("capped at 100");
+  });
+
+  it("golden vs main: congestion, unmet demand (load factor, fullAt 1.0) and growth are identical for every airport (absolute)", () => {
+    for (const a of Object.values(enplanementsDataset.airports)) {
+      const got = Object.fromEntries(
+        scoreAirport(a).kpis.filter((k) => k.key !== "long_haul").map((k) => [k.key, k.normalized]),
+      );
+      expect(got, a.airportCode).toEqual((golden.absolute as Record<string, unknown>)[a.airportCode]);
+    }
+  });
+
+  it("golden vs main: the same three KPIs are identical in a relative comparison", () => {
+    for (const s of rankAirportsRelative(records("LAX", "SNA", "JFK", "DEN"))) {
+      const got = Object.fromEntries(s.kpis.filter((k) => k.key !== "long_haul").map((k) => [k.key, k.normalized]));
+      expect(got, s.item.airportCode).toEqual((golden.relative as Record<string, unknown>)[s.item.airportCode]);
+    }
+  });
+
+  it("unmet demand: LAX load factor scores the load factor itself", () => {
+    const k = scoreAirport(findAirport("LAX")!).kpis.find((x) => x.key === "unmet_demand")!;
+    expect(k.normalized).toBe(k.raw);
   });
 });

@@ -25,7 +25,7 @@ export const scoreAirportsTool = defineTool<ScoreAirportsInput, unknown>({
     "Rank US airports by the deterministic Investment Attractiveness Score (0-100): a weighted blend of " +
     "congestion (operations), unmet demand (load factor), long-haul share (international seats) and growth " +
     "(enplanement CAGR), from FAA + BTS T-100 data. With 2+ codes it ranks them RELATIVE to each other " +
-    "(for the min-max categories, 100 = best of the compared set; for unmet demand the score is the load factor % itself, capped at 100); with 1 code it scores ABSOLUTELY vs all US airports. Each " +
+    "(for the min-max categories, 100 = best of the compared set; for the two percentage categories the score does not depend on the compared set: unmet demand is the load factor % itself, capped at 100, and long-haul is the international seat share out of 50%, so 50% international = 100 and 40% = 80, capped at 100); with 1 code it scores ABSOLUTELY vs all US airports. Each " +
     "result gives the final score, a per-category subScore + contribution, and evidence (formula, inputs, " +
     "explanation) so the ranking can be explained. `coverage`/`missing` flag any category without data; " +
     "unknown codes are returned in `notFound`. Codes are case-insensitive and deduplicated; at most " +
