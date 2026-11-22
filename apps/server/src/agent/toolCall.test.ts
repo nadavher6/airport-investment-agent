@@ -1,31 +1,33 @@
 import { describe, expect, it } from "vitest";
 import { looksLikeToolCall, parseModelStep } from "./toolCall.ts";
 
-describe("parseModelStep", () => {
+const CALL = '{"tool":"get_enplanements","input":{"airport_code":"BOS"}}';
+const BOS = { name: "get_enplanements", input: { airport_code: "BOS" } };
+
+describe("parseModelStep (#48, #49)", () => {
   it("reads a bare call", () => {
-    expect(parseModelStep('{"tool":"get_enplanements","input":{"airport_code":"BOS"}}')).toEqual({
-      kind: "call",
-      call: { name: "get_enplanements", input: { airport_code: "BOS" } },
-    });
+    expect(parseModelStep(CALL)).toEqual({ kind: "call", call: BOS, extra: false });
   });
 
-  it("reads a call in a ```json fence and a call after a lead-in", () => {
-    const fenced = parseModelStep('```json\n{"tool":"get_enplanements","input":{"airport_code":"BOS"}}\n```');
-    const prefaced = parseModelStep('Let me check.\n{"tool":"get_enplanements","input":{"airport_code":"BOS"}}');
-    expect(fenced).toEqual({ kind: "call", call: { name: "get_enplanements", input: { airport_code: "BOS" } } });
-    expect(prefaced).toEqual(fenced);
+  it("reads a call in a ```json fence, after a lead-in, and before trailing prose", () => {
+    expect(parseModelStep("```json\n" + CALL + "\n```")).toEqual({ kind: "call", call: BOS, extra: false });
+    expect(parseModelStep(`Let me check.\n${CALL}`)).toEqual({ kind: "call", call: BOS, extra: false });
+    expect(parseModelStep(`Let me check.\n${CALL}\nOne moment.`)).toMatchObject({ kind: "call", call: BOS });
   });
 
-  it("treats plain prose as the answer", () => {
+  it("treats prose with no tool call as the answer, even with braces in it", () => {
     expect(parseModelStep("Boston handled about 20M passengers.")).toEqual({ kind: "answer" });
+    expect(parseModelStep("BOS had 20.4M boardings in 2024 {approx}.")).toEqual({ kind: "answer" });
     expect(looksLikeToolCall("A set like {a, b} in prose")).toBe(false);
   });
 
   it("unparseable: truncated or broken JSON", () => {
-    const truncated = parseModelStep('{"tool":"get_enplanements","input":{"airport_code":"BO');
-    const broken = parseModelStep("{tool: get_enplanements}");
-    expect(truncated).toMatchObject({ kind: "error", error: { code: "unparseable" } });
-    expect(broken).toMatchObject({ kind: "error", error: { code: "unparseable" } });
+    expect(parseModelStep('{"tool":"get_enplanements","input":{"airport_code":"BO')).toMatchObject({
+      kind: "error",
+      error: { code: "unparseable" },
+    });
+    expect(parseModelStep("{tool: get_enplanements}")).toMatchObject({ kind: "error", error: { code: "unparseable" } });
+    expect(parseModelStep("{'tool': 'get_enplanements'}")).toMatchObject({ kind: "error", error: { code: "unparseable" } });
   });
 
   it.each([
@@ -46,6 +48,18 @@ describe("parseModelStep", () => {
   it("keeps the tool name of a bad_shape call when it was a string", () => {
     expect(parseModelStep('{"tool":"get_enplanements","input":"BOS"}')).toMatchObject({
       error: { code: "bad_shape", tool: "get_enplanements" },
+    });
+  });
+
+  it("reads only the first of several calls and says there were more", () => {
+    const two = `${CALL}\n{"tool":"get_enplanements","input":{"airport_code":"LAX"}}`;
+    expect(parseModelStep(two)).toEqual({ kind: "call", call: BOS, extra: true });
+  });
+
+  it("does not let a brace inside a string end the object early", () => {
+    expect(parseModelStep('{"tool":"find_airports_by_city","input":{"cities":["a}b"]}}')).toMatchObject({
+      kind: "call",
+      call: { input: { cities: ["a}b"] } },
     });
   });
 

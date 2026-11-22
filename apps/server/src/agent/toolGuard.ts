@@ -57,27 +57,33 @@ function firstSchemaProblem(tool: RegisteredTool, input: JsonValue): string | nu
   }
 }
 
+/** A loop-level input rule on top of a tool's schema: `<path> — <message>` when it rejects the call. */
+export type LoopRule = (call: ParsedToolCall) => string | null;
+
 /**
  * Check a parsed call against the allowed tools and this turn's earlier calls, then run it.
  * `seen` holds the keys of calls already run this turn; a call that runs is added to it.
+ * Order: unknown_tool, repeat_call, invalid_input (the tool's schema, then `rule`), then the run.
  */
 export async function runGuarded(
   call: ParsedToolCall,
   tools: readonly RegisteredTool[],
   seen: Set<string>,
   ctx: ToolContext,
+  rule: LoopRule = () => null,
 ): Promise<GuardedResult> {
   const tool = tools.find((t) => t.name === call.name);
   if (tool === undefined) return { ok: false, error: { code: "unknown_tool", call } };
   const key = callKey(call);
   if (seen.has(key)) return { ok: false, error: { code: "repeat_call", call } };
-  const problem = firstSchemaProblem(tool, call.input);
+  const problem = firstSchemaProblem(tool, call.input) ?? rule(call);
   if (problem !== null) return { ok: false, error: { code: "invalid_input", call, problem } };
   seen.add(key);
   const result = await tool.run(call.input, ctx);
   if (result.ok) return { ok: true, tool, output: result.output };
   if (result.error.code === "invalid_input") {
-    return { ok: false, error: { code: "invalid_input", call, problem: result.error.message } };
+    const problem = result.error.message.replace(/^Invalid input for [^:]+: /, "");
+    return { ok: false, error: { code: "invalid_input", call, problem } };
   }
   return { ok: false, error: { code: "tool_failed", call, error: result.error } };
 }
@@ -127,9 +133,9 @@ export function errorUiMessage(error: ToolCallError): string {
     case "unknown_tool":
       return `There is no tool called "${error.call.name}" (unknown_tool).`;
     case "invalid_input":
-      return `Invalid input for ${error.call.name}: ${error.problem} (invalid_input).`;
+      return `Invalid input for ${error.call.name}: ${error.problem.replace(/\.$/, "")} (invalid_input).`;
     case "tool_failed":
-      return `${error.error.message} (tool_failed: ${error.error.code}).`;
+      return `${error.error.message.replace(/\.$/, "")} (tool_failed: ${error.error.code}).`;
     case "repeat_call":
       return `${error.call.name} was already called with this exact input, so it was not run again (repeat_call).`;
   }

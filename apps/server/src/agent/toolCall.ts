@@ -2,10 +2,11 @@ import type { JsonObject } from "@airport/shared";
 import type { ToolError } from "./tools/tool.ts";
 
 /**
- * Tool-call parsing for the ReAct loop (#49). The LlmClient has no native function calling, so
- * the model writes a call as JSON in its text: `{"tool": "<name>", "input": {...}}`, possibly in a
- * ```json fence or after a short lead-in. This module decides whether a model step is a tool call
- * and, if it is, either parses it or returns a typed `ToolCallError`. Nothing here throws.
+ * Tool-call parsing for the ReAct loop (#48, guardrails #49). The LlmClient has no native function
+ * calling, so the model writes a call as JSON in its text: `{"tool": "<name>", "input": {...}}`, bare,
+ * in a ```json fence, or after a short lead-in. This module decides whether a model step is a tool
+ * call and, if it is, either parses it or returns a typed `ToolCallError`. Nothing here throws.
+ * Whether the name is an allowed tool is the guard's check (toolGuard.ts), not the parser's.
  */
 
 /** A well-formed tool-use directive from the model's text (the name is not checked here). */
@@ -24,30 +25,31 @@ export type ToolCallError =
   | { readonly code: "bad_shape"; readonly problem: string; readonly raw: string; readonly tool?: string }
   /** `tool` is not in the loop's allowed list. */
   | { readonly code: "unknown_tool"; readonly call: ParsedToolCall }
-  /** The tool's Zod schema rejected `input`. `problem` is `<path> — <message>` of the first issue. */
+  /** The tool's Zod schema (or a loop rule) rejected `input`. `problem` is `<path> — <message>`. */
   | { readonly code: "invalid_input"; readonly call: ParsedToolCall; readonly problem: string }
   /** The tool ran and returned a `ToolError` (`not_found` / `unavailable` / `internal`). */
   | { readonly code: "tool_failed"; readonly call: ParsedToolCall; readonly error: ToolError }
   /** The exact same tool + input as an earlier call in this turn. */
   | { readonly code: "repeat_call"; readonly call: ParsedToolCall };
 
-/** What one model step turned out to be. */
+/** What one model step turned out to be. `extra`: the step held more than one call (only the first runs). */
 export type ModelStep =
   | { readonly kind: "answer" }
-  | { readonly kind: "call"; readonly call: ParsedToolCall }
+  | { readonly kind: "call"; readonly call: ParsedToolCall; readonly extra: boolean }
   | { readonly kind: "error"; readonly error: ToolCallError };
 
 /** The longest slice of the model's own text quoted back to it in feedback. */
 const MAX_RAW_CHARS = 600;
 
 const FENCE = /```[a-zA-Z]*[ \t]*\r?\n?([\s\S]*?)(?:```|$)/;
-const TOOL_KEY_OBJECT = /\{\s*"tool"\s*:/;
+/** A `"tool":` (or `'tool':`) key opening an object: a call, even after a lead-in or with broken JSON. */
+const TOOL_KEY_OBJECT = /\{\s*["']tool["']\s*:/;
 
 /** The body of the first ``` fence that mentions "tool", or null. */
 function toolFenceBody(text: string): string | null {
   const match = FENCE.exec(text);
   const body = match?.[1];
-  return body !== undefined && body.includes('"tool"') ? body : null;
+  return body !== undefined && /["']tool["']/.test(body) ? body : null;
 }
 
 /**
@@ -58,7 +60,7 @@ export function looksLikeToolCall(text: string): boolean {
   return text.trimStart().startsWith("{") || toolFenceBody(text) !== null || TOOL_KEY_OBJECT.test(text);
 }
 
-/** From the first '{', the source of a balanced JSON object, or null when it never closes. */
+/** From the first '{', the source of a balanced JSON object (string-aware), or null when it never closes. */
 function firstJsonObject(text: string): string | null {
   const start = text.indexOf("{");
   if (start === -1) return null;
@@ -114,12 +116,13 @@ function shapeProblem(value: unknown): string | null {
 /**
  * Classify one model step. Prose with no sign of a call is the final answer; anything that looks
  * like a call is parsed into a `ParsedToolCall` or an `unparseable` / `bad_shape` error.
- * Only the first call in a step is read.
+ * Only the first call in a step is read; `extra` says whether another one followed it.
  */
 export function parseModelStep(text: string): ModelStep {
   if (!looksLikeToolCall(text)) return { kind: "answer" };
   const raw = truncate(text.trim());
-  const src = firstJsonObject(callSource(text));
+  const source = callSource(text);
+  const src = firstJsonObject(source);
   if (src === null) {
     return { kind: "error", error: { code: "unparseable", problem: "the JSON object is missing or never closed", raw } };
   }
@@ -137,5 +140,6 @@ export function parseModelStep(text: string): ModelStep {
       error: { code: "bad_shape", problem: problem ?? "not a tool call", raw, ...(tool !== undefined ? { tool } : {}) },
     };
   }
-  return { kind: "call", call: { name: value.tool, input: value.input } };
+  const after = text.slice(text.indexOf(src) + src.length);
+  return { kind: "call", call: { name: value.tool, input: value.input }, extra: TOOL_KEY_OBJECT.test(after) };
 }

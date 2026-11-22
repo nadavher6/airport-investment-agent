@@ -32,13 +32,9 @@ describe("POST /api/chat with claude-headless", () => {
     // The fake replays the same fixture to the classifier call too, so it falls back to in_scope (#13).
     expect(events[1]).toMatchObject({ type: "tool_call", name: "classify_message" });
     expect(events[2]).toMatchObject({ type: "tool_result", result: { ok: true, output: { label: "in_scope" } } });
-    // ...and the candidate step (#42) falls back to no candidates, so no tool runs before the answer.
-    expect(events[3]).toMatchObject({ type: "tool_call", name: "pick_candidates" });
-    expect(events[4]).toMatchObject({ type: "tool_result", result: { ok: true, output: { codes: [], fallback: true } } });
+    // ...then the tool loop (#48): the fixture's prose is the answer, so no tool runs.
     expect(events.map((e) => e.type)).toEqual([
       "message_start",
-      "tool_call",
-      "tool_result",
       "tool_call",
       "tool_result",
       "thinking_delta",

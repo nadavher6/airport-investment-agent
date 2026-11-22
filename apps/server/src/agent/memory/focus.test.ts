@@ -3,7 +3,7 @@ import { extractExplicitCodes, resolveFocus } from "./focus.ts";
 import { selectFocusedRecords } from "./assemble.ts";
 import { findAirportsByCity, findAirportsByRegion } from "../../data/places/airports.ts";
 
-/** The codes the city lookup returns for one name: the single source of truth for places. */
+/** The codes #23's city tool returns for one name: the single source of truth for places. */
 const cityCodes = (city: string): string[] =>
   findAirportsByCity([city]).results[city]?.airports.map((a) => a.code) ?? [];
 import type { AirportRecord, MemoryState } from "./types.ts";
