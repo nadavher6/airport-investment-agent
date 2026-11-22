@@ -1,4 +1,4 @@
-import { basename, dirname, isAbsolute, resolve } from "node:path";
+import { basename, dirname, isAbsolute, join, resolve } from "node:path";
 
 /** The prefix of every sandbox dir this client creates (see makeSandboxDir). */
 export const SANDBOX_PREFIX = "airport-claude-";
@@ -23,16 +23,23 @@ const MAX_NAME_LENGTH = 200;
  *   - `home` and `sandboxCwd` are absolute,
  *   - the sandbox is one of ours (its last segment starts with SANDBOX_PREFIX),
  *   - the derived name is short enough that Claude Code would not have shortened it,
- *   - the resolved target sits directly under `<home>/.claude/projects` and its last segment is
+ *   - the resolved target sits directly under `<configDir>/projects` (configDir = $CLAUDE_CONFIG_DIR when set and absolute,
+ *     else `<home>/.claude`) and its last segment is
  *     exactly the derived name (so no "..", no separators, no other dir can be hit).
  */
-export function claudeProjectDirToRemove(home: string, sandboxCwd: string): string | undefined {
+export function claudeProjectDirToRemove(
+  home: string,
+  sandboxCwd: string,
+  configDir?: string,
+): string | undefined {
   if (!isAbsolute(home) || !isAbsolute(sandboxCwd)) return undefined;
+  if (configDir !== undefined && !isAbsolute(configDir)) return undefined;
   if (!basename(sandboxCwd).startsWith(SANDBOX_PREFIX)) return undefined;
   const name = claudeProjectDirName(sandboxCwd);
   if (name.length > MAX_NAME_LENGTH || !/^[a-zA-Z0-9-]+$/.test(name)) return undefined;
   if (!name.endsWith(claudeProjectDirName(basename(sandboxCwd)))) return undefined;
-  const root = resolve(home, ".claude", "projects");
+  // Claude Code keeps projects under $CLAUDE_CONFIG_DIR when it is set, else under ~/.claude.
+  const root = resolve(configDir ?? join(home, ".claude"), "projects");
   const target = resolve(root, name);
   if (dirname(target) !== root || basename(target) !== name) return undefined;
   return target;

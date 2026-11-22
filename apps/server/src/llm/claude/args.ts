@@ -55,7 +55,7 @@ const ENV_ALLOW = new Set([
   "HTTP_PROXY", "HTTPS_PROXY", "NO_PROXY", "http_proxy", "https_proxy", "no_proxy",
   "NODE_EXTRA_CA_CERTS", "SSL_CERT_FILE",
 ]);
-/** Markers that make `claude` think it is nested in another Claude Code session. */
+/** Dropped so the child `claude` runs as a plain endpoint when the server was started from inside a Claude Code session. */
 const ENV_DROP = new Set(["CLAUDECODE", "CLAUDE_CODE_ENTRYPOINT"]);
 const allowed = (name: string): boolean =>
   !ENV_DROP.has(name) && (ENV_ALLOW.has(name) || name.startsWith("LC_") || name.startsWith("CLAUDE_"));

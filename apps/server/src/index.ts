@@ -14,7 +14,7 @@ try {
 
 const config = loadConfig();
 // Selecting the claude-headless model sends every LLM call to a `claude -p` child; the rest use the mock.
-const claude = new ClaudeHeadlessClient({ config: config.claude, home: homedir() });
+const claude = new ClaudeHeadlessClient({ config: config.claude, home: homedir(), ...(process.env.CLAUDE_CONFIG_DIR ? { configDir: process.env.CLAUDE_CONFIG_DIR } : {}) });
 const llmClients = { "claude-headless": claude };
 const agent = new LlmPassthroughAgent(llmClients, new MockAgent());
 const app = createApp({ config, agent, llmClients });

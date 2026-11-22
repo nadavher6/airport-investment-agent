@@ -1,3 +1,6 @@
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { claudeProjectDirName, claudeProjectDirToRemove } from "./projectDir.ts";
 
@@ -27,5 +30,17 @@ describe("claudeProjectDirToRemove", () => {
   it("refuses a relative home and names Claude Code would have shortened", () => {
     expect(claudeProjectDirToRemove("someone", sandbox)).toBeUndefined();
     expect(claudeProjectDirToRemove(home, `/${"d".repeat(220)}/airport-claude-x`)).toBeUndefined();
+  });
+});
+
+describe("claudeProjectDirToRemove with CLAUDE_CONFIG_DIR", () => {
+  it("uses <configDir>/projects instead of <home>/.claude/projects, still the exact dir", () => {
+    const configDir = mkdtempSync(join(tmpdir(), "fake-config-"));
+    try {
+      expect(claudeProjectDirToRemove(home, sandbox, configDir)).toBe(join(configDir, "projects", real));
+      expect(claudeProjectDirToRemove(home, sandbox, "relative/config")).toBeUndefined();
+    } finally {
+      rmSync(configDir, { recursive: true, force: true });
+    }
   });
 });
