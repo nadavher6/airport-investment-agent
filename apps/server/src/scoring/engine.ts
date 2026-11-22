@@ -97,10 +97,31 @@ export function normalize(raw: number, bounds: Bounds, direction: Direction): nu
  * Build a scorer from a reference population: KPI bounds are computed once from `reference`,
  * so any item (even a single one) is scored on the same fixed, comparable scale.
  */
+export interface ScorerOptions<A> {
+  /** Winsor percentiles [low, high]; default [5, 95]. */
+  readonly winsor?: readonly [number, number];
+  /**
+   * Key used to order items with an equal score (ascending, by code point, so it does not depend on
+   * the locale). Without it, ties keep the caller's input order, so the ranking is not deterministic.
+   */
+  readonly tieBreak?: (item: A) => string;
+}
+
+/** Score descending, then the tie-break key ascending (plain code-point order). */
+export function compareRanked<A>(tieBreak?: (item: A) => string): (a: ScoredItem<A>, b: ScoredItem<A>) => number {
+  return (a, b) => {
+    if (a.score !== b.score) return b.score - a.score;
+    if (!tieBreak) return 0;
+    const ka = tieBreak(a.item);
+    const kb = tieBreak(b.item);
+    return ka < kb ? -1 : ka > kb ? 1 : 0;
+  };
+}
+
 export function buildScorer<A>(
   reference: readonly A[],
   kpis: readonly KpiDef<A>[],
-  opts: { winsor?: readonly [number, number] } = {},
+  opts: ScorerOptions<A> = {},
 ): Scorer<A> {
   const [lowP, highP] = opts.winsor ?? [5, 95];
   const bounds = new Map<string, Bounds>();
@@ -143,6 +164,6 @@ export function buildScorer<A>(
 
   return {
     score,
-    rank: (items) => items.map(score).sort((a, b) => b.score - a.score),
+    rank: (items) => items.map(score).sort(compareRanked(opts.tieBreak)),
   };
 }

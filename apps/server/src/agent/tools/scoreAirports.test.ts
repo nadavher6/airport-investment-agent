@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { scoreAirportsTool } from "./scoreAirports.ts";
+import { MAX_AIRPORT_CODES, scoreAirportsTool } from "./scoreAirports.ts";
 
 const ctx = { signal: new AbortController().signal };
 
@@ -76,5 +76,23 @@ describe("score_airports tool", () => {
       ok: false,
       error: { code: "not_found" },
     });
+  });
+
+  it("upper-cases and dedupes the codes: LAX and lax are one row", async () => {
+    const { mode, ranking, notFound } = await rank(["LAX", "lax", " Lax ", "zzz", "ZZZ"]);
+    expect(ranking.map((r) => r.airportCode)).toEqual(["LAX"]);
+    expect(mode).toBe("absolute");
+    expect(notFound).toEqual(["ZZZ"]);
+  });
+
+  it(`caps the input at ${MAX_AIRPORT_CODES} codes with a clear invalid_input error`, async () => {
+    expect(MAX_AIRPORT_CODES).toBe(50);
+    const codes = (n: number) => Array.from({ length: n }, (_, i) => `A${String(i).padStart(2, "0")}`);
+    const over = await scoreAirportsTool.run({ airport_codes: codes(51) }, ctx);
+    expect(over).toMatchObject({ ok: false, error: { code: "invalid_input" } });
+    if (over.ok) throw new Error("expected an error");
+    expect(over.error.message).toContain("at most 50 airport_codes");
+    // exactly 50 is allowed (all unknown here, so the tool says not_found, not invalid_input)
+    expect(await scoreAirportsTool.run({ airport_codes: codes(50) }, ctx)).toMatchObject({ ok: false, error: { code: "not_found" } });
   });
 });
