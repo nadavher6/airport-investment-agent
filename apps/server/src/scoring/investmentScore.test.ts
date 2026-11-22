@@ -3,7 +3,7 @@ import { findAirport } from "../data/enplanements/dataset.ts";
 import { enplanementsDataset } from "../data/enplanements/dataset.ts";
 import type { AirportRecord } from "../data/enplanements/types.ts";
 import { buildScorer } from "./engine.ts";
-import { INVESTMENT_KPIS, growthPctPerYear, rankAirports, rankAirportsRelative, scoreAirport } from "./investmentScore.ts";
+import { INVESTMENT_KPIS, growthPctPerYear, rankAirports, scoreAirport } from "./investmentScore.ts";
 
 import { getT100 } from "../data/t100/dataset.ts";
 import golden from "./fixtures/kpi-golden-main.json" with { type: "json" };
@@ -41,8 +41,8 @@ describe("investment score", () => {
     }
   });
 
-  it("relative ranking differentiates the compared set (long-haul: gateway beats domestic hub)", () => {
-    const ranked = rankAirportsRelative(records("JFK", "DEN"));
+  it("ranking a set differentiates it (long-haul: gateway beats domestic hub)", () => {
+    const ranked = rankAirports(records("JFK", "DEN"));
     const jfk = ranked.find((r) => r.item.airportCode === "JFK")!;
     const den = ranked.find((r) => r.item.airportCode === "DEN")!;
     const lh = (s: typeof jfk) => s.kpis.find((k) => k.key === "long_haul")!.normalized!;
@@ -64,13 +64,11 @@ describe("investment score", () => {
   it("gives the same ranking for forward and reversed input, ties ordered by airport code", () => {
     const all = Object.values(enplanementsDataset.airports);
     const codes = (xs: ReturnType<typeof rankAirports>) => xs.map((s) => s.item.airportCode);
-    for (const rank of [rankAirports, rankAirportsRelative]) {
-      const forward = rank(all);
-      expect(codes(rank([...all].reverse()))).toEqual(codes(forward));
-      for (let i = 1; i < forward.length; i++) {
-        const [a, b] = [forward[i - 1]!, forward[i]!];
-        if (a.score === b.score) expect(a.item.airportCode < b.item.airportCode).toBe(true);
-      }
+    const forward = rankAirports(all);
+    expect(codes(rankAirports([...all].reverse()))).toEqual(codes(forward));
+    for (let i = 1; i < forward.length; i++) {
+      const [a, b] = [forward[i - 1]!, forward[i]!];
+      if (a.score === b.score) expect(a.item.airportCode < b.item.airportCode).toBe(true);
     }
   });
 
@@ -109,14 +107,12 @@ describe("unmet demand sub-score = load factor as a percentage (#53)", () => {
     ]);
   });
 
-  it("LAX and SNA: the sub-score equals the load factor, in both modes", () => {
-    for (const ranked of [rankAirports(records("LAX", "SNA")), rankAirportsRelative(records("LAX", "SNA"))]) {
-      for (const s of ranked) {
-        const u = sub(s, "unmet_demand");
-        expect(u.raw).toBe(lf(s.item.airportCode));
-        expect(u.normalized).toBe(Math.min(100, u.raw!));
-        expect(u.contribution).toBe(Math.round((u.normalized! * 0.3) * 10) / 10); // full coverage: weight 0.3
-      }
+  it("LAX and SNA: the sub-score equals the load factor", () => {
+    for (const s of rankAirports(records("LAX", "SNA"))) {
+      const u = sub(s, "unmet_demand");
+      expect(u.raw).toBe(lf(s.item.airportCode));
+      expect(u.normalized).toBe(Math.min(100, u.raw!));
+      expect(u.contribution).toBe(Math.round((u.normalized! * 0.3) * 10) / 10); // full coverage: weight 0.3
     }
   });
 
@@ -133,7 +129,7 @@ describe("unmet demand sub-score = load factor as a percentage (#53)", () => {
     expect(kpi.extract({ airportCode: "ZZZ" } as AirportRecord)).toBeNull();
   });
 
-  it("golden: the other KPIs are unchanged (values recorded from main before #53; long_haul updated for #57; congestion changed in #54)", () => {
+  it("golden: the other KPIs are unchanged (values recorded from main before #53; long_haul updated for #57; congestion changed in #54; growth in #75)", () => {
     const line = (s: ReturnType<typeof scoreAirport>) =>
       `${s.item.airportCode} ` +
       s.kpis
@@ -142,16 +138,10 @@ describe("unmet demand sub-score = load factor as a percentage (#53)", () => {
         .join(" ");
     const codes = ["LAX", "SNA", "ATL", "JFK"];
     expect(rankAirports(records(...codes)).map(line).sort()).toEqual([
-      "ATL long_haul:13.6:27.2 growth:-0.3745:53.6",
-      "JFK long_haul:52.9:100 growth:0.2752:56.4",
-      "LAX long_haul:30.8:61.6 growth:-2.5375:44.1",
-      "SNA long_haul:2.1:4.2 growth:0.8283:58.8",
-    ]);
-    expect(rankAirportsRelative(records(...codes)).map(line).sort()).toEqual([
-      "ATL long_haul:13.6:27.2 growth:-0.3745:64.3",
-      "JFK long_haul:52.9:100 growth:0.2752:83.6",
-      "LAX long_haul:30.8:61.6 growth:-2.5375:0",
-      "SNA long_haul:2.1:4.2 growth:0.8283:100",
+      "ATL long_haul:13.6:27.2 growth:-0.3745:48.1",
+      "JFK long_haul:52.9:100 growth:0.2752:51.4",
+      "LAX long_haul:30.8:61.6 growth:-2.5375:37.3",
+      "SNA long_haul:2.1:4.2 growth:0.8283:54.1",
     ]);
   });
 });
@@ -165,16 +155,14 @@ describe("long-haul as a percentage out of 50% (#57)", () => {
     expect(scale("long_haul")).toEqual({ kind: "percent", fullAt: 0.5 });
     expect(scale("unmet_demand")).toEqual({ kind: "percent", fullAt: 1.0 });
     expect(scale("congestion")).toEqual({ kind: "percent", fullAt: 1.0 }); // #54: runway utilization
-    expect(scale("growth")).toBeUndefined();
+    expect(scale("growth")).toEqual({ kind: "linear", zeroAt: -10, fullAt: 10 }); // #75
   });
 
-  it("LAX 30.8% -> 61.6 and SNA 2.1% -> 4.2, in both modes", () => {
-    for (const rank of [rankAirports, rankAirportsRelative]) {
-      const set = rank(records("LAX", "SNA"));
-      const sub = (code: string) => set.find((s) => s.item.airportCode === code)!.kpis.find((k) => k.key === "long_haul")!.normalized;
-      expect(sub("LAX")).toBe(61.6);
-      expect(sub("SNA")).toBe(4.2);
-    }
+  it("LAX 30.8% -> 61.6 and SNA 2.1% -> 4.2", () => {
+    const set = rankAirports(records("LAX", "SNA"));
+    const sub = (code: string) => set.find((s) => s.item.airportCode === code)!.kpis.find((k) => k.key === "long_haul")!.normalized;
+    expect(sub("LAX")).toBe(61.6);
+    expect(sub("SNA")).toBe(4.2);
   });
 
   it("evidence names the 50% benchmark and the result; contribution = sub-score x renormalized weight", () => {
@@ -185,7 +173,7 @@ describe("long-haul as a percentage out of 50% (#57)", () => {
 
   it("long_haul KPI: 0% scores 0 and exactly 50% scores 100 (its own scale, no cap note at 50)", () => {
     const def = INVESTMENT_KPIS.find((k) => k.key === "long_haul")!;
-    const only = buildScorer([{ share: 0 }, { share: 50 }], [{ key: def.key, label: def.label, weight: 1, direction: def.direction, ...(def.scale ? { scale: def.scale } : {}), extract: (r: { share: number }) => r.share }]);
+    const only = buildScorer([{ key: def.key, label: def.label, weight: 1, direction: def.direction, scale: def.scale, extract: (r: { share: number }) => r.share }]);
     expect(only.score({ share: 0 }).kpis[0]!.normalized).toBe(0);
     expect(only.score({ share: 50 }).kpis[0]!.normalized).toBe(100);
   });
@@ -200,19 +188,16 @@ describe("long-haul as a percentage out of 50% (#57)", () => {
   // changes congestion on purpose (its own goldens are in congestion.test.ts), so only congestion is left out here.
   const withoutCongestion = (row: unknown): Record<string, unknown> =>
     Object.fromEntries(Object.entries(row as Record<string, unknown>).filter(([k]) => k !== "congestion"));
-  const kept = (key: string): boolean => key !== "long_haul" && key !== "congestion";
+  // #75 moves growth to a fixed scale on purpose, so only unmet demand is compared to this older fixture (the full
+  // #75 golden for congestion, unmet demand and long-haul is in comparisonIndependence.test.ts).
+  const kept = (key: string): boolean => key === "unmet_demand";
+  const onlyKept = (row: unknown): Record<string, unknown> =>
+    Object.fromEntries(Object.entries(withoutCongestion(row)).filter(([k]) => kept(k)));
 
-  it("golden vs main: unmet demand (load factor, fullAt 1.0) and growth are identical for every airport (absolute)", () => {
+  it("golden vs main: unmet demand (load factor, fullAt 1.0) is identical for every airport", () => {
     for (const a of Object.values(enplanementsDataset.airports)) {
       const got = Object.fromEntries(scoreAirport(a).kpis.filter((k) => kept(k.key)).map((k) => [k.key, k.normalized]));
-      expect(got, a.airportCode).toEqual(withoutCongestion((golden.absolute as Record<string, unknown>)[a.airportCode]));
-    }
-  });
-
-  it("golden vs main: the same two KPIs are identical in a relative comparison", () => {
-    for (const s of rankAirportsRelative(records("LAX", "SNA", "JFK", "DEN"))) {
-      const got = Object.fromEntries(s.kpis.filter((k) => kept(k.key)).map((k) => [k.key, k.normalized]));
-      expect(got, s.item.airportCode).toEqual(withoutCongestion((golden.relative as Record<string, unknown>)[s.item.airportCode]));
+      expect(got, a.airportCode).toEqual(onlyKept((golden.absolute as Record<string, unknown>)[a.airportCode]));
     }
   });
 

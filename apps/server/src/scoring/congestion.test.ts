@@ -8,7 +8,6 @@ import { buildScorer, type KpiDef } from "./engine.ts";
 import {
   INVESTMENT_KPIS,
   rankAirports,
-  rankAirportsRelative,
   runwayUtilization,
   scoreAirport,
   ratioToPct,
@@ -126,35 +125,27 @@ describe("congestion = runway utilization (#54)", () => {
     expect(ev.explanation).toContain("not an FAA figure");
   });
 
-  it("score_airports([LAX, SNA]) shows congestion as utilization %, not 0/100, in both modes", async () => {
+  it("score_airports([LAX, SNA]) shows congestion as utilization %, not 0/100", async () => {
     const r = await scoreAirportsTool.run({ airport_codes: ["LAX", "SNA"] }, { signal: new AbortController().signal });
     if (!r.ok) throw new Error("expected ok");
     const out = r.output as unknown as { ranking: { airportCode: string; breakdown: Record<string, { subScore: number | null }> }[] };
     const subScores = Object.fromEntries(out.ranking.map((a) => [a.airportCode, a.breakdown.congestion!.subScore]));
     expect(subScores).toEqual({ LAX: runwayUtilization("LAX")!.utilizationPct, SNA: runwayUtilization("SNA")!.utilizationPct });
     for (const v of Object.values(subScores)) expect([0, 100]).not.toContain(v);
-    for (const ranked of [rankAirports(records("LAX", "SNA")), rankAirportsRelative(records("LAX", "SNA"))]) {
-      for (const s of ranked) expect(sub(s, "congestion").normalized).toBe(runwayUtilization(s.item.airportCode)!.utilizationPct);
-    }
+    for (const s of rankAirports(records("LAX", "SNA"))) expect(sub(s, "congestion").normalized).toBe(runwayUtilization(s.item.airportCode)!.utilizationPct);
   });
 
-  it("golden: unmet demand, long-haul and growth are unchanged by #54", () => {
+  it("golden: unmet demand and long-haul are unchanged by #54 (growth: #75's fixed scale, 50 + 5 x CAGR)", () => {
     const line = (s: ReturnType<typeof scoreAirport>) =>
       `${s.item.airportCode} ` +
       s.kpis.filter((k) => k.key !== "congestion").map((k) => `${k.key}:${k.raw}:${k.normalized}`).join(" ");
     const codes = ["LAX", "SNA", "ATL", "JFK"];
     // long_haul values are #57's (share ÷ 50%), identical to its own golden in investmentScore.test.ts.
     expect(rankAirports(records(...codes)).map(line).sort()).toEqual([
-      "ATL unmet_demand:82.2:82.2 long_haul:13.6:27.2 growth:-0.3745:53.6",
-      "JFK unmet_demand:81.9:81.9 long_haul:52.9:100 growth:0.2752:56.4",
-      "LAX unmet_demand:81.9:81.9 long_haul:30.8:61.6 growth:-2.5375:44.1",
-      "SNA unmet_demand:79.3:79.3 long_haul:2.1:4.2 growth:0.8283:58.8",
-    ]);
-    expect(rankAirportsRelative(records(...codes)).map(line).sort()).toEqual([
-      "ATL unmet_demand:82.2:82.2 long_haul:13.6:27.2 growth:-0.3745:64.3",
-      "JFK unmet_demand:81.9:81.9 long_haul:52.9:100 growth:0.2752:83.6",
-      "LAX unmet_demand:81.9:81.9 long_haul:30.8:61.6 growth:-2.5375:0",
-      "SNA unmet_demand:79.3:79.3 long_haul:2.1:4.2 growth:0.8283:100",
+      "ATL unmet_demand:82.2:82.2 long_haul:13.6:27.2 growth:-0.3745:48.1",
+      "JFK unmet_demand:81.9:81.9 long_haul:52.9:100 growth:0.2752:51.4",
+      "LAX unmet_demand:81.9:81.9 long_haul:30.8:61.6 growth:-2.5375:37.3",
+      "SNA unmet_demand:79.3:79.3 long_haul:2.1:4.2 growth:0.8283:54.1",
     ]);
   });
 });
@@ -189,7 +180,7 @@ describe("percent-scale goldens per KPI (#54 on #57's scale shape)", () => {
       scale: c.scale!,
       extract: (r) => r.pct,
     };
-    const scorer = buildScorer([{ pct: ratioToPct(0.868) }, { pct: 205 }], [util]);
+    const scorer = buildScorer([util]);
     expect(ratioToPct(0.868)).toBe(86.8);
     expect(scorer.score({ pct: ratioToPct(0.868) }).kpis[0]!.normalized).toBe(86.8);
     expect(scorer.score({ pct: 205 }).kpis[0]!.normalized).toBe(100);
