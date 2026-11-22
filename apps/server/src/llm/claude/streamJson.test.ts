@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { fixtureLines } from "../../test/fakeClaude.ts";
 import { LlmError } from "../llmClient.ts";
-import { claudeFailure, StreamJsonMapper } from "./streamJson.ts";
+import { claudeFailure, parseStreamLine, StreamJsonMapper } from "./streamJson.ts";
 
 function mapAll(lines: unknown[]) {
   const mapper = new StreamJsonMapper();
@@ -52,6 +52,16 @@ describe("StreamJsonMapper", () => {
 
   it("ignores lines it does not know", () => {
     expect(mapAll([null, 3, { type: "system", subtype: "init" }, { type: "stream_event", event: { type: "ping" } }]).events).toEqual([]);
+  });
+});
+
+describe("parseStreamLine", () => {
+  it("accepts the documented shapes and rejects wrong types", () => {
+    expect(parseStreamLine({ type: "stream_event", event: { type: "content_block_delta", delta: { type: "text_delta", text: "A" } } })).toEqual({ kind: "text_delta", text: "A" });
+    expect(parseStreamLine({ type: "stream_event", event: { type: "content_block_delta", delta: { type: "text_delta", text: 5 } } })).toBeUndefined();
+    expect(parseStreamLine({ type: "stream_event", event: { type: "message_delta", delta: { stop_reason: "end_turn" } } })).toEqual({ kind: "stop_reason", stopReason: "end_turn" });
+    expect(parseStreamLine({ type: "result", subtype: "success", is_error: false, result: "ok" })).toEqual({ kind: "result", isError: false, subtype: "success", result: "ok" });
+    expect(parseStreamLine({ type: "assistant", message: { content: "not an array" } })).toBeUndefined();
   });
 });
 
