@@ -1,0 +1,47 @@
+.app {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  height: 100dvh;
+}
+
+.thread {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable both-edges;
+}
+
+.thread__column {
+  max-width: var(--column);
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-4) var(--space-7);
+}
+
+.thread__messages {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.notice {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  animation: message-in var(--dur-slow) var(--ease-out);
+}
+
+.notice--error {
+  border: 1px solid var(--err-soft);
+  background: var(--err-soft);
+  color: var(--err);
+}
+
+.notice__code {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.8;
+}

@@ -10,6 +10,8 @@
   ],
   "scripts": {
     "dev:server": "npm run dev -w @airport/server",
+    "dev:web": "npm run dev -w @airport/web",
+    "build": "npm run build -w @airport/web",
     "typecheck": "npm run typecheck --workspaces --if-present"
   },
   "author": "nadavher6",

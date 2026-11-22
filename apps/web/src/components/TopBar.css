@@ -1,0 +1,161 @@
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  height: var(--topbar-h);
+  padding: 0 var(--space-5);
+  background: var(--surface-glass);
+  backdrop-filter: saturate(1.4) blur(14px);
+  -webkit-backdrop-filter: saturate(1.4) blur(14px);
+  border-bottom: 1px solid var(--line);
+}
+
+.topbar__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.topbar__wordmark {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+
+.topbar__divider {
+  width: 1px;
+  height: 18px;
+  background: var(--line-strong);
+}
+
+.topbar__tagline {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.topbar__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.topbar__new {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--ink-2);
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+
+.topbar__new:hover {
+  border-color: var(--line-strong);
+  color: var(--ink);
+}
+
+/* --- status pill --------------------------------------------------------- */
+
+.status-pill {
+  --dot: var(--ink-3);
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 26px;
+  padding: 0 10px 0 9px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+.status-pill[data-status="online"] {
+  --dot: var(--ok);
+}
+
+.status-pill[data-status="offline"] {
+  --dot: var(--err);
+  color: var(--err);
+  border-color: var(--err-soft);
+  background: var(--err-soft);
+}
+
+.status-pill__dot {
+  position: relative;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--dot);
+}
+
+/* Beacon ping while online, like an approach light. */
+.status-pill[data-status="online"] .status-pill__dot::after,
+.status-pill[data-status="checking"] .status-pill__dot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--dot);
+  animation: beacon 2.4s var(--ease-out) infinite;
+}
+
+@keyframes beacon {
+  0% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  70%,
+  100% {
+    transform: scale(3);
+    opacity: 0;
+  }
+}
+
+/* --- theme toggle -------------------------------------------------------- */
+
+.theme-toggle {
+  position: relative;
+  overflow: hidden;
+}
+
+.theme-toggle__icon {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  transition:
+    transform var(--dur-slow) var(--ease-spring),
+    opacity var(--dur) var(--ease-out);
+}
+
+.theme-toggle__icon[data-visible="false"] {
+  opacity: 0;
+  transform: translateY(14px) rotate(-60deg);
+}
+
+@media (max-width: 640px) {
+  .topbar {
+    padding: 0 var(--space-3);
+  }
+  .topbar__divider,
+  .topbar__tagline {
+    display: none;
+  }
+}

@@ -1,4 +1,6 @@
 {
+  // F5 runs "Full stack": API server and web app, each in its own integrated terminal.
+  // Vite proxies /api/* to the server, so the two talk without CORS.
   "version": "0.2.0",
   "configurations": [
     {
@@ -9,7 +11,34 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev", "-w", "@airport/server"],
       "console": "integratedTerminal",
-      "skipFiles": ["<node_internals>/**", "**/node_modules/**"]
+      "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
+      "presentation": { "group": "services", "order": 2 }
+    },
+    {
+      "name": "Web",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "-w", "@airport/web"],
+      "console": "integratedTerminal",
+      // Plain output so the ready-pattern below can match Vite's URL line.
+      "env": { "NO_COLOR": "1" },
+      "serverReadyAction": {
+        "pattern": "Local:\\s+(https?://\\S+)",
+        "uriFormat": "%s",
+        "action": "openExternally"
+      },
+      "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
+      "presentation": { "group": "services", "order": 3 }
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Full stack",
+      "configurations": ["Server", "Web"],
+      "stopAll": true,
+      "presentation": { "group": "0-main", "order": 1 }
     }
   ]
 }
