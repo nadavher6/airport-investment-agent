@@ -1,6 +1,7 @@
 import {
   API_ROUTES,
   type AgentEvent,
+  type AgentEventType,
   type ApiError,
   type ApiErrorBody,
   type ApiRoute,
@@ -35,6 +36,37 @@ async function toClientError(res: Response): Promise<ApiClientError> {
   }
 }
 
+// A Record (not an array) so adding an event type to the contract is a compile error here until it's listed.
+const KNOWN_EVENT_TYPES: Record<AgentEventType, true> = {
+  message_start: true,
+  thinking_delta: true,
+  thinking_end: true,
+  tool_call: true,
+  tool_result: true,
+  text_delta: true,
+  message_end: true,
+  error: true,
+};
+
+const isKnownEventType = (type: unknown): type is AgentEventType =>
+  typeof type === "string" && Object.hasOwn(KNOWN_EVENT_TYPES, type);
+
+/** Parses one SSE payload. Returns null for event types this client doesn't know (e.g. from a newer server). */
+function parseEvent(data: string, status: number): AgentEvent | null {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(data);
+  } catch {
+    throw new ApiClientError({ code: "internal", message: "The server sent a malformed response." }, status);
+  }
+  const type = typeof parsed === "object" && parsed !== null ? (parsed as { type?: unknown }).type : undefined;
+  if (!isKnownEventType(type)) {
+    console.warn("Ignoring unknown agent event", parsed);
+    return null;
+  }
+  return parsed as AgentEvent;
+}
+
 async function getJson<T>(route: ApiRoute, signal?: AbortSignal): Promise<T> {
   const res = await fetch(route, signal ? { signal } : {});
   if (!res.ok) throw await toClientError(res);
@@ -57,7 +89,8 @@ export const api = {
     if (!res.ok || !res.body) throw await toClientError(res);
 
     for await (const data of readSseData(res.body)) {
-      yield JSON.parse(data) as AgentEvent;
+      const event = parseEvent(data, res.status);
+      if (event) yield event;
     }
   },
 };

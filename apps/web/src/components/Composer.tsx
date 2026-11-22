@@ -8,6 +8,7 @@ import {
   type ReactNode,
   type Ref,
 } from "react";
+import { MAX_CONTENT_LENGTH } from "@airport/shared";
 import { ArrowUpIcon, StopIcon } from "./icons";
 import "./Composer.css";
 
@@ -48,6 +49,8 @@ export function Composer({ isStreaming, canSend, onSend, onStop, toolbar, ref }:
   }, [draft]);
 
   const hasText = draft.trim() !== "";
+  // maxLength silently cuts pastes, so show the count once the draft nears the server's limit.
+  const showCount = draft.length >= MAX_CONTENT_LENGTH * 0.9;
   const sendEnabled = hasText && canSend && !isStreaming;
 
   const submit = (e?: FormEvent) => {
@@ -80,6 +83,7 @@ export function Composer({ isStreaming, canSend, onSend, onStop, toolbar, ref }:
           placeholder="Ask about any US airport: capacity, congestion, unmet demand…"
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={onKeyDown}
+          maxLength={MAX_CONTENT_LENGTH}
           autoFocus
         />
 
@@ -87,9 +91,15 @@ export function Composer({ isStreaming, canSend, onSend, onStop, toolbar, ref }:
           <div className="composer__toolbar">{toolbar}</div>
 
           <div className="composer__right">
-            <span className="composer__hint" aria-hidden="true">
-              <kbd>↵</kbd> send <kbd>⇧↵</kbd> new line
-            </span>
+            {showCount ? (
+              <span className="composer__count" data-full={draft.length >= MAX_CONTENT_LENGTH} role="status">
+                {draft.length.toLocaleString()} / {MAX_CONTENT_LENGTH.toLocaleString()}
+              </span>
+            ) : (
+              <span className="composer__hint" aria-hidden="true">
+                <kbd>↵</kbd> send <kbd>⇧↵</kbd> new line
+              </span>
+            )}
             {isStreaming ? (
               <button type="button" className="composer__send composer__send--stop" onClick={onStop} aria-label="Stop generating">
                 <StopIcon size={16} />
