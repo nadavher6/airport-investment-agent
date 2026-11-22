@@ -30,8 +30,8 @@ const API_CODE: Record<LlmError["code"], ApiErrorCode> = {
   internal: "internal",
 };
 
-/** Max tool round-trips before the agent must answer, so a loop can't run forever. */
-const MAX_TOOL_STEPS = 6;
+/** Max tool round-trips before the agent is forced to answer, so a loop can't run forever. */
+const MAX_TOOL_STEPS = 10;
 
 /**
  * The main agent: classify (shown as classify_message), then run a tool-use loop. Because the
@@ -149,7 +149,26 @@ export class ToolAgent implements Agent {
         convo.push({ role: "user", content: `Tool ${call.name} returned: ${JSON.stringify(wire)}` });
       }
 
-      // Ran out of steps without a final answer.
+      // Tool budget exhausted: force one final answer so we never return an empty message.
+      convo.push({
+        role: "user",
+        content: "You have reached the tool-call limit. Do NOT call any more tools. Give your final answer now using the information already gathered.",
+      });
+      let answered = false;
+      for await (const ev of client.stream({ system: assembled.system, messages: convo, model, signal: input.signal })) {
+        yield* startEvents();
+        if (ev.type === "thinking_delta") {
+          thinkingSince ??= Date.now();
+          yield { type: "thinking_delta", messageId, delta: ev.text };
+          continue;
+        }
+        if (ev.type !== "text_delta") break;
+        if (!answered) {
+          yield* endThinking();
+          answered = true;
+        }
+        yield { type: "text_delta", messageId, delta: ev.text };
+      }
       yield* endThinking();
       yield { type: "message_end", messageId, stopReason: "end_turn" };
       this.memory.commitFocus(convId, focus.codes);
