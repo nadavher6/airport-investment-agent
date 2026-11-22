@@ -40,6 +40,11 @@ In dev the browser only talks to Vite (`:5173`), which proxies `/api/*` to the s
 | GET    | `/api/health` | –             | `HealthResponse`                            |
 | GET    | `/api/models` | –             | `ModelsResponse`                            |
 | POST   | `/api/chat`   | `ChatRequest` | `text/event-stream` of `AgentEvent` frames  |
+| GET    | `/api/providers/:provider/health` | – | `ProviderHealthResponse` |
+
+`/api/providers/:provider/health` checks one `ModelProvider`. For `claude-headless` it runs `claude --version`
+(5 s timeout) and answers `ok`, `unavailable` (no `claude` binary on PATH or at `CLAUDE_BIN`) or `error`, with a
+plain-English `detail`. Other providers are still served by the mock agent and are not checked live.
 
 Errors are always `{ "error": { "code", "message" } }` (`ApiErrorBody`) with a matching HTTP status.
 Validation and model lookup happen **before** the stream opens, so they return normal 4xx/5xx responses.
