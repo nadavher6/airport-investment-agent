@@ -12,7 +12,12 @@ try {
 const config = loadConfig();
 const app = createApp({ config, agent: new MockAgent() });
 
-const server = app.listen(config.port, () => {
+// Express 5 also calls this callback on the server's "error" event (e.g. EADDRINUSE).
+const server = app.listen(config.port, (err?: Error) => {
+  if (err) {
+    console.error(`Failed to listen on port ${config.port}: ${err.message}`);
+    process.exit(1);
+  }
   console.log(`✈  API server listening on http://localhost:${config.port}`);
 });
 

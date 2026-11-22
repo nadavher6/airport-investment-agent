@@ -11,7 +11,10 @@ export function openEventStream(res: Response): void {
   res.flushHeaders();
 }
 
-/** One SSE frame per event. The client parses `data:` lines as JSON AgentEvents. */
-export function writeEvent(res: Response, event: AgentEvent): void {
-  res.write(`data: ${JSON.stringify(event)}\n\n`);
+/**
+ * One SSE frame per event. The client parses `data:` lines as JSON AgentEvents.
+ * Returns false when the socket buffer is full and the caller should wait for "drain".
+ */
+export function writeEvent(res: Response, event: AgentEvent): boolean {
+  return res.write(`data: ${JSON.stringify(event)}\n\n`);
 }
