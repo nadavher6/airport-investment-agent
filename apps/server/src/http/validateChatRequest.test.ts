@@ -91,9 +91,16 @@ describe("validateChatRequest", () => {
     expect("conversationId" in validateChatRequest(valid)).toBe(false);
   });
 
-  it("rejects a conversationId that is not a bounded id string (#50)", () => {
-    for (const conversationId of [42, "", "x".repeat(65), "a b", "../etc", { id: "x" }, null]) {
-      expect(rejectionOf({ ...valid, conversationId })).toMatch(/conversationId must be 1-64 characters/);
+  it("accepts a UUID and the 32-hex fallback format as conversationId (#50)", () => {
+    for (const id of ["3f1c2a7e-9b1d-4c1e-8f00-1234abcd5678", "0123456789abcdef0123456789abcdef", "x".repeat(16), "x".repeat(64)]) {
+      expect(validateChatRequest({ ...valid, conversationId: id }).conversationId).toBe(id);
+    }
+  });
+
+  it("rejects a conversationId that is short, too long, has bad characters or is not a string (#50)", () => {
+    const bad = [42, "", "a", "x".repeat(15), "x".repeat(65), "a b".padEnd(20, "x"), "../etc/passwd/../x", "x".repeat(15) + ".", { id: "x" }, null];
+    for (const conversationId of bad) {
+      expect(rejectionOf({ ...valid, conversationId })).toMatch(/conversationId must be 16-64 characters/);
     }
   });
 });

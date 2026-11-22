@@ -1,9 +1,17 @@
-import type { AgentEvent, ChatRequest } from "@airport/shared";
+import {
+  CONVERSATION_ID_PATTERN,
+  MAX_CONVERSATION_ID_LENGTH,
+  MIN_CONVERSATION_ID_LENGTH,
+  type AgentEvent,
+  type ChatRequest,
+} from "@airport/shared";
 import { act, renderHook, waitFor } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { api, ApiClientError } from "../api/client";
 import { fullRun, MODEL_ID } from "../test/fixtures";
 import { useChat } from "./useChat";
+
+afterEach(() => vi.unstubAllGlobals());
 
 async function* replay(events: AgentEvent[]) {
   yield* events;
@@ -179,9 +187,9 @@ describe("useChat", () => {
     await act(() => result.current.send("New chat"));
 
     const ids = stream.mock.calls.map((call) => call[0].conversationId);
-    expect(ids[0]).toMatch(/^[A-Za-z0-9_-]{1,64}$/);
+    expect(ids[0]).toMatch(/^[A-Za-z0-9_-]{16,64}$/);
     expect(ids[1]).toBe(ids[0]);
-    expect(ids[2]).toMatch(/^[A-Za-z0-9_-]{1,64}$/);
+    expect(ids[2]).toMatch(/^[A-Za-z0-9_-]{16,64}$/);
     expect(ids[2]).not.toBe(ids[0]);
   });
 
@@ -194,5 +202,32 @@ describe("useChat", () => {
     await act(() => b.result.current.send("Hi"));
 
     expect(stream.mock.calls[0]![0].conversationId).not.toBe(stream.mock.calls[1]![0].conversationId);
+  });
+
+  it("keeps the same conversationId across re-renders (#50)", async () => {
+    const stream = vi.spyOn(api, "streamChat").mockImplementation(() => replay(fullRun));
+    const spy = vi.spyOn(crypto, "randomUUID");
+    const { result, rerender } = renderHook(() => useChat(MODEL_ID));
+    const callsAfterFirstRender = spy.mock.calls.length;
+    rerender();
+    rerender();
+    expect(spy.mock.calls.length).toBe(callsAfterFirstRender);
+    await act(() => result.current.send("Hi"));
+    rerender();
+    await act(() => result.current.send("Again"));
+    expect(stream.mock.calls[1]![0].conversationId).toBe(stream.mock.calls[0]![0].conversationId);
+    spy.mockRestore();
+  });
+
+  it("falls back to getRandomValues when crypto.randomUUID is missing, and the id passes the server rule (#50)", async () => {
+    vi.stubGlobal("crypto", { getRandomValues: crypto.getRandomValues.bind(crypto) });
+    const stream = vi.spyOn(api, "streamChat").mockImplementation(() => replay(fullRun));
+    const { result } = renderHook(() => useChat(MODEL_ID)); // the first render must not throw
+    await act(() => result.current.send("Hi"));
+    const id = stream.mock.calls[0]![0].conversationId as string;
+    expect(id).toMatch(CONVERSATION_ID_PATTERN);
+    expect(id.length).toBeGreaterThanOrEqual(MIN_CONVERSATION_ID_LENGTH);
+    expect(id.length).toBeLessThanOrEqual(MAX_CONVERSATION_ID_LENGTH);
+    expect(id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
   });
 });

@@ -80,7 +80,7 @@ of both saturating at 100); a **single** airport is scored *absolute* vs. all US
    - **Step cap:** at most 6 tool runs, then one call that must answer in prose; if it still does not, a plain
      "limit reached" sentence. The answer is never empty.
    - **Memory (#50)** is keyed ONLY by the optional `conversationId` in `ChatRequest` (the web app mints one per
-     chat with `crypto.randomUUID()`); never by message content, so two chats that start with the same text never
+     chat with `crypto.randomUUID()`, or a UUID v4 from `crypto.getRandomValues` over plain http; the server requires 16-64 characters of `[A-Za-z0-9_-]`, so the id is an unguessable bearer secret); never by message content, so two chats that start with the same text never
      share data. With no id there is no memory at all (no reads, no writes). Per chat it keeps the tool results by
      airport code (`get_enplanements`, `get_airport_by_code`, the per-airport `score_airports` entries), a focus
      stack and the last ranked list (`agent/memory/conversationMemory.ts`). Each turn, `resolveFocus` +

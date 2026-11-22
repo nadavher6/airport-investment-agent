@@ -5,6 +5,7 @@ import {
   MAX_CONTENT_LENGTH,
   MAX_CONVERSATION_ID_LENGTH,
   MAX_TURNS,
+  MIN_CONVERSATION_ID_LENGTH,
   type ChatRequest,
   type ChatTurn,
   type ConversationId,
@@ -38,13 +39,13 @@ function parseTurn(value: unknown, index: number): ChatTurn {
   return { role, content };
 }
 
-/** The optional conversationId (#50): absent, or a bounded string of letters, digits, "-" and "_". */
+/** The optional conversationId (#50): absent, or an unguessable string (16-64 letters, digits, "-" or "_"). */
 function parseConversationId(value: unknown): ConversationId | undefined {
   if (value === undefined) return undefined;
-  if (typeof value !== "string" || value.length === 0 || value.length > MAX_CONVERSATION_ID_LENGTH || !CONVERSATION_ID_PATTERN.test(value)) {
+  if (typeof value !== "string" || value.length < MIN_CONVERSATION_ID_LENGTH || value.length > MAX_CONVERSATION_ID_LENGTH || !CONVERSATION_ID_PATTERN.test(value)) {
     throw new HttpError(
       "bad_request",
-      `conversationId must be 1-${MAX_CONVERSATION_ID_LENGTH} characters of letters, digits, "-" or "_"`,
+      `conversationId must be ${MIN_CONVERSATION_ID_LENGTH}-${MAX_CONVERSATION_ID_LENGTH} characters of letters, digits, "-" or "_"`,
     );
   }
   return asConversationId(value);

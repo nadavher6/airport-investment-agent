@@ -1,17 +1,20 @@
-import { useCallback, useEffect, useReducer, useRef } from "react";
+import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import { asConversationId, asMessageId, nowIso, type ChatMessage, type ConversationId, type ModelId } from "@airport/shared";
 import { api, ApiClientError } from "../api/client";
 import { toChatTurns } from "../lib/messages";
+import { randomId } from "../lib/randomId";
 import { chatReducer, initialChatState } from "../state/chatReducer";
 
 /** A fresh id for one chat (#50): the server keys its memory by it. */
-const newConversationId = (): ConversationId => asConversationId(crypto.randomUUID());
+const newConversationId = (): ConversationId => asConversationId(randomId());
 
 export function useChat(modelId: ModelId | null) {
   const [state, dispatch] = useReducer(chatReducer, initialChatState);
   const abortRef = useRef<AbortController | null>(null);
   // Minted once per chat and sent with every turn; reset() starts a new chat with a new id.
-  const conversationIdRef = useRef<ConversationId>(newConversationId());
+  // A lazy useState initializer runs once, not on every render (the ref then holds the current id).
+  const [initialConversationId] = useState(newConversationId);
+  const conversationIdRef = useRef<ConversationId>(initialConversationId);
 
   // Keep the latest messages in a ref so send() can build history without being recreated per token.
   const messagesRef = useRef(state.messages);
@@ -27,7 +30,7 @@ export function useChat(modelId: ModelId | null) {
       if (!content || !modelId || abortRef.current) return;
 
       const userMessage: ChatMessage = {
-        id: asMessageId(crypto.randomUUID()),
+        id: asMessageId(randomId()),
         role: "user",
         blocks: [{ type: "text", text: content }],
         createdAt: nowIso(),
