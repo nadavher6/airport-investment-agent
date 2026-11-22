@@ -1,6 +1,4 @@
-import { findAirportsByCityTool } from "../tools/findAirportsByCity.ts";
-import { findAirportsByRegionTool } from "../tools/findAirportsByRegion.ts";
-import { getAirportByCodeTool } from "../tools/getAirportByCode.ts";
+import { findAirportsByCity, findAirportsByRegion, getAirportByCode } from "../../data/places/airports.ts";
 import { enplanementsDataset } from "../../data/enplanements/dataset.ts";
 import type { CityResult } from "../../data/places/airports.ts";
 import { metrosFile, regionsFile } from "../../data/places/files.ts";
@@ -95,7 +93,7 @@ const CUE_AFTER: ReadonlySet<string> = new Set(["airport", "airports", "vs", "ve
 
 /** The canonical code when get_airport_by_code (#23) confirms the token; else undefined. */
 function confirmCode(token: string): string | undefined {
-  const found = getAirportByCodeTool.run({ code: token });
+  const found = getAirportByCode(token);
   return "error" in found ? undefined : found.code;
 }
 
@@ -104,10 +102,10 @@ const cityCodes = (result: CityResult | undefined): string[] => (result ? result
 /** Airports for a place key the index matched; the #23 tools return them (a match never hits the fuzzy path). */
 function placeCodes(key: string, kind: "region" | "city"): string[] {
   if (kind === "region") {
-    const region = findAirportsByRegionTool.run({ region: key });
+    const region = findAirportsByRegion(key);
     return region.cities.flatMap((city) => cityCodes(region.results[city]));
   }
-  return cityCodes(findAirportsByCityTool.run({ cities: [key] }).results[key]);
+  return cityCodes(findAirportsByCity([key]).results[key]);
 }
 
 const isUpperCode = (w: string): boolean => /^[A-Z]{3}$/.test(w);
