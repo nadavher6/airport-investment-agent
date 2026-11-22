@@ -4,10 +4,12 @@ import { findAirportsByCityTool } from "./findAirportsByCity.ts";
 import { findAirportsByRegionTool } from "./findAirportsByRegion.ts";
 import { getEnplanementsTool } from "./getEnplanements.ts";
 import { scoreAirportsTool } from "./scoreAirports.ts";
+import { CATEGORY_TOOLS } from "./categoryTools.ts";
 
 /**
  * The tool catalogue the main agent exposes. Order is the order shown in the system prompt
- * (see `renderToolsForPrompt`). All five tools implement the shared `Tool` contract.
+ * (see `renderToolsForPrompt`). Every tool implements the shared `Tool` contract; the four per-category
+ * tools (#61) follow score_airports.
  * Not connected to any agent, LLM client or route yet.
  */
 export const TOOLS: readonly RegisteredTool[] = [
@@ -16,6 +18,7 @@ export const TOOLS: readonly RegisteredTool[] = [
   findAirportsByRegionTool,
   getEnplanementsTool,
   scoreAirportsTool,
+  ...CATEGORY_TOOLS,
 ];
 
 /** Index by name; a duplicate name is a programming error, so it fails at load time. */

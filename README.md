@@ -76,13 +76,15 @@ message `greeting`, `capabilities`, `off_topic`, `in_scope` (the fallback) or `g
 
 - `greeting`, `capabilities` and `off_topic`: the agent streams one fixed answer (`apps/server/src/agent/responses/greeting.ts`, `capabilities.ts`, `offTopic.ts`) as a single `text_delta` and does not call the main model (off_topic covers prompt injection). The off_topic answer suggests one of the 15 `OFF_TOPIC_SUGGESTIONS`, picked at random.
 - `in_scope` and `grading`: the agent runs a ReAct tool loop (`agent/flow/toolLoop.ts`, #48) with every registry
-  tool: `get_airport_by_code`, `find_airports_by_city`, `find_airports_by_region`, `get_enplanements` and
-  `score_airports`. The model calls one tool per step as a JSON object in its text; each call is shown as a
+  tool: `get_airport_by_code`, `find_airports_by_city`, `find_airports_by_region`, `get_enplanements`,
+  `score_airports` and the four per-category tools `get_congestion`, `get_unmet_demand`, `get_long_haul_share` and
+  `get_growth` (#61: one category of the score for 1-5 airports, the same numbers as `score_airports`). The model calls one tool per step as a JSON object in its text; each call is shown as a
   `tool_call`/`tool_result` pair, at most 6, then the model answers. Each step may start with thinking and a short
   lead-in, hence the repeat group in the order above. Tool JSON is never streamed. `score_airports` with more than
   5 codes does not run: the model gets the error "max 5 airports; pick the 5 most relevant" back. The loop's system
   prompt (`agent/prompts/toolLoop.ts`) holds the owner's scoring rule (score with `score_airports`, never rank from
-  memory), the compare skill (`agent/skills/compare.md`) and, for `grading`, the grading skill
+  memory), the category rule (a question about ONE category goes to that category's tool, not `score_airports`),
+  the compare skill (`agent/skills/compare.md`) and, for `grading`, the grading skill
   (`agent/skills/grading.md`). A failed tool is a `tool_result` with `ok: false`.
   Guardrails (#49): a call that cannot be read, has the wrong shape, names an unknown tool, has invalid input, fails
   in the tool or repeats an earlier call is never thrown. It is a `tool_call` + `tool_result` with `ok: false` and a

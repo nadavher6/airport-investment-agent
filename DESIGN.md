@@ -69,10 +69,19 @@ of both saturating at 100); a **single** airport is scored *absolute* vs. all US
    parses the whole step (bare, in a ```json fence or after a lead-in; `agent/toolCall.ts`), runs it through the
    registry tool (`TOOLS`; each tool's zod schema validates the input before its code runs), shows it as a
    `tool_call` / `tool_result` pair, and sends the result back wrapped as `<tool_result>` data, never as instructions.
-   - **Tools:** all five registry tools, `score_airports` included. The **scores are always deterministic code**
+   - **Tools:** all nine registry tools, `score_airports` and the four per-category tools included. The **scores are always deterministic code**
      (`src/scoring/`); the model only decides which airports to look up and score, then explains.
    - **Scoring rule (the owner's, verbatim in the prompt):** questions about investment potential, or which
      airport is better / should be expanded, MUST go through `score_airports`; the model never ranks from memory.
+   - **Category rule (#61, next to the scoring rule):** a question about ONE category ("how congested is JFK?",
+     "what is LAX's load factor?", "compare congestion at LAX and SFO") calls that category's tool
+     (`get_congestion`, `get_unmet_demand`, `get_long_haul_share`, `get_growth`), not `score_airports`, and the answer
+     covers only that category. The tools (`agent/tools/categoryTools.ts`) do no math of their own: each scores the
+     airports with the same scorer and `INVESTMENT_KPIS` as `score_airports` and returns that one KPI's breakdown
+     (raw value, sub-score, evidence) plus its weight and caveat, so the numbers always match the full score (a golden
+     test checks it). They always score against all US airports (`mode: "absolute"`), so a min-max category is never
+     all-or-nothing between two airports; a percent-scale category is the same in both modes. At most 5 distinct
+     codes (more is `invalid_input`); unknown codes go to `notFound`.
    - **Cap of 5 airports:** `score_airports` with more than 5 distinct codes does not run; it is an `invalid_input`
      error with the problem "max 5 airports; pick the 5 most relevant" (`MAX_SCORED_AIRPORTS` in
      `agent/flow/scoreAirports.ts`), fed back like any other bad call (below).
