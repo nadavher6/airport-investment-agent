@@ -24,7 +24,7 @@ export interface CategoryAirport {
   readonly available: boolean;
   /** The raw KPI value (e.g. load factor %), or null when it can't be computed. */
   readonly raw: number | null;
-  /** The 0-100 sub-score, exactly as score_airports computes it; null when unavailable. */
+  /** The 0-100 sub-score on the absolute scale (as score_airports with one code); null when unavailable. */
   readonly subScore: number | null;
   readonly evidence: KpiEvidence | null;
 }
@@ -37,6 +37,8 @@ export interface CategoryOutput {
   /** Always "absolute": scored against all US airports, like score_airports with one code. */
   readonly mode: "absolute";
   readonly scale: CategoryScale;
+  /** The unit of every airport's `raw` value, e.g. "%" or "departures/yr", so the answer and the UI can show it. */
+  readonly unit: string;
   /** The KPI's assumption / proxy caveat, for the answer. */
   readonly note: string | null;
   /** In the order asked (upper-cased, deduplicated). */
@@ -70,6 +72,18 @@ export function scaleKind(scale: unknown): CategoryScale {
   return "minmax";
 }
 
+/**
+ * The unit of each category's raw value. KpiDef has no unit field, and the raw units are fixed by the KPI
+ * definitions' own formulas (load factor %, international share %, CAGR % per year). Congestion is annual
+ * departures until #54 turns it into a percent: the "percent scale => %" test fails then, so this is updated with it.
+ */
+export const CATEGORY_UNITS: Readonly<Record<CategoryKey, string>> = {
+  congestion: "departures/yr",
+  unmet_demand: "%",
+  long_haul: "%",
+  growth: "% per year",
+};
+
 /** Build the output for one category from the full (absolute) score of each airport. */
 export function categoryOutput(key: CategoryKey, found: readonly AirportRecord[], notFound: readonly string[]): CategoryOutput {
   const def = INVESTMENT_KPIS.find((k) => k.key === key);
@@ -91,6 +105,7 @@ export function categoryOutput(key: CategoryKey, found: readonly AirportRecord[]
     weight: def.weight,
     mode: "absolute",
     scale: scaleKind(def.scale),
+    unit: CATEGORY_UNITS[key],
     note: def.note ?? null,
     airports,
     notFound,
@@ -98,9 +113,12 @@ export function categoryOutput(key: CategoryKey, found: readonly AirportRecord[]
 }
 
 const SHARED_DESCRIPTION =
-  "Returns ONLY this category for 1-5 airports: per airport the raw value, the 0-100 sub-score, and the evidence " +
-  "(formula, inputs, explanation), plus the category's weight in the full score and its caveat (`note`). The numbers " +
-  "are exactly score_airports' sub-scores for this category, scored against all US airports (mode absolute). " +
+  "Returns ONLY this category for 1-5 airports: per airport the raw value (in `unit`), the 0-100 sub-score, and the " +
+  "evidence (formula, inputs, explanation), plus the category's weight in the full score and its caveat (`note`). " +
+  "This tool is always ABSOLUTE: every airport is scored against all US airports, so a min-max category (growth) can " +
+  "differ from score_airports with 2+ codes, which rescales it relative to the compared set (e.g. growth LAX 44.1 here " +
+  "but 0 there); it equals score_airports with ONE code. The percent-scale categories (unmet demand, long-haul) are " +
+  "the same in both modes. Do not put the two side by side as if they were the same number. " +
   "Use it when the question is about this one category, not about overall investment potential or a ranking " +
   `(those need score_airports). Codes are case-insensitive and deduplicated; at most ${MAX_CATEGORY_CODES}. Unknown ` +
   "codes are returned in `notFound`; `available: false` means the category has no data for that airport.";

@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { INVESTMENT_KPIS } from "../../scoring/investmentScore.ts";
 import {
   CATEGORY_TOOLS,
+  CATEGORY_UNITS,
   MAX_CATEGORY_CODES,
   getCongestionTool,
   getGrowthTool,
@@ -168,6 +169,42 @@ describe("golden: each category tool equals score_airports' breakdown (#61)", ()
     for (const a of out.airports) {
       expect(a.subScore).toBe(entry(relative, a.airportCode, "unmet_demand").subScore);
       expect(a.subScore).toBe(Math.min(100, Math.round((a.raw ?? NaN) * 10) / 10));
+    }
+  });
+});
+
+describe("the description and unit the model sees (#61 review)", () => {
+  it.each(TOOL_KEYS)("%# the description states the absolute basis and never claims equality in relative mode", (tool) => {
+    const d = tool.description.replace(/\s+/g, " ");
+    expect(d).toContain("always ABSOLUTE");
+    expect(d).toContain("against all US airports");
+    expect(d).toContain("equals score_airports with ONE code");
+    expect(d).toContain("score_airports with 2+ codes, which rescales it relative to the compared set");
+    expect(d).toContain("percent-scale categories (unmet demand, long-haul) are the same in both modes");
+    expect(d).not.toMatch(/exactly score_airports/i);
+    expect(d).not.toMatch(/same numbers as score_airports/i);
+  });
+
+  it("a min-max KPI really differs in relative mode with 2 codes: growth LAX/SNA is absolute here, rescaled in score_airports", async () => {
+    const abs = await call(getGrowthTool, ["LAX", "SNA"]);
+    const relative = await score(["LAX", "SNA"]);
+    expect(relative.mode).toBe("relative");
+    const lax = abs.airports.find((a) => a.airportCode === "LAX")!;
+    const rel = entry(relative, "LAX", "growth");
+    expect(lax.subScore).not.toBe(rel.subScore);
+    // The one-code score_airports is the absolute scale, which the tool matches.
+    expect(lax.subScore).toBe(entry(await score(["LAX"]), "LAX", "growth").subScore);
+    // With two airports, relative min-max puts one at 0 and the other at 100.
+    expect([rel.subScore, entry(relative, "SNA", "growth").subScore].sort()).toEqual([0, 100]);
+  });
+
+  it("every category returns its unit; percent-scale categories are in %", async () => {
+    expect(CATEGORY_UNITS).toEqual({ congestion: "departures/yr", unmet_demand: "%", long_haul: "%", growth: "% per year" });
+    for (const [tool, key] of TOOL_KEYS) {
+      const out = await call(tool, ["LAX"]);
+      expect(out.unit).toBe(CATEGORY_UNITS[key]);
+      const def = INVESTMENT_KPIS.find((k) => k.key === key)!;
+      if (scaleKind(def.scale) === "percent") expect(out.unit).toBe("%");
     }
   });
 });

@@ -80,9 +80,11 @@ of both saturating at 100); a **single** airport is scored *absolute* vs. all US
      goes to `score_airports` with the full breakdown. It is one persona rule (`ANSWER_SCOPE_RULE`), so it cannot
      contradict a second one. The tools (`agent/tools/categoryTools.ts`) do no math of their own: each scores the
      airports with the same scorer and `INVESTMENT_KPIS` as `score_airports` and returns that one KPI's breakdown
-     (raw value, sub-score, evidence) plus its weight and caveat, so the numbers always match the full score (a golden
-     test checks it). They always score against all US airports (`mode: "absolute"`), so a min-max category is never
-     all-or-nothing between two airports; a percent-scale category is the same in both modes. At most 5 distinct
+     (raw value with its `unit`, sub-score, evidence) plus its weight and caveat. They are always ABSOLUTE
+     (`mode: "absolute"`, scored against all US airports), so they equal `score_airports` with ONE code (a golden test
+     checks it). `score_airports` with 2+ codes is relative: it rescales the min-max category (growth) within the
+     compared set, so that sub-score can differ (growth LAX 44.1 here, 0 there); the percent-scale categories (unmet
+     demand, long-haul) are the same in both modes. A min-max category is never all-or-nothing between two airports. At most 5 distinct
      codes (more is `invalid_input`); unknown codes go to `notFound`.
    - **Cap of 5 airports:** `score_airports` with more than 5 distinct codes does not run; it is an `invalid_input`
      error with the problem "max 5 airports; pick the 5 most relevant" (`MAX_SCORED_AIRPORTS` in

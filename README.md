@@ -78,7 +78,7 @@ message `greeting`, `capabilities`, `off_topic`, `in_scope` (the fallback) or `g
 - `in_scope` and `grading`: the agent runs a ReAct tool loop (`agent/flow/toolLoop.ts`, #48) with every registry
   tool: `get_airport_by_code`, `find_airports_by_city`, `find_airports_by_region`, `get_enplanements`,
   `score_airports` and the four per-category tools `get_congestion`, `get_unmet_demand`, `get_long_haul_share` and
-  `get_growth` (#61: one category of the score for 1-5 airports, the same numbers as `score_airports`). The model calls one tool per step as a JSON object in its text; each call is shown as a
+  `get_growth` (#61: one category of the score for 1-5 airports, always scored against all US airports, so equal to `score_airports` with one code; with 2+ codes `score_airports` rescales growth relative to the set). The model calls one tool per step as a JSON object in its text; each call is shown as a
   `tool_call`/`tool_result` pair, at most 6, then the model answers. Each step may start with thinking and a short
   lead-in, hence the repeat group in the order above. Tool JSON is never streamed. `score_airports` with more than
   5 codes does not run: the model gets the error "max 5 airports; pick the 5 most relevant" back. The loop's system
