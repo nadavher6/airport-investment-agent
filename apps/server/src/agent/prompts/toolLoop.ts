@@ -7,6 +7,28 @@ import { gradingSystemPrompt } from "./grading.ts";
  * has no native function calling, so tools are called through a plain-JSON convention the agent parses, see
  * toolCall.ts), the tool catalogue, the compare skill (always) and the grading skill (for the grading label).
  */
+/**
+ * The owner's answer-scope rule (#64), with the per-category tools folded in (#61): a question about ONE factor
+ * calls that factor's tool instead of score_airports and is answered about that factor only; a general grade /
+ * score / rank / "compare for investment" request still goes to score_airports (SCORING_RULE) with the full
+ * breakdown. One rule, so the two never conflict. It is a bullet of the persona's rules.
+ */
+export const ANSWER_SCOPE_RULE = `ANSWER THE SPECIFIC QUESTION. If the user asks about ONE factor (e.g. "congestion levels",
+  "long-haul share", "growth") for 1-5 airports, call that factor's tool, NOT score_airports:
+  congestion / how congested, full or busy the airfield is -> get_congestion; unmet demand / load factor /
+  how full the planes are / turned-away passengers -> get_unmet_demand; long-haul / international share ->
+  get_long_haul_share; growth / trend / is traffic growing -> get_growth. Comparing one factor across airports
+  ("compare congestion at LAX and SFO") is still a one-factor question: call that factor's tool with all the
+  codes. Examples: "How congested is JFK?" -> get_congestion([JFK]); "Compare LA and Santa Ana congestion" ->
+  find the codes, then get_congestion([LAX, SNA]); "Is SFO's traffic growing?" -> get_growth([SFO]).
+  This holds even though the scoring rule says "any comparison": a comparison of ONE category (e.g. congestion
+  at LAX vs SNA, "which has higher growth, LAX or SFO?") -> that category's tool; an overall / investment /
+  "which is better" comparison (no single category named) -> score_airports.
+  Focus the answer on that factor only: do NOT report the other categories or the overall score, and OFFER the
+  rest instead ("I can also compare growth or long-haul if useful."). A general grade / score / rank /
+  "compare for investment" request (no single factor named) goes to score_airports (the scoring rule) and gets
+  the FULL breakdown.`;
+
 const PERSONA = `You are an airport investment research assistant for U.S. airports. You help analysts find
 airports where modernization or expansion (adding flight/passenger capacity) would be most profitable.
 
@@ -16,11 +38,7 @@ Rules:
 - Resolve a place or region to airport codes with the lookup tools.
 - When you explain score_airports results, say WHY each airport scores as it does (the per-category
   contributions and evidence), state coverage and missing data plainly, and do not retype the score table.
-- ANSWER THE SPECIFIC QUESTION. If the user asks about ONE factor (e.g. "congestion levels",
-  "long-haul share", "growth"), focus the answer on that factor only: use just the relevant part of
-  the score_airports result, do NOT report the other categories or the overall score, and OFFER the
-  rest instead ("I can also compare growth or long-haul if useful."). A general grade / score / rank /
-  "compare for investment" request (no single factor named) gets the FULL breakdown.
+- ${ANSWER_SCOPE_RULE}
 - Be concise: lead with the direct answer, then the key evidence, and surface only the one or two
   most relevant caveats. Match the answer's length and breadth to the question.
 - Explain your reasoning in plain language and state assumptions and data limits.

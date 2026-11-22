@@ -2,8 +2,10 @@ import { useId, useMemo, useState, type ReactNode } from "react";
 import type { JsonValue, ToolCallStatus, ToolUseBlock } from "@airport/shared";
 import { CheckIcon, ChevronIcon, CrossIcon, ToolIcon } from "../icons";
 import { FenceBoundary } from "../markdown/FenceBoundary";
+import { CategoryView } from "../../visuals/score/CategoryView";
 import { ScoreView } from "../../visuals/score/ScoreView";
-import { SCORE_TOOL, parseScoreResult, type ScoreResult } from "../../visuals/score/spec";
+import { isCategoryTool, parseCategoryResult } from "../../visuals/score/categorySpec";
+import { SCORE_TOOL, parseScoreResult } from "../../visuals/score/spec";
 
 const STATUS_LABEL: Record<ToolCallStatus, string> = {
   running: "Running",
@@ -29,25 +31,42 @@ function summarize(input: ToolUseBlock["input"]): string | null {
 const pretty = (value: JsonValue) => JSON.stringify(value, null, 2);
 
 /**
- * A tool call card. A succeeded `score_airports` call whose output passes the score check is
- * drawn from the data by ScoreView (#41), with the raw JSON behind "Show data"; anything else,
- * or a score view that throws, is the generic card with the JSON.
+ * The data view for a succeeded tool output, when the tool has one and the output passes its zod check:
+ * score_airports -> ScoreView (#41), the per-category tools -> CategoryView (#61). Else null (generic card).
+ */
+function dataView(name: string, output: JsonValue): ReactNode | null {
+  if (name === SCORE_TOOL) {
+    const score = parseScoreResult(output);
+    return score.ok ? <ScoreView result={score.result} /> : null;
+  }
+  if (isCategoryTool(name)) {
+    const category = parseCategoryResult(output);
+    return category.ok ? <CategoryView result={category.result} /> : null;
+  }
+  return null;
+}
+
+/**
+ * A tool call card. A succeeded `score_airports` or category-tool call whose output passes its check is
+ * drawn from the data (ScoreView, CategoryView), with the raw JSON behind "Show data"; anything else,
+ * or a view that throws, is the generic card with the JSON.
  */
 export function ToolUseBlockView({ block }: { block: ToolUseBlock }) {
   const output = block.status === "succeeded" ? block.output : undefined;
-  const isScore = block.name === SCORE_TOOL && output !== undefined;
-  const score = useMemo(() => (isScore ? parseScoreResult(output) : null), [isScore, output]);
-  if (!score?.ok) return <ToolCard block={block} />;
+  const view = useMemo(() => (output === undefined ? null : dataView(block.name, output)), [block.name, output]);
+  if (view === null) return <ToolCard block={block} />;
   return (
     <FenceBoundary key={JSON.stringify(output)} fallback={<ToolCard block={block} />}>
-      <ToolCard block={block} score={score.result} />
+      <ToolCard block={block} view={view} />
     </FenceBoundary>
   );
 }
 
-function ToolCard({ block, score }: { block: ToolUseBlock; score?: ScoreResult }) {
-  // A score card opens by default so the result is visible; every other card starts closed.
-  const [open, setOpen] = useState(score !== undefined);
+function ToolCard({ block, view }: { block: ToolUseBlock; view?: ReactNode }) {
+  // A card with a data view opens by default so the result is visible and collapses from its header like
+  // every other card (#58); the raw JSON sits behind its own "Show data" toggle. Other cards start closed.
+  const hasView = view !== undefined;
+  const [open, setOpen] = useState(hasView);
   const [showData, setShowData] = useState(false);
   const bodyId = useId();
   const dataId = useId();
@@ -77,9 +96,9 @@ function ToolCard({ block, score }: { block: ToolUseBlock; score?: ScoreResult }
         <ChevronIcon size={14} className="tool-card__chevron" />
       </button>
 
-      {score ? (
+      {hasView ? (
         <div id={bodyId} className="tool-card__score" hidden={!open}>
-          <ScoreView result={score} />
+          {view}
           <button
             type="button"
             className="tool-card__show-data"
