@@ -11,7 +11,7 @@ ${FINAL_ANSWER_RULE}
 - "airports" (optional): the airport codes the answer is about, uppercase, each confirmed by a tool (get_airport_by_code or another tool result).
 - "caveats" (optional, at most ${MAX_CAVEATS}): assumptions, missing data, data windows; one short line each.
 - "summary" (required, at most ${MAX_SUMMARY_CHARS} characters): one or two sentences with the direct answer or verdict.
-- "markdown" (required, at most ${MAX_MARKDOWN_CHARS} characters): the full answer body in Markdown; the chart / table / kpi / compare fences work here.
+- "markdown" (required, at most ${MAX_MARKDOWN_CHARS} characters): the full answer body in Markdown; the chart / table / kpi / compare fences work here. Do not repeat the summary in it: the user sees the summary as its lead line.
 - Put the keys in this order: kind, then answer with airports, caveats, summary, markdown. The user sees the summary and markdown while you write them.
 - It is valid JSON: escape line breaks in strings as \\n and quotes as \\". No code fence around it.
 If your final answer is invalid you get a block between FINAL_ANSWER_ERROR and END_FINAL_ANSWER_ERROR with the
