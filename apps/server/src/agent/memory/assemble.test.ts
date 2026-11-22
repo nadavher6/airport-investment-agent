@@ -69,6 +69,26 @@ describe("assembleRequest", () => {
     expect(messages.at(-1)).toEqual({ role: "user", content: "and the second one's unmet demand?" });
   });
 
+  it("starts the window on a user message when the slice would start on an assistant turn", () => {
+    const nine: LlmMessage[] = [
+      { role: "user", content: "u1" },
+      { role: "assistant", content: "a1" },
+      { role: "user", content: "u2" },
+      { role: "assistant", content: "a2" },
+      { role: "user", content: "u3" },
+      { role: "assistant", content: "a3" },
+      { role: "user", content: "u4" },
+      { role: "assistant", content: "a4" },
+      { role: "user", content: "u5" },
+    ];
+    const { messages } = assembleRequest({ systemPrompt: "SYS", history: nine });
+    expect(messages[0]).toEqual({ role: "user", content: "u2" });
+    expect(messages).toHaveLength(7);
+    expect(messages.at(-1)).toEqual({ role: "user", content: "u5" });
+    const even = assembleRequest({ systemPrompt: "SYS", history, windowTurns: 4 }).messages;
+    expect(even[0]?.role).toBe("user");
+  });
+
   it("puts memory in the system seam and never in the dialogue messages", () => {
     const { system, messages } = assembleRequest({
       systemPrompt: "SYS",

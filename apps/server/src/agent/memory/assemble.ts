@@ -78,6 +78,10 @@ export function assembleRequest(params: AssembleParams): AssembledRequest {
     ...(params.rollingSummary !== undefined ? { rollingSummary: params.rollingSummary } : {}),
     ...(params.focusedRecords !== undefined ? { focusedRecords: params.focusedRecords } : {}),
   });
-  const messages = params.history.slice(-window).map((m) => ({ role: m.role, content: m.content }));
+  const windowed = params.history.slice(-window);
+  // Providers (Gemini, Anthropic) need the first turn to be the user's: drop leading non-user messages.
+  const firstUser = windowed.findIndex((m) => m.role === "user");
+  const kept = firstUser === -1 ? windowed : windowed.slice(firstUser);
+  const messages = kept.map((m) => ({ role: m.role, content: m.content }));
   return { system, messages };
 }
