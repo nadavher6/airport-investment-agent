@@ -1,4 +1,5 @@
 import type { JsonObject, JsonValue, ToolResult } from "@airport/shared";
+import { z } from "zod";
 import type { ZodError, ZodType } from "zod";
 
 /**
@@ -7,7 +8,7 @@ import type { ZodError, ZodType } from "zod";
  * actual code. `Tool<Input, Output>` is what an author writes; `defineTool` turns it into a
  * `RegisteredTool` with input validation baked in, ready for the tool registry.
  *
- * The main agent (a) renders each tool's name + description + example into the system prompt
+ * The main agent (a) renders each tool's name + description + input JSON Schema + example into the system prompt
  * (`renderToolsForPrompt`), (b) runs it via `RegisteredTool.run`, which validates the model's
  * arguments first, and (c) maps the result to the wire `ToolResult` (`toWireResult`).
  */
@@ -76,6 +77,8 @@ export interface RegisteredTool {
   readonly name: string;
   readonly description: string;
   readonly inputSchema: ZodType;
+  /** `inputSchema` as JSON Schema (the input side, computed once), shown to the model in the prompt. */
+  readonly inputJsonSchema: JsonObject;
   readonly exampleInput: JsonValue;
   /**
    * Validates `rawInput` against `inputSchema` (failure: `invalid_input`), then runs the tool.
@@ -121,6 +124,8 @@ export function defineTool<Input, Output>(tool: Tool<Input, Output>): Registered
     name: tool.name,
     description: tool.description,
     inputSchema: tool.inputSchema,
+    // io "input": the model writes the input, and a transform (e.g. uppercasing) has no JSON form.
+    inputJsonSchema: z.toJSONSchema(tool.inputSchema, { io: "input" }) as JsonObject,
     exampleInput: tool.exampleInput as JsonValue,
     async run(rawInput, ctx) {
       // Tools never throw: a schema that throws, a run() that throws or rejects, and an abort
@@ -148,11 +153,16 @@ export function toWireResult(result: ToolRunResult<JsonValue>): ToolResult {
 }
 
 /**
- * Render the tool catalogue for the system prompt: each tool's name, description, and one
+ * Render the tool catalogue for the system prompt: each tool's name, description, its input
+ * JSON Schema (so the model sees required/optional fields, enums and nested shapes) and one
  * example input. The main prompt is then `basePersona + "\n\n## Tools\n" + this`.
  */
 export function renderToolsForPrompt(tools: readonly RegisteredTool[]): string {
   return tools
-    .map((t) => `### ${t.name}\n${t.description}\nExample input: ${JSON.stringify(t.exampleInput)}`)
+    .map(
+      (t) =>
+        `### ${t.name}\n${t.description}\nInput schema: ${JSON.stringify(t.inputJsonSchema)}\n` +
+        `Example input: ${JSON.stringify(t.exampleInput)}`,
+    )
     .join("\n\n");
 }

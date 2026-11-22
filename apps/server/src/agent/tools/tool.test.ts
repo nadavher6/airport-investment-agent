@@ -158,4 +158,41 @@ describe("renderToolsForPrompt", () => {
     expect(block).toContain("### b_tool");
     expect(block).toContain('Example input: {"y":"z"}');
   });
+
+  it("includes each tool's input JSON Schema (z.toJSONSchema), in tool order", () => {
+    const block = renderToolsForPrompt([fakeA, fakeB]);
+    expect(block).toContain(`Input schema: ${JSON.stringify(z.toJSONSchema(z.object({ x: z.number() }).strict()))}`);
+    expect(block).toContain('"properties":{"y":{"type":"string"}}');
+    expect(block.indexOf("### a_tool")).toBeLessThan(block.indexOf("### b_tool"));
+    expect(renderToolsForPrompt([])).toBe("");
+  });
+
+  it("the JSON Schema shows nested, optional, enum and array fields, and the input side of a transform", () => {
+    const rich = defineTool({
+      name: "rich_tool",
+      description: "Rich input.",
+      inputSchema: z
+        .object({
+          where: z.object({ region: z.enum(["West", "East"]), note: z.string().optional() }).strict(),
+          codes: z.array(z.string().transform((c) => c.toUpperCase())).min(1),
+        })
+        .strict(),
+      exampleInput: { where: { region: "West" }, codes: ["LAX"] },
+      run: () => Promise.resolve(ok(null)),
+    });
+    expect(rich.inputJsonSchema).toMatchObject({
+      type: "object",
+      required: ["where", "codes"],
+      additionalProperties: false,
+      properties: {
+        where: {
+          type: "object",
+          required: ["region"],
+          properties: { region: { type: "string", enum: ["West", "East"] }, note: { type: "string" } },
+        },
+        codes: { type: "array", minItems: 1, items: { type: "string" } },
+      },
+    });
+    expect(renderToolsForPrompt([rich])).toContain(`Input schema: ${JSON.stringify(rich.inputJsonSchema)}`);
+  });
 });
