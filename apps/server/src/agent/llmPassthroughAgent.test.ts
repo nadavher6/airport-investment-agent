@@ -4,6 +4,9 @@ import { HttpError } from "../http/errors.ts";
 import { LlmError, type LlmClient, type LlmRequest, type LlmStreamEvent } from "../llm/llmClient.ts";
 import { collect } from "../test/helpers.ts";
 import { CLASSIFIER_PROMPT } from "./classifier/prompt.ts";
+import { fakeScoreAirports } from "./flow/fakeScoreAirports.ts";
+import { CANDIDATE_PROMPT } from "./prompts/candidates.ts";
+import { NO_CANDIDATES_PROMPT } from "./prompts/scoreAnswer.ts";
 import { LlmPassthroughAgent } from "./llmPassthroughAgent.ts";
 import { CAPABILITIES_ANSWER } from "./responses/capabilities.ts";
 import { GREETING_ANSWER } from "./responses/greeting.ts";
@@ -25,13 +28,19 @@ const modelOf = (provider: ModelProvider): ModelInfo => ({
 
 const CLASSIFIED = '{"label":"in_scope","reason":"Asks about airports."}';
 
+/** The candidate step's reply when a test does not care: no airports, so score_airports is not called (#42). */
+const NO_CANDIDATES_REPLY = '{"codes":[],"cities":[],"region":null}';
+
 /**
- * A fake LlmClient. The classifier's call (system = CLASSIFIER_PROMPT) gets `classifierReply`; every other
- * call replays `events`, then optionally throws. Records the main calls in `seen`, classifier calls in `classified`.
+ * A fake LlmClient. The classifier's call (system = CLASSIFIER_PROMPT) gets `classifierReply`, the candidate
+ * step's call (system = CANDIDATE_PROMPT) gets `candidateReplies` in turn (the last one repeats); every other
+ * call replays `events`, then optionally throws. Records the main calls in `seen`, classifier calls in
+ * `classified`, candidate calls in `candidates`.
  */
-function fakeClient(events: LlmStreamEvent[], failWith?: LlmError, classifierReply = CLASSIFIED) {
+function fakeClient(events: LlmStreamEvent[], failWith?: LlmError, classifierReply = CLASSIFIED, candidateReplies: string[] = [NO_CANDIDATES_REPLY]) {
   const seen: LlmRequest[] = [];
   const classified: LlmRequest[] = [];
+  const candidates: LlmRequest[] = [];
   const client: LlmClient = {
     provider: "claude-headless",
     health: async () => ({ status: "ok", detail: "fake" }),
@@ -42,12 +51,18 @@ function fakeClient(events: LlmStreamEvent[], failWith?: LlmError, classifierRep
         yield { type: "done", stopReason: "end_turn" };
         return;
       }
+      if (request.system === CANDIDATE_PROMPT) {
+        candidates.push(request);
+        yield { type: "text_delta", text: candidateReplies[Math.min(candidates.length - 1, candidateReplies.length - 1)] ?? "" };
+        yield { type: "done", stopReason: "end_turn" };
+        return;
+      }
       seen.push(request);
       yield* events;
       if (failWith) throw failWith;
     },
   };
-  return { client, seen, classified };
+  return { client, seen, classified, candidates };
 }
 
 /** A client that must not be called: the passthrough should pick the other provider's client. */
@@ -59,10 +74,16 @@ const unused: LlmClient = {
   },
 };
 
-const runWith = (client: LlmClient, provider: ModelProvider = "claude-headless", signal = new AbortController().signal, rng = rngFor(0)) => {
+const runWith = (
+  client: LlmClient,
+  provider: ModelProvider = "claude-headless",
+  signal = new AbortController().signal,
+  rng = rngFor(0),
+  scoreAirports = fakeScoreAirports().tool,
+) => {
   const clients: Record<ModelProvider, LlmClient> = { "claude-headless": unused, gemini: unused };
   clients[provider] = client;
-  const agent = new LlmPassthroughAgent(clients, undefined, { rng });
+  const agent = new LlmPassthroughAgent(clients, undefined, { rng, scoreAirports });
   const history = [
     { role: "user" as const, content: "Rank SFO" },
     { role: "assistant" as const, content: "It is busy." },
@@ -81,8 +102,11 @@ describe("LlmPassthroughAgent", () => {
       { type: "done", stopReason: "end_turn" },
     ]);
     const events = await runWith(client);
+    // classify_message, then pick_candidates (in_scope, #42), then the main model's stream.
     expect(events.map((e) => e.type)).toEqual([
       "message_start",
+      "tool_call",
+      "tool_result",
       "tool_call",
       "tool_result",
       "thinking_delta",
@@ -97,9 +121,9 @@ describe("LlmPassthroughAgent", () => {
     expect(events[0]).toMatchObject({ modelId: "claude-headless-model" });
     expect(events.at(-1)).toMatchObject({ stopReason: "end_turn" });
 
-    // The whole history goes to the client, with no system prompt.
+    // The whole history goes to the client; no airport was picked, so the system context says so (#42).
     expect(seen[0]!.messages).toHaveLength(3);
-    expect(seen[0]!.system).toBeUndefined();
+    expect(seen[0]!.system).toBe(NO_CANDIDATES_PROMPT);
   });
 
   it("passes max_tokens through and maps other stop reasons to end_turn", async () => {
@@ -117,7 +141,7 @@ describe("LlmPassthroughAgent", () => {
 
   it("turns an LlmError after output started into an error event", async () => {
     const events = await runWith(fakeClient([{ type: "text_delta", text: "Half" }], new LlmError("internal", "Claude crashed.")).client);
-    expect(events.map((e) => e.type)).toEqual(["message_start", "tool_call", "tool_result", "text_delta", "error"]);
+    expect(events.map((e) => e.type)).toEqual(["message_start", "tool_call", "tool_result", "tool_call", "tool_result", "text_delta", "error"]);
     expect(events.at(-1)).toEqual({ type: "error", error: { code: "internal", message: "Claude crashed." } });
   });
 
@@ -212,7 +236,7 @@ describe("LlmPassthroughAgent", () => {
       '{"label":"in_scope","reason":"Asks about LAX."}',
     );
     const events = await runWith(client);
-    expect(events.map((e) => e.type)).toEqual(["message_start", "tool_call", "tool_result", "text_delta", "message_end"]);
+    expect(events.map((e) => e.type)).toEqual(["message_start", "tool_call", "tool_result", "tool_call", "tool_result", "text_delta", "message_end"]);
     const [, call, result] = events;
     expect(call).toMatchObject({ type: "tool_call", name: "classify_message", input: { message: "And LAX?" } });
     expect(result).toMatchObject({ type: "tool_result", result: { ok: true, output: { label: "in_scope", reason: "Asks about LAX.", attempts: 1 } } });
@@ -278,7 +302,7 @@ describe("LlmPassthroughAgent", () => {
   it.each(["gemini", "claude-headless"] as const)("sends a %s model's turn to that provider's client", async (provider) => {
     const { client, seen } = fakeClient([{ type: "text_delta", text: "Hi" }, { type: "done", stopReason: "end_turn" }]);
     const events = await runWith(client, provider);
-    expect(events.map((e) => e.type)).toEqual(["message_start", "tool_call", "tool_result", "text_delta", "message_end"]);
+    expect(events.map((e) => e.type)).toEqual(["message_start", "tool_call", "tool_result", "tool_call", "tool_result", "text_delta", "message_end"]);
     expect(seen).toHaveLength(1);
   });
 });
