@@ -1,5 +1,5 @@
 import { assertNever, type ContentBlock } from "@airport/shared";
-import { renderMarkdown } from "../../lib/inlineMarkdown";
+import { Markdown } from "../markdown/Markdown";
 import { ThinkingBlockView } from "./ThinkingBlockView";
 import { ToolUseBlockView } from "./ToolUseBlockView";
 import "./blocks.css";
@@ -14,7 +14,7 @@ interface ContentBlockViewProps {
 export function ContentBlockView({ block, isLive }: ContentBlockViewProps) {
   switch (block.type) {
     case "text":
-      return <div className={`text-block${isLive ? " is-live" : ""}`}>{renderMarkdown(block.text)}</div>;
+      return <div className={`text-block${isLive ? " is-live" : ""}`}><Markdown text={block.text} /></div>;
     case "thinking":
       return <ThinkingBlockView block={block} />;
     case "tool_use":

@@ -25,7 +25,7 @@
 }
 
 /* Blinking runway-light caret at the end of a streaming answer. */
-.text-block.is-live p:last-child::after {
+.text-block.is-live .md > :last-child::after {
   content: "";
   display: inline-block;
   width: 8px;
