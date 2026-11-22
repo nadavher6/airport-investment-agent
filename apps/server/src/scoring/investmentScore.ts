@@ -3,7 +3,8 @@
  *
  * Full model = Need 0.60 (congestion + unmet demand) / Quality 0.40 (long-haul + growth):
  * - congestion   — annual departures (BTS T-100 (latest 12 months)), a traffic-volume proxy for capacity pressure
- * - unmet_demand — load factor = passengers ÷ seats (BTS T-100 (latest 12 months)), proxy for spilled demand
+ * - unmet_demand — load factor = passengers ÷ seats (BTS T-100 (latest 12 months)), proxy for spilled demand;
+ *                  its sub-score is the load factor percentage itself (scale "percent", capped at 100)
  * - long_haul    — international seats ÷ total seats (BTS T-100 (latest 12 months))
  * - growth       — enplanement 5-year CAGR, CY2019 -> CY2024, % per year (FAA data); missing if no CAGR
  *
@@ -52,16 +53,17 @@ export const INVESTMENT_KPIS: readonly KpiDef<AirportRecord>[] = [
     label: "Unmet demand (load factor)",
     weight: 0.3,
     direction: "higher",
-    note: "Load factor = passengers ÷ seats (BTS T-100 (latest 12 months)). A capacity-pressure proxy for spill: turned-away demand becomes material above ~80-85% load factor; true spill needs booking data.",
+    scale: "percent",
+    note: "Load factor = passengers ÷ seats (BTS T-100 (latest 12 months)). A capacity-pressure proxy for spill: turned-away demand becomes material above ~80-85% load factor; true spill needs booking data. Sub-score = the load factor as a percentage (81.7% scores 81.7), capped at 100.",
     extract: (a) => getT100(a.airportCode)?.loadFactor ?? null,
     evidence: (a) => {
       const t = getT100(a.airportCode);
       return {
-        formula: "load factor = passengers ÷ seats (BTS T-100 (latest 12 months))",
+        formula: "load factor = passengers ÷ seats (BTS T-100 (latest 12 months)). Sub-score = load factor as a percentage, capped at 100",
         inputs: { passengers: t?.passengers ?? null, seats: t?.seats ?? null, loadFactor: t?.loadFactor ?? null },
         value: t?.loadFactor ?? null,
         explanation: t
-          ? `Planes averaged ${t.loadFactor}% full over the latest 12 months; the fuller they run, the more peak-day demand is spilled (turned away) — material above ~80-85%.`
+          ? `Planes averaged ${t.loadFactor}% full over the latest 12 months; the fuller they run, the more peak-day demand is spilled (turned away) — material above ~80-85%.${t.loadFactor > 100 ? " The sub-score is capped at 100 (load factor above 100%)." : ""}`
           : "No BTS T-100 record for this airport.",
       };
     },
