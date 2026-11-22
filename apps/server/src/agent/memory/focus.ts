@@ -86,6 +86,8 @@ export interface FocusResolution {
   readonly codes: string[];
   /** Updated focus stack (targets moved to the front, capped). */
   readonly focusStack: string[];
+  /** Codes the user named in this message. Pass to selectFocusedRecords as `pinned` so the K-cap keeps them. */
+  readonly explicitCodes: string[];
   /** A reference was made ("it", "the second one") but nothing could be resolved. */
   readonly ambiguous: boolean;
 }
@@ -101,8 +103,9 @@ export function resolveFocus(message: string, state: MemoryState): FocusResoluti
   let ambiguous = false;
 
   if (explicit.length > 0) {
-    // "add Denver" / "also include BOS" keeps the current focus and extends it.
-    codes = ADDITIVE.test(message) ? unique([...state.focusStack, ...explicit]) : explicit;
+    // "add Denver" / "also include BOS" keeps the current focus and extends it. The new codes go
+    // first, so the K-cap and the focus-stack cap trim the oldest focus, never the new airport.
+    codes = ADDITIVE.test(message) ? unique([...explicit, ...state.focusStack]) : explicit;
   } else {
     const ordinal = findOrdinal(message);
     if (ordinal !== undefined) {
@@ -122,5 +125,5 @@ export function resolveFocus(message: string, state: MemoryState): FocusResoluti
   }
 
   const focusStack = unique([...codes, ...state.focusStack]).slice(0, MAX_FOCUS_STACK);
-  return { codes, focusStack, ambiguous };
+  return { codes, focusStack, explicitCodes: explicit, ambiguous };
 }

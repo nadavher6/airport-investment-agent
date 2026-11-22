@@ -28,6 +28,15 @@ describe("selectFocusedRecords", () => {
     expect(out).toHaveLength(4);
   });
 
+  it("never drops pinned (explicitly named) codes when the K-cap is hit", () => {
+    const big = new Map(workingSet);
+    for (const c of ["ORD", "ATL", "JFK", "SEA"]) big.set(c, rec(c));
+    const out = selectFocusedRecords(big, ["ATL", "LAX", "ORD", "JFK", "SEA", "DEN"], 4, undefined, ["DEN", "SFO"]);
+    expect(out.map((r) => r.airportCode)).toEqual(["DEN", "SFO", "ATL", "LAX"]);
+    const over = selectFocusedRecords(big, ["ATL"], 2, undefined, ["DEN", "SFO", "LAX"]);
+    expect(over.map((r) => r.airportCode)).toEqual(["DEN", "SFO", "LAX"]);
+  });
+
   it("applies field projection when given", () => {
     const out = selectFocusedRecords(workingSet, ["DEN"], 4, (r) => ({ airportCode: r.airportCode }));
     expect(out).toEqual([{ airportCode: "DEN" }]);

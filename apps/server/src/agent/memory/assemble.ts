@@ -17,18 +17,29 @@ export const DEFAULT_MAX_RECORDS = 4;
 /**
  * Pick the records to inject: in `codes` order, skipping ones with no data, capped at K.
  * `project` optionally trims a record to the dimension the turn is about.
+ * `pinned` (the codes the user named this turn) are never dropped by the cap: they come first
+ * and the cap trims the other, older focus codes instead.
  */
 export function selectFocusedRecords(
   workingSet: ReadonlyMap<string, AirportRecord>,
   codes: readonly string[],
   maxRecords = DEFAULT_MAX_RECORDS,
   project?: (record: AirportRecord) => AirportRecord,
+  pinned: readonly string[] = [],
 ): AirportRecord[] {
   const out: AirportRecord[] = [];
+  const seen = new Set<string>();
+  const take = (code: string): void => {
+    const rec = workingSet.get(code);
+    if (rec && !seen.has(code)) {
+      seen.add(code);
+      out.push(project ? project(rec) : rec);
+    }
+  };
+  for (const code of pinned) take(code);
   for (const code of codes) {
     if (out.length >= maxRecords) break;
-    const rec = workingSet.get(code);
-    if (rec) out.push(project ? project(rec) : rec);
+    take(code);
   }
   return out;
 }

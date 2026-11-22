@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { extractExplicitCodes, resolveFocus } from "./focus.ts";
+import { selectFocusedRecords } from "./assemble.ts";
 import type { AirportRecord, MemoryState } from "./types.ts";
 
 const state = (over: Partial<MemoryState> = {}): MemoryState => ({
@@ -34,7 +35,22 @@ describe("resolveFocus", () => {
 
   it("'add X' extends the current focus instead of replacing it", () => {
     const r = resolveFocus("add Denver to the comparison", state({ focusStack: ["LAX", "SFO"] }));
-    expect(r.codes).toEqual(["LAX", "SFO", "DEN"]);
+    expect(r.codes).toEqual(["DEN", "LAX", "SFO"]);
+    expect(r.explicitCodes).toEqual(["DEN"]);
+  });
+
+  it("'add X' with a full focus stack keeps X and trims the oldest focus (K-cap)", () => {
+    const stack = ["ATL", "LAX", "ORD", "JFK", "SEA", "BOS", "SFO", "MIA"];
+    const ws = new Map<string, AirportRecord>(
+      [...stack, "DEN"].map((c) => [c, { airportCode: c, enplanements: { cy2024: 1 } }]),
+    );
+    const r = resolveFocus("add DEN", state({ workingSet: ws, focusStack: stack }));
+    expect(r.focusStack[0]).toBe("DEN");
+    expect(r.focusStack).toHaveLength(8);
+    expect(r.focusStack).not.toContain("MIA");
+    const injected = selectFocusedRecords(ws, r.codes, 4, undefined, r.explicitCodes);
+    expect(injected).toHaveLength(4);
+    expect(injected.map((x) => x.airportCode)).toContain("DEN");
   });
 
   it("resolves the singular pronoun 'it' to the top of the focus stack", () => {
