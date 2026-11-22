@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { renderVisual } from "./Visual";
 import { VisualBoundary, coerceToTable, NOTE } from "./fallback";
 import { registerVisuals } from "./registerVisuals";
-import { getFenceRenderer, registerFence, type FenceRenderer } from "./fenceRegistryStub";
+import { getFenceRenderer, registerFence, type FenceRenderer } from "../components/markdown/fences";
 import { DEMO_FENCES, FAA } from "./demo/faaDemo";
 import { deltaDirection } from "./KpiTiles";
 
@@ -211,7 +211,7 @@ describe("registration", () => {
     expect([...seen.keys()]).toEqual(["chart", "table", "kpi"]);
   });
 
-  it("uses the stub registry by default, and the registered renderer draws the fence", () => {
+  it("uses the real registry by default, and the registered renderer draws the fence", () => {
     registerFence("chart", () => "placeholder");
     registerVisuals();
     for (const lang of ["chart", "table", "kpi"]) expect(getFenceRenderer(lang)).toBeTypeOf("function");

@@ -1,5 +1,4 @@
-// The one line to change once #32 merges: import from #32's registry and delete the stub.
-import { registerFence, type FenceRenderer } from "./fenceRegistryStub";
+import { registerFence, type FenceRenderer } from "../components/markdown/fences";
 import { FENCE_LANGS } from "./spec";
 import { renderVisual } from "./Visual";
 
