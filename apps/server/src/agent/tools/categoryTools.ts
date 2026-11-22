@@ -4,7 +4,7 @@
 import { z } from "zod";
 import { enplanementsDataset, findAirport } from "../../data/enplanements/dataset.ts";
 import type { AirportRecord } from "../../data/enplanements/types.ts";
-import type { KpiEvidence } from "../../scoring/engine.ts";
+import type { KpiEvidence, Scale } from "../../scoring/engine.ts";
 import { INVESTMENT_KPIS, scoreAirport } from "../../scoring/investmentScore.ts";
 import { growthFacts, type GrowthFacts } from "./growth.ts";
 import { defineTool, fail, ok, type RegisteredTool } from "./tool.ts";
@@ -15,8 +15,8 @@ export const MAX_CATEGORY_CODES = 5;
 /** The four category KPI keys, as in INVESTMENT_KPIS. */
 export type CategoryKey = "congestion" | "unmet_demand" | "long_haul" | "growth";
 
-/** "percent": the sub-score does not depend on the other airports; "minmax": scaled against all US airports. */
-export type CategoryScale = "percent" | "minmax";
+/** The kind of the category's fixed scale (#75): "percent" (share ÷ fullAt) or "linear" (growth: 50 + 5 × CAGR). */
+export type CategoryScale = Scale["kind"];
 
 /** One airport's value for the category: the same fields as its score_airports breakdown entry. */
 export interface CategoryAirport {
@@ -25,7 +25,7 @@ export interface CategoryAirport {
   readonly available: boolean;
   /** The raw KPI value (e.g. load factor %), or null when it can't be computed. */
   readonly raw: number | null;
-  /** The 0-100 sub-score on the absolute scale (as score_airports with one code); null when unavailable. */
+  /** The 0-100 sub-score on the category's fixed scale (the same as in score_airports); null when unavailable. */
   readonly subScore: number | null;
   readonly evidence: KpiEvidence | null;
 }
@@ -35,8 +35,6 @@ export interface CategoryOutput {
   readonly label: string;
   /** The category's target weight in the full Investment Attractiveness Score. */
   readonly weight: number;
-  /** Always "absolute": scored against all US airports, like score_airports with one code. */
-  readonly mode: "absolute";
   readonly scale: CategoryScale;
   /** The unit of every airport's `raw` value, e.g. "%" or "departures/yr", so the answer and the UI can show it. */
   readonly unit: string;
@@ -64,16 +62,6 @@ const inputSchema = z
 export type CategoryInput = z.infer<typeof inputSchema>;
 
 /**
- * The scale kind of a KPI definition. Takes `unknown` on purpose: the engine's `Scale` is the string
- * "percent" on main and becomes `{ kind: "percent", fullAt }` with #54 / #57; both read as "percent".
- */
-export function scaleKind(scale: unknown): CategoryScale {
-  if (scale === "percent") return "percent";
-  if (typeof scale === "object" && scale !== null && "kind" in scale && scale.kind === "percent") return "percent";
-  return "minmax";
-}
-
-/**
  * The unit of each category's raw value. KpiDef has no unit field, and the raw units are fixed by the KPI
  * definitions' own formulas (load factor %, international share %, CAGR % per year). Congestion is runway utilization
  * in percent (#54).
@@ -85,7 +73,7 @@ export const CATEGORY_UNITS: Readonly<Record<CategoryKey, string>> = {
   growth: "% per year",
 };
 
-/** Build the output for one category from the full (absolute) score of each airport. */
+/** Build the output for one category from the full score of each airport. */
 export function categoryOutput(key: CategoryKey, found: readonly AirportRecord[], notFound: readonly string[]): CategoryOutput {
   const def = INVESTMENT_KPIS.find((k) => k.key === key);
   if (def === undefined) throw new Error(`No KPI definition for category ${key}`);
@@ -104,8 +92,7 @@ export function categoryOutput(key: CategoryKey, found: readonly AirportRecord[]
     category: key,
     label: def.label,
     weight: def.weight,
-    mode: "absolute",
-    scale: scaleKind(def.scale),
+    scale: def.scale.kind,
     unit: CATEGORY_UNITS[key],
     note: def.note ?? null,
     airports,
@@ -141,10 +128,8 @@ export function growthOutput(found: readonly AirportRecord[], notFound: readonly
 const SHARED_DESCRIPTION =
   "Returns ONLY this category for 1-5 airports: per airport the raw value (in `unit`), the 0-100 sub-score, and the " +
   "evidence (formula, inputs, explanation), plus the category's weight in the full score and its caveat (`note`). " +
-  "This tool is always ABSOLUTE: every airport is scored against all US airports, so a min-max category (growth) can " +
-  "differ from score_airports with 2+ codes, which rescales it relative to the compared set (e.g. growth LAX 44.1 here " +
-  "but 0 there); it equals score_airports with ONE code. The percent-scale categories (unmet demand, long-haul) are " +
-  "the same in both modes. Do not put the two side by side as if they were the same number. " +
+  "Every sub-score is a FIXED scale on the airport's own numbers, so it never depends on which other airports are " +
+  "asked about, and it is exactly the same number as this category in score_airports (with one code or many). " +
   "Use it when the question is about this one category, not about overall investment potential or a ranking " +
   `(those need score_airports). Codes are case-insensitive and deduplicated; at most ${MAX_CATEGORY_CODES}. Unknown ` +
   "codes are returned in `notFound`; `available: false` means the category has no data for that airport.";

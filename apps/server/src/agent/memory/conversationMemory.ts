@@ -187,10 +187,10 @@ export function airportRecordsFrom(toolName: string, output: JsonValue): Array<[
   } else if (toolName === "get_airport_by_code" && typeof o.code === "string") {
     out.push([o.code.toUpperCase(), { airport: output as unknown as NonNullable<AirportRecord["airport"]> }]);
   } else if (toolName === "score_airports" && Array.isArray(o.ranking)) {
-    // Each ranked airport's score, with the mode it was scored in (relative to that set, or absolute).
+    // Each ranked airport's score entry (every score is a fixed scale on the airport's own numbers, #75).
     for (const entry of o.ranking) {
       const e = asObj(entry);
-      if (e !== null && typeof e.airportCode === "string") out.push([e.airportCode.toUpperCase(), { score: { mode: o.mode ?? null, ...e } }]);
+      if (e !== null && typeof e.airportCode === "string") out.push([e.airportCode.toUpperCase(), { score: e }]);
     }
   }
   return out;

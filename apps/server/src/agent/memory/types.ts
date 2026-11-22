@@ -14,7 +14,7 @@ export interface AirportRecord {
   readonly airport?: AirportSummary;
   /** From get_enplanements (FAA annual data). Shape owned by the tool. */
   readonly enplanements?: unknown;
-  /** From score_airports (#50): the airport's ranking entry and the mode it was scored in. */
+  /** From score_airports (#50): the airport's ranking entry. */
   readonly score?: unknown;
   readonly source?: readonly string[];
   readonly fetchedAtTurn?: number;

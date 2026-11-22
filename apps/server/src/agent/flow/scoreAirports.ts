@@ -4,7 +4,7 @@ import type { RegisteredTool } from "../tools/tool.ts";
 /**
  * score_airports for the agent flow (#42), behind the #30 Tool contract: the flow only needs a
  * `RegisteredTool` named "score_airports" that takes `{ airport_codes: string[] }` and returns
- * #38's `{ mode, ranking, notFound }`. The agent takes it as an injectable dependency
+ * `{ ranking, notFound }` (#38; `mode` was removed in #75). The agent takes it as an injectable dependency
  * (`AgentOptions.scoreAirports`); tests pass a fake (`src/test/fakeScoreAirports.ts`).
  */
 export type ScoreAirportsTool = RegisteredTool;
