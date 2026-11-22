@@ -38,32 +38,22 @@ export type ModelStep =
   | { readonly kind: "call"; readonly call: ParsedToolCall; readonly extra: boolean }
   | { readonly kind: "error"; readonly error: ToolCallError };
 
-/** The longest slice of the model's own text quoted back to it in feedback. */
+/** The longest slice of the model's own text kept in an error (the feedback caps it again, toolGuard.ts). */
 const MAX_RAW_CHARS = 600;
+/** At most this many `{` positions are examined per step, so a reply full of braces stays cheap. */
+const MAX_CANDIDATES = 256;
 
-const FENCE = /```[a-zA-Z]*[ \t]*\r?\n?([\s\S]*?)(?:```|$)/;
-/** A `"tool":` (or `'tool':`) key opening an object: a call, even after a lead-in or with broken JSON. */
-const TOOL_KEY_OBJECT = /\{\s*["']tool["']\s*:/;
-
-/** The body of the first ``` fence that mentions "tool", or null. */
-function toolFenceBody(text: string): string | null {
-  const match = FENCE.exec(text);
-  const body = match?.[1];
-  return body !== undefined && /["']tool["']/.test(body) ? body : null;
+/** One `{...}` object found in the text: where it starts, its source, whether it closed, its top-level keys. */
+interface Candidate {
+  readonly start: number;
+  readonly src: string;
+  readonly closed: boolean;
+  readonly keys: readonly string[];
+  readonly fenced: boolean;
 }
 
-/**
- * Does this step look like an attempted tool call? Yes when it starts with `{`, when a ``` fence
- * mentions "tool", or when a `{"tool": ...` object appears anywhere (a call after a lead-in).
- */
-export function looksLikeToolCall(text: string): boolean {
-  return text.trimStart().startsWith("{") || toolFenceBody(text) !== null || TOOL_KEY_OBJECT.test(text);
-}
-
-/** From the first '{', the source of a balanced JSON object (string-aware), or null when it never closes. */
-function firstJsonObject(text: string): string | null {
-  const start = text.indexOf("{");
-  if (start === -1) return null;
+/** From `start` (a '{'), the end (exclusive) of the balanced object, string-aware; -1 when it never closes. */
+function objectEnd(text: string, start: number): number {
   let depth = 0;
   let inString = false;
   let escaped = false;
@@ -79,18 +69,80 @@ function firstJsonObject(text: string): string | null {
     else if (ch === "{") depth++;
     else if (ch === "}") {
       depth--;
-      if (depth === 0) return text.slice(start, i + 1);
+      if (depth === 0) return i + 1;
     }
   }
-  return null;
+  return -1;
 }
 
-/** Where the call most likely starts: a mentioning fence, else a `{"tool"` object, else the first `{`. */
-function callSource(text: string): string {
-  const fence = toolFenceBody(text);
-  if (fence !== null) return fence;
-  const keyed = TOOL_KEY_OBJECT.exec(text);
-  return keyed ? text.slice(keyed.index) : text;
+/** A key right after `{` or `,`: `"key"`, `'key'` or a bare identifier, then `:` (read loosely, JSON5-ish). */
+const KEY_AT = /\s*(?:"((?:[^"\\]|\\.)*)"|'((?:[^'\\]|\\.)*)'|([A-Za-z_$][\w$]*))\s*:/y;
+/** A ``` fence opening (with an optional language tag) right before an object. */
+const FENCE_BEFORE = /```[\w-]*[ \t]*\r?\n?[ \t]*$/;
+
+/** The top-level keys of an object source, quoted or not, in any order (nested keys and strings are skipped). */
+function topLevelKeys(src: string): string[] {
+  const keys: string[] = [];
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+  for (let i = 0; i < src.length; i++) {
+    const ch = src[i];
+    if (inString) {
+      if (escaped) escaped = false;
+      else if (ch === "\\") escaped = true;
+      else if (ch === '"') inString = false;
+      continue;
+    }
+    if (ch === '"') {
+      inString = true;
+      continue;
+    }
+    if (ch === "{" || ch === "[") depth++;
+    else if (ch === "}" || ch === "]") depth--;
+    if (depth === 1 && (ch === "{" || ch === ",")) {
+      KEY_AT.lastIndex = i + 1;
+      const match = KEY_AT.exec(src);
+      if (match) {
+        keys.push(match[1] ?? match[2] ?? match[3] ?? "");
+        i = KEY_AT.lastIndex - 1;
+      }
+    }
+  }
+  return keys;
+}
+
+/** Every `{` in the text (up to MAX_CANDIDATES), nested ones included, as a candidate object. */
+function candidates(text: string): Candidate[] {
+  const found: Candidate[] = [];
+  let start = text.indexOf("{");
+  while (start !== -1 && found.length < MAX_CANDIDATES) {
+    const end = objectEnd(text, start);
+    const src = end === -1 ? text.slice(start) : text.slice(start, end);
+    const fenced = FENCE_BEFORE.test(text.slice(Math.max(0, start - 40), start));
+    found.push({ start, src, closed: end !== -1, keys: topLevelKeys(src), fenced });
+    start = text.indexOf("{", start + 1);
+  }
+  return found;
+}
+
+/**
+ * The rule for "this object is an attempted tool call" (anything else is prose, even when it
+ * mentions `{"tool": ...}`):
+ * 1. the step starts with it (after whitespace): the issue's "a `{` means a call attempt";
+ * 2. it has both top-level keys `tool` and `input`, in any order, quoted or not, anywhere in the step
+ *    (after a lead-in, in a fence, before trailing prose);
+ * 3. it has a top-level `tool` key and sits right inside a ``` fence, or never closes (a cut-off call).
+ */
+function isAttempt(c: Candidate, text: string): boolean {
+  if (c.start === text.length - text.trimStart().length) return true;
+  if (!c.keys.includes("tool")) return false;
+  return c.keys.includes("input") || c.fenced || !c.closed;
+}
+
+/** Does this step hold an attempted tool call (see `isAttempt` for the rule)? */
+export function looksLikeToolCall(text: string): boolean {
+  return candidates(text).some((c) => isAttempt(c, text));
 }
 
 const isPlainObject = (value: unknown): value is JsonObject =>
@@ -114,23 +166,29 @@ function shapeProblem(value: unknown): string | null {
 }
 
 /**
- * Classify one model step. Prose with no sign of a call is the final answer; anything that looks
- * like a call is parsed into a `ParsedToolCall` or an `unparseable` / `bad_shape` error.
+ * Classify one model step. Prose with no attempted call (the rule is at `isAttempt`) is the final
+ * answer; the first attempted call is parsed as strict JSON into a `ParsedToolCall`, or it becomes an
+ * `unparseable` (cut off, unquoted keys, broken JSON) or `bad_shape` error.
  * Only the first call in a step is read; `extra` says whether another one followed it.
  */
 export function parseModelStep(text: string): ModelStep {
-  if (!looksLikeToolCall(text)) return { kind: "answer" };
+  const found = candidates(text);
+  const index = found.findIndex((c) => isAttempt(c, text));
+  const attempt = found[index];
+  if (attempt === undefined) return { kind: "answer" };
   const raw = truncate(text.trim());
-  const source = callSource(text);
-  const src = firstJsonObject(source);
-  if (src === null) {
+  if (!attempt.closed) {
     return { kind: "error", error: { code: "unparseable", problem: "the JSON object is missing or never closed", raw } };
   }
+  const src = attempt.src;
   let value: unknown;
   try {
     value = JSON.parse(src);
   } catch {
-    return { kind: "error", error: { code: "unparseable", problem: "the tool call is not valid JSON", raw } };
+    return {
+      kind: "error",
+      error: { code: "unparseable", problem: "the tool call is not valid JSON (keys and strings need double quotes)", raw },
+    };
   }
   const problem = shapeProblem(value);
   if (problem !== null || !isPlainObject(value) || typeof value.tool !== "string" || !isPlainObject(value.input)) {
@@ -140,6 +198,7 @@ export function parseModelStep(text: string): ModelStep {
       error: { code: "bad_shape", problem: problem ?? "not a tool call", raw, ...(tool !== undefined ? { tool } : {}) },
     };
   }
-  const after = text.slice(text.indexOf(src) + src.length);
-  return { kind: "call", call: { name: value.tool, input: value.input }, extra: TOOL_KEY_OBJECT.test(after) };
+  const end = attempt.start + src.length;
+  const extra = found.slice(index + 1).some((c) => c.start >= end && c.keys.includes("tool"));
+  return { kind: "call", call: { name: value.tool, input: value.input }, extra };
 }
