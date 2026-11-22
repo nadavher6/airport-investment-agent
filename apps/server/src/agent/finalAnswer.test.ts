@@ -11,6 +11,8 @@ import {
   type FinalAnswerErrorCode,
 } from "./finalAnswer.ts";
 import { MAX_ECHO_CHARS } from "./toolGuard.ts";
+import { FINAL_ANSWER_PROMPT } from "./prompts/finalAnswer.ts";
+import { findAirport } from "../data/enplanements/dataset.ts";
 
 const known = (code: string): boolean => ["ATL", "LAX", "SNA"].includes(code);
 const answer = (a: Record<string, unknown>, top: Record<string, unknown> = {}): string =>
@@ -101,5 +103,16 @@ describe("renderFinalAnswerFeedback (#63)", () => {
     const schema = JSON.parse(FINAL_ANSWER_JSON_SCHEMA) as { additionalProperties: boolean; properties: { kind: { const: string } } };
     expect(schema.additionalProperties).toBe(false);
     expect(schema.properties.kind.const).toBe("final_answer");
+  });
+});
+
+describe("the final-answer prompt example (#63)", () => {
+  it("quotes ATL's 2024 enplanements (0.1M) and the change on 2023 (whole %) as data/enplanements.json has them", () => {
+    const series = findAirport("ATL")?.series ?? [];
+    const value = (year: number): number => series.find((p) => p.year === year)?.enplanements ?? Number.NaN;
+    const millions = (value(2024) / 1e6).toFixed(1);
+    const yoy = Math.round((value(2024) / value(2023) - 1) * 100);
+    expect(FINAL_ANSWER_PROMPT).toContain(`**${millions}M** passengers in 2024, up ${yoy}% on 2023`);
+    expect(FINAL_ANSWER_PROMPT).toContain(`about ${millions} million enplanements in 2024`);
   });
 });

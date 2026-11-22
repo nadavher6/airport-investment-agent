@@ -6,7 +6,7 @@ export const FINAL_ANSWER_RULE = "Your final reply MUST be exactly one JSON obje
 /** The final-answer section of the tool loop's system prompt (#63): the format, one example, the rules. */
 export const FINAL_ANSWER_PROMPT = `## Final answer format
 ${FINAL_ANSWER_RULE}
-{"kind": "final_answer", "answer": {"airports": ["ATL"], "caveats": ["Calendar-year 2024 FAA enplanements (boardings), not total passengers."], "summary": "ATL had about 52.7 million enplanements in 2024.", "markdown": "**Atlanta (ATL)** boarded **52.7M** passengers in 2024, up 4% on 2023, so traffic is still growing at a steady pace."}}
+{"kind": "final_answer", "answer": {"airports": ["ATL"], "caveats": ["Calendar-year 2024 FAA enplanements (boardings), not total passengers."], "summary": "ATL had about 52.5 million enplanements in 2024.", "markdown": "**Atlanta (ATL)** boarded **52.5M** passengers in 2024, up 3% on 2023, so traffic is still growing at a steady pace."}}
 - "kind" is exactly "final_answer" and comes first. No other keys, at either level.
 - "airports" (optional): the airport codes the answer is about, uppercase, each confirmed by a tool (get_airport_by_code or another tool result).
 - "caveats" (optional, at most ${MAX_CAVEATS}): assumptions, missing data, data windows; one short line each.
