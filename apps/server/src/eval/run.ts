@@ -3,7 +3,12 @@
  * captures the tool trace + answer, and writes one Markdown transcript per case plus an index and
  * grading instructions. A Claude session then reads eval-results/ and produces the HTML scorecard.
  *
- * Run: npx tsx src/eval/run.ts [--group=G4-single] [--id=single-bos-growth] [--limit=3] [--model=sonnet]
+ * Run: npx tsx src/eval/run.ts [--group=G4-single] [--id=single-bos-growth] [--limit=3] [--model=sonnet] [--timeout-sec=300]
+ *
+ * Strict CLI: unknown flags, a non-positive-integer --limit, an unmatched --group/--id, or 0 selected cases exit 2.
+ * Each case gets its own conversationId (shared by its turns) and a wall-clock timeout of 300 s by default
+ * (DEFAULT_CASE_TIMEOUT_MS in cli.ts, --timeout-sec to override). Ctrl-C aborts the current case and exits 130;
+ * INDEX.md is rewritten after every case, so a partial run still has an index.
  */
 import { homedir } from "node:os";
 import { mkdirSync, writeFileSync } from "node:fs";
@@ -15,9 +20,9 @@ import { loadConfig } from "../config.ts";
 import { ClaudeHeadlessClient } from "../llm/claude/claudeHeadlessClient.ts";
 import type { LlmClient, LlmMessage } from "../llm/llmClient.ts";
 import { EVAL_CASES, type EvalCase } from "./cases.ts";
+import { newConversationId, parseEvalArgs, selectCases, type EvalArgs } from "./cli.ts";
 import { GRADING_MD } from "./grading.ts";
 
-const argOf = (flag: string): string | undefined => process.argv.find((a) => a.startsWith(`--${flag}=`))?.split("=")[1];
 
 interface ToolCall { readonly name: string; readonly input: unknown }
 interface ToolResult { readonly name: string; readonly ok: boolean; readonly output: unknown; readonly error?: string }
@@ -62,12 +67,14 @@ function traceOf(user: string, events: AgentEvent[]): TurnTrace {
   return { user, ...(classification ? { classification } : {}), tools, results, answer: answer.trim(), ...(errored ? { errored } : {}) };
 }
 
-async function runCase(agent: LlmPassthroughAgent, model: ModelInfo, c: EvalCase): Promise<TurnTrace[]> {
+async function runCase(agent: LlmPassthroughAgent, model: ModelInfo, c: EvalCase, signal: AbortSignal): Promise<TurnTrace[]> {
   const history: LlmMessage[] = [];
   const traces: TurnTrace[] = [];
+  const conversationId = newConversationId(); // one id per case, reused by every turn so the agent's memory is exercised
   for (const turn of c.turns) {
+    if (signal.aborted) break;
     const messages: LlmMessage[] = [...history, { role: "user", content: turn }];
-    const events = await collect(agent.run({ request: { modelId: model.id, messages }, model, signal: new AbortController().signal }));
+    const events = await collect(agent.run({ request: { modelId: model.id, messages, conversationId }, model, signal }));
     const t = traceOf(turn, events);
     traces.push(t);
     history.push({ role: "user", content: turn }, { role: "assistant", content: t.answer });
@@ -111,44 +118,62 @@ function caseMarkdown(c: EvalCase, traces: TurnTrace[]): string {
 }
 
 async function main(): Promise<void> {
+  let args: EvalArgs;
+  try {
+    args = parseEvalArgs(process.argv.slice(2));
+    selectCases(EVAL_CASES, args); // fail fast, before any model call
+  } catch (err) {
+    console.error(`eval: ${(err as Error).message}`);
+    process.exit(2);
+  }
   const config = loadConfig();
   const claude = new ClaudeHeadlessClient({ config: config.claude, home: homedir(), ...(process.env.CLAUDE_CONFIG_DIR ? { configDir: process.env.CLAUDE_CONFIG_DIR } : {}) });
   const unused: LlmClient = { provider: "gemini", health: async () => ({ status: "unavailable", detail: "eval runs claude-headless only" }), stream: () => { throw new Error("gemini not used in eval"); } };
   const clients: Record<ModelProvider, LlmClient> = { "claude-headless": claude, gemini: unused };
-  const claudeModel = argOf("model") ?? config.claude.model;
+  const claudeModel = args.model ?? config.claude.model;
   const model: ModelInfo = { id: asModelId("eval-claude"), label: "eval", provider: "claude-headless", description: "", capabilities: { thinking: true, toolUse: false }, available: true };
 
-  let cases = [...EVAL_CASES];
-  const group = argOf("group");
-  const id = argOf("id");
-  const limit = argOf("limit");
-  if (group) cases = cases.filter((c) => c.group === group);
-  if (id) cases = cases.filter((c) => c.id === id);
-  if (limit) cases = cases.slice(0, Number(limit));
+  const cases = selectCases(EVAL_CASES, args);
 
   const outDir = resolve(fileURLToPath(import.meta.url), "../../../../../eval-results");
   mkdirSync(resolve(outDir, "cases"), { recursive: true });
   writeFileSync(resolve(outDir, "GRADING.md"), GRADING_MD);
 
-  const index: string[] = ["# Eval run", "", `Ran ${cases.length} case(s) on ${new Date().toISOString().slice(0, 16).replace("T", " ")} with claude-headless (${claudeModel ?? "default"}).`, "", "| Case | Group | Turns | Tools used |", "|---|---|---|---|"];
+  const index: string[] = ["# Eval run", "", `Selected ${cases.length} case(s) on ${new Date().toISOString().slice(0, 16).replace("T", " ")} with claude-headless (${claudeModel ?? "default"}); rows are added as each case finishes.`, "", "| Case | Group | Turns | Tools used |", "|---|---|---|---|"];
+  const writeIndex = (): void => writeFileSync(resolve(outDir, "INDEX.md"), `${index.join("\n")}\n`);
+  writeIndex();
 
+  // Ctrl-C aborts the current case, then we stop with what is done (INDEX.md is already up to date).
+  const sigint = new AbortController();
+  process.once("SIGINT", () => sigint.abort());
+
+  let interrupted = false;
   for (const c of cases) {
+    if (sigint.signal.aborted) { interrupted = true; break; }
     process.stdout.write(`running ${c.id} … `);
     const agent = new LlmPassthroughAgent(clients, claudeModel); // fresh agent per case so memory is per-conversation
+    const timeout = AbortSignal.timeout(args.timeoutMs);
     try {
-      const traces = await runCase(agent, model, c);
+      const traces = await runCase(agent, model, c, AbortSignal.any([timeout, sigint.signal]));
+      if (sigint.signal.aborted) throw new Error("interrupted (SIGINT)");
+      if (timeout.aborted) throw new Error(`timed out after ${args.timeoutMs / 1000}s`);
       writeFileSync(resolve(outDir, "cases", `${c.id}.md`), caseMarkdown(c, traces));
       const toolsUsed = [...new Set(traces.flatMap((t) => t.tools.map((x) => x.name)))].join(", ") || "(none)";
-      index.push(`| [${c.id}](cases/${c.id}.md) | ${c.group} | ${c.turns.length} | ${toolsUsed} |`);
-      console.log("done");
+      const flags = traces.some((t) => t.errored) ? " STREAM ERROR" : traces.some((t) => t.answer === "") ? " EMPTY ANSWER" : "";
+      index.push(`| [${c.id}](cases/${c.id}.md) | ${c.group} | ${c.turns.length} | ${toolsUsed}${flags} |`);
+      console.log(`done${flags}`);
     } catch (err) {
-      console.log(`FAILED: ${(err as Error).message}`);
-      index.push(`| ${c.id} | ${c.group} | - | RUN ERROR: ${(err as Error).message} |`);
+      const message = sigint.signal.aborted ? "interrupted (SIGINT)" : timeout.aborted ? `timed out after ${args.timeoutMs / 1000}s` : (err as Error).message;
+      console.log(`FAILED: ${message}`);
+      index.push(`| ${c.id} | ${c.group} | - | RUN ERROR: ${message} |`);
+      if (sigint.signal.aborted) interrupted = true;
     }
+    writeIndex();
+    if (interrupted) break;
   }
 
-  writeFileSync(resolve(outDir, "INDEX.md"), `${index.join("\n")}\n`);
-  console.log(`\nWrote ${cases.length} transcript(s) to ${outDir}. Point a Claude session at it and follow GRADING.md.`);
+  console.log(`\nWrote ${index.length - 6} of ${cases.length} case row(s) to ${outDir}. Point a Claude session at it and follow GRADING.md.`);
+  if (interrupted) process.exit(130);
 }
 
 main().catch((err) => {
