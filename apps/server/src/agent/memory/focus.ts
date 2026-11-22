@@ -1,3 +1,4 @@
+import { getAirportByCodeTool } from "../tools/getAirportByCode.ts";
 import type { MemoryState } from "./types.ts";
 
 /**
@@ -46,26 +47,28 @@ const ORDINALS: Record<string, number> = {
   last: -1,
 };
 
-const CAPS_CODE = /\b[A-Z]{3}\b/g;
+/** Any 3-letter word, any case; only codes that get_airport_by_code confirms are kept. */
+const CODE_CANDIDATE = /\b[A-Za-z]{3}\b/g;
 const ADDITIVE = /\b(add|also|include|as well|along with|plus)\b/i;
 const PRONOUN_PLURAL = /\b(them|those|these|both|all|the (?:airports|ones|hubs))\b/i;
 const PRONOUN_SINGULAR = /\b(it|that|this|the (?:airport|one|hub|asset))\b/i;
-
-/** All-caps 3-letter English words that look like codes but are not airports. */
-const CODE_STOPWORDS = new Set([
-  "THE", "AND", "FOR", "ARE", "WHY", "HOW", "ADD", "YOU", "CAN", "WHO", "NOT",
-  "BUT", "ALL", "ANY", "ITS", "OUR", "WAS", "HAS", "GET", "TOP", "ONE", "TWO",
-]);
 
 const unique = (codes: readonly string[]): string[] => [...new Set(codes)];
 
 const escapeRegExp = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-/** Explicit airport codes in the message: all-caps 3-letter tokens + gazetteer phrases. */
+/** The canonical code when get_airport_by_code (#23) knows the token, in any case; else undefined. */
+function confirmCode(token: string): string | undefined {
+  const found = getAirportByCodeTool.run({ code: token });
+  return "error" in found ? undefined : found.code;
+}
+
+/** Explicit airport codes in the message: 3-letter tokens confirmed by get_airport_by_code + gazetteer phrases. */
 export function extractExplicitCodes(message: string): string[] {
   const codes: string[] = [];
-  for (const m of message.matchAll(CAPS_CODE)) {
-    if (!CODE_STOPWORDS.has(m[0])) codes.push(m[0]);
+  for (const m of message.matchAll(CODE_CANDIDATE)) {
+    const code = confirmCode(m[0]);
+    if (code !== undefined) codes.push(code);
   }
   for (const [name, mapped] of GAZETTEER_ENTRIES) {
     if (new RegExp(`\\b${escapeRegExp(name)}\\b`, "i").test(message)) codes.push(...mapped);

@@ -19,6 +19,20 @@ describe("extractExplicitCodes", () => {
     expect(extractExplicitCodes("WHY is LAX higher")).toEqual(["LAX"]);
   });
 
+  it("accepts only codes get_airport_by_code confirms, in any case", () => {
+    expect(extractExplicitCodes("add bos")).toEqual(["BOS"]);
+    expect(extractExplicitCodes("compare lax and Sfo")).toEqual(["LAX", "SFO"]);
+    expect(extractExplicitCodes("How does the FAA rank the USA hubs?")).toEqual([]);
+    expect(extractExplicitCodes("What ROI would the CEO expect?")).toEqual([]);
+    expect(extractExplicitCodes("Is ZZQ a hub?")).toEqual([]);
+  });
+
+  it("does not replace the focus with non-airport caps words", () => {
+    const r = resolveFocus("How does the FAA rank the USA hubs?", state({ focusStack: ["LAX"] }));
+    expect(r.codes).toEqual([]);
+    expect(r.focusStack).toEqual(["LAX"]);
+  });
+
   it("resolves city and region names via the gazetteer", () => {
     expect(extractExplicitCodes("add Denver to the comparison")).toEqual(["DEN"]);
     expect(extractExplicitCodes("look at the Bay Area")).toEqual(["SFO", "OAK", "SJC"]);
@@ -89,7 +103,7 @@ describe("resolveFocus", () => {
   });
 
   it("caps the focus stack length", () => {
-    const many = ["AAA", "BBB", "CCC", "DDD", "EEE", "FFF", "GGG", "HHH"];
+    const many = ["ATL", "LAX", "ORD", "DFW", "DEN", "SFO", "SEA", "MIA"];
     const r = resolveFocus("look at JFK", state({ focusStack: many }));
     expect(r.focusStack.length).toBeLessThanOrEqual(8);
     expect(r.focusStack[0]).toBe("JFK");
