@@ -30,8 +30,6 @@ export interface ProviderHealthResponse {
   /** Plain-English explanation, e.g. "Claude Code 2.1.3 is installed". */
   readonly detail: string;
   readonly checkedAt: IsoDateString;
-  /** The provider's version string when known (claude --version). */
-  readonly version?: string;
 }
 
 // GET /api/models
