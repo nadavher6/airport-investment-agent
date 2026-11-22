@@ -83,7 +83,8 @@ message `greeting`, `capabilities`, `off_topic`, `in_scope` (the fallback) or `g
   lead-in, hence the repeat group in the order above. Tool JSON is never streamed. `score_airports` with more than
   5 codes does not run: the model gets the error "max 5 airports; pick the 5 most relevant" back. The loop's system
   prompt (`agent/prompts/toolLoop.ts`) holds the owner's scoring rule (score with `score_airports`, never rank from
-  memory), the category rule (a question about ONE category goes to that category's tool, not `score_airports`),
+  memory), the answer-scope rule (#64, with #61: a question about ONE factor goes to that factor's tool, not
+  `score_airports`, and is answered about that factor only),
   the compare skill (`agent/skills/compare.md`) and, for `grading`, the grading skill
   (`agent/skills/grading.md`). A failed tool is a `tool_result` with `ok: false`.
   Guardrails (#49): a call that cannot be read, has the wrong shape, names an unknown tool, has invalid input, fails

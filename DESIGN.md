@@ -73,10 +73,12 @@ of both saturating at 100); a **single** airport is scored *absolute* vs. all US
      (`src/scoring/`); the model only decides which airports to look up and score, then explains.
    - **Scoring rule (the owner's, verbatim in the prompt):** questions about investment potential, or which
      airport is better / should be expanded, MUST go through `score_airports`; the model never ranks from memory.
-   - **Category rule (#61, next to the scoring rule):** a question about ONE category ("how congested is JFK?",
-     "what is LAX's load factor?", "compare congestion at LAX and SFO") calls that category's tool
+   - **Answer-scope rule (#64, with the category tools folded in by #61):** a question about ONE factor ("how
+     congested is JFK?", "what is LAX's load factor?", "compare congestion at LAX and SFO") calls that factor's tool
      (`get_congestion`, `get_unmet_demand`, `get_long_haul_share`, `get_growth`), not `score_airports`, and the answer
-     covers only that category. The tools (`agent/tools/categoryTools.ts`) do no math of their own: each scores the
+     covers only that factor and offers the rest; a general grade / rank / "compare for investment" question still
+     goes to `score_airports` with the full breakdown. It is one persona rule (`ANSWER_SCOPE_RULE`), so it cannot
+     contradict a second one. The tools (`agent/tools/categoryTools.ts`) do no math of their own: each scores the
      airports with the same scorer and `INVESTMENT_KPIS` as `score_airports` and returns that one KPI's breakdown
      (raw value, sub-score, evidence) plus its weight and caveat, so the numbers always match the full score (a golden
      test checks it). They always score against all US airports (`mode: "absolute"`), so a min-max category is never

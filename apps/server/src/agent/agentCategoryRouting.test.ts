@@ -5,7 +5,7 @@ import { fakeScoreAirports } from "../test/fakeScoreAirports.ts";
 import { collect } from "../test/helpers.ts";
 import { CLASSIFIER_PROMPT } from "./classifier/prompt.ts";
 import { LlmPassthroughAgent } from "./llmPassthroughAgent.ts";
-import { CATEGORY_RULE, SCORING_RULE, buildToolLoopPrompt } from "./prompts/toolLoop.ts";
+import { ANSWER_SCOPE_RULE, SCORING_RULE, buildToolLoopPrompt } from "./prompts/toolLoop.ts";
 import { TOOLS } from "./tools/registry.ts";
 
 const model: ModelInfo = {
@@ -17,7 +17,7 @@ const model: ModelInfo = {
   available: true,
 };
 
-/** Which category tool a question is about, by the words CATEGORY_RULE lists for it. */
+/** Which category tool a question is about, by the words ANSWER_SCOPE_RULE lists for it. */
 const CATEGORY_WORDS: ReadonlyArray<readonly [RegExp, string]> = [
   [/congest|busy/i, "get_congestion"],
   [/load factor|unmet demand|turned.away/i, "get_unmet_demand"],
@@ -28,7 +28,7 @@ const CATEGORY_WORDS: ReadonlyArray<readonly [RegExp, string]> = [
 /**
  * A fake main model that follows the prompt: with both rules in its system prompt, an investment / "better" /
  * ranking question goes to score_airports (SCORING_RULE); a question about one category goes to that
- * category's tool (CATEGORY_RULE). Without the category rule it would score everything.
+ * factor's tool (ANSWER_SCOPE_RULE). Without that rule in the prompt it would score everything.
  */
 function followsRules(request: LlmRequest): string {
   const last = request.messages.at(-1)!.content;
@@ -40,7 +40,7 @@ function followsRules(request: LlmRequest): string {
     return JSON.stringify({ tool: "score_airports", input: { airport_codes: codes } });
   }
   const category = CATEGORY_WORDS.find(([re]) => re.test(question))?.[1];
-  if (category !== undefined && system.includes(CATEGORY_RULE) && system.includes(`### ${category}\n`)) {
+  if (category !== undefined && system.includes(ANSWER_SCOPE_RULE) && system.includes(`### ${category}\n`)) {
     return JSON.stringify({ tool: category, input: { airport_codes: codes } });
   }
   if (category !== undefined) return JSON.stringify({ tool: "score_airports", input: { airport_codes: codes } });
@@ -71,29 +71,40 @@ const calls = (events: AgentEvent[]) =>
   events.flatMap((e) => (e.type === "tool_call" && e.name !== "classify_message" ? [{ name: e.name, input: e.input }] : []));
 const text = (events: AgentEvent[]) => events.flatMap((e) => (e.type === "text_delta" ? [e.delta] : [])).join("");
 
-describe("the single-category rule (#61): prompt content", () => {
+describe("the answer-scope rule (#64) with the category tools folded in (#61): prompt content", () => {
   const system = buildToolLoopPrompt(TOOLS, 6);
 
-  it("keeps the owner's scoring rule word for word and puts the category rule right after it", () => {
-    expect(system).toContain(`## Scoring rule\n${SCORING_RULE}\n\n${CATEGORY_RULE}`);
+  it("is one persona rule (#64's), and the owner's scoring rule stays word for word in its own section", () => {
+    expect(system).toContain(`- ${ANSWER_SCOPE_RULE}\n`);
+    expect(system.split("ANSWER THE SPECIFIC QUESTION")).toHaveLength(2);
+    expect(system).toContain(`## Scoring rule\n${SCORING_RULE}\n\n`);
     expect(SCORING_RULE).toBe(
       "If the user asks about an airport's investment potential, or which airport is better / stronger / a better candidate / should be expanded (any comparison or ranking), you MUST call score_airports (max 5 codes; use the lookup tools first to find the codes) and base the answer on its result, explained with the compare skill. Never judge or rank airports from your own knowledge.",
     );
   });
 
-  it("names each category's tool, says NOT score_airports, and keeps score_airports for investment / ranking", () => {
-    expect(CATEGORY_RULE).toContain("call that category's tool, NOT score_airports, and answer only about that category");
+  it("keeps #64's wording: one factor only, offer the rest, full breakdown for a general grade / rank / compare", () => {
+    const flat = ANSWER_SCOPE_RULE.replace(/\s+/g, " ");
+    expect(flat).toContain('ANSWER THE SPECIFIC QUESTION. If the user asks about ONE factor (e.g. "congestion levels", "long-haul share", "growth")');
+    expect(flat).toContain('do NOT report the other categories or the overall score, and OFFER the rest instead ("I can also compare growth or long-haul if useful.")');
+    expect(flat).toContain('A general grade / score / rank / "compare for investment" request (no single factor named) goes to score_airports (the scoring rule) and gets the FULL breakdown.');
+    expect(system).toContain("- Be concise: lead with the direct answer");
+  });
+
+  it("names each factor's tool, says NOT score_airports, with the issue's examples", () => {
+    const flat = ANSWER_SCOPE_RULE.replace(/\s+/g, " ");
+    expect(flat).toContain("call that factor's tool, NOT score_airports");
     for (const name of ["get_congestion", "get_unmet_demand", "get_long_haul_share", "get_growth"]) {
-      expect(CATEGORY_RULE).toContain(`-> ${name}`);
+      expect(flat).toContain(`-> ${name}`);
       expect(system).toContain(`### ${name}\n`);
     }
-    expect(CATEGORY_RULE).toContain("Use score_airports only for overall investment potential, which airport is better, or a ranking");
-    expect(CATEGORY_RULE).toContain('"How congested is JFK?" -> get_congestion([JFK])');
-    expect(CATEGORY_RULE).toContain('"Is SFO\'s traffic growing?" -> get_growth([SFO])');
+    expect(flat).toContain('"How congested is JFK?" -> get_congestion([JFK])');
+    expect(flat).toContain('"compare congestion at LAX and SFO") is still a one-factor question');
+    expect(flat).toContain('"Is SFO\'s traffic growing?" -> get_growth([SFO])');
   });
 });
 
-describe("the single-category rule (#61): a fake model that follows the prompt", () => {
+describe("the answer-scope rule (#61, #64): a fake model that follows the prompt", () => {
   it('"how congested is JFK?" calls get_congestion [JFK], not score_airports', async () => {
     const { events, score } = await run("how congested is JFK?");
     expect(calls(events)).toEqual([{ name: "get_congestion", input: { airport_codes: ["JFK"] } }]);
