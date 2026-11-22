@@ -65,8 +65,8 @@ The optional first `classify_message` pair (LLM-backed models only) is the one p
 
 For an LLM-backed model, the first step of every turn is a message classifier: it labels the latest user
 message `greeting`, `capabilities`, `off_topic` or `in_scope` (the fallback) and is shown as a
-`classify_message` `tool_call`/`tool_result` pair with the output `{ label, reason }`, right after
-`message_start` and before any thinking. The label does not change what happens next yet.
+`classify_message` `tool_call`/`tool_result` pair with the output `{ label, reason, attempts }`, right after
+`message_start` and before any thinking. `attempts` is 2 when the first answer was not a valid label and the classifier was asked once more. The label does not change what happens next yet.
 
 Closing the connection aborts the agent run via an `AbortSignal` (it cancels the classifier call too).
 

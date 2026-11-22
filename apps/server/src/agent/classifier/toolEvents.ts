@@ -21,7 +21,7 @@ export function classificationToolEvents(
       type: "tool_result",
       messageId,
       toolCallId,
-      result: { ok: true, output: { label: classification.label, reason: classification.reason } },
+      result: { ok: true, output: { label: classification.label, reason: classification.reason, attempts: classification.attempts } },
     },
   ];
 }

@@ -31,9 +31,9 @@ describe("POST /api/chat with gemini", () => {
     const events = parseSse(res.text);
     expect(events.map((e) => e.type)).toEqual(["message_start", "tool_call", "tool_result", "text_delta", "text_delta", "message_end"]);
     expect(events.flatMap((e) => (e.type === "text_delta" ? [e.delta] : [])).join("")).toBe("Good candidates are congested.");
-    // One call for the classify step (#13, fast model), one for the answer (main model) (#17).
+    // The fake replies plain text, so the classify step (#13, fast model) retries once (#19), then the answer (main model) (#17).
     const url = (model: string) => `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse`;
-    expect(urls).toEqual([url("gemini-flash-lite-latest"), url("gemini-3.5-flash")]);
+    expect(urls).toEqual([url("gemini-flash-lite-latest"), url("gemini-flash-lite-latest"), url("gemini-3.5-flash")]);
   });
 
   it("returns 503 JSON before the stream when Gemini rejects the key, without echoing it", async () => {

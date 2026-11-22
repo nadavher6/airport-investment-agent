@@ -124,7 +124,7 @@ describe("LlmPassthroughAgent", () => {
     expect(events.map((e) => e.type)).toEqual(["message_start", "tool_call", "tool_result", "text_delta", "message_end"]);
     const [, call, result] = events;
     expect(call).toMatchObject({ type: "tool_call", name: "classify_message", input: { message: "And LAX?" } });
-    expect(result).toMatchObject({ type: "tool_result", result: { ok: true, output: { label: "greeting", reason: "Says hello." } } });
+    expect(result).toMatchObject({ type: "tool_result", result: { ok: true, output: { label: "greeting", reason: "Says hello.", attempts: 1 } } });
     expect(call && "toolCallId" in call && result && "toolCallId" in result && call.toolCallId === result.toolCallId).toBe(true);
 
     // One classifier call that sees the recent turns; the label changes nothing about the main call.
