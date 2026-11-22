@@ -43,6 +43,11 @@ In dev the browser only talks to Vite (`:5173`), which proxies `/api/*` to the s
 | POST   | `/api/chat`   | `ChatRequest` | `text/event-stream` of `AgentEvent` frames  |
 | GET    | `/api/providers/:provider/health` | – | `ProviderHealthResponse` |
 
+`ChatRequest` is `{ modelId, messages, conversationId? }`. `messages` is the whole chat so far, oldest first, ending
+with the user's turn. `conversationId` is optional: the web app mints one per chat (a new chat gets a new id) and
+sends it with every turn. It must be 16-64 letters, digits, `-` or `_` (a 400 otherwise): a UUID passes, a short id does not, because the id is a bearer secret (whoever sends it reads that chat's memory). The server keys its
+tool-result memory by it (bounded, see DESIGN.md); with no id the turn has no memory.
+
 `/api/providers/:provider/health` checks one `ModelProvider`. For `claude-headless` it runs `claude --version`
 (5 s timeout) and answers `ok`, `unavailable` (no `claude` binary on PATH or at `CLAUDE_BIN`) or `error`, with a
 plain-English `detail`. For `gemini` it lists one model with `GEMINI_API_KEY` (5 s timeout): `ok`, `unavailable` (no

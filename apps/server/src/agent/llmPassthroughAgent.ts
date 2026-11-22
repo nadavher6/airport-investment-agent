@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { asMessageId, type AgentEvent, type ApiErrorCode, type ModelProvider } from "@airport/shared";
+import { asMessageId, type AgentEvent, type ApiErrorCode, type JsonValue, type ModelProvider } from "@airport/shared";
 import { HttpError } from "../http/errors.ts";
 import { LlmError, type LlmClient } from "../llm/llmClient.ts";
 import { mainModel } from "../llm/models.ts";
@@ -8,6 +8,9 @@ import { classifyMessage, type Classification, type ClassificationLabel } from "
 import { classificationToolEvents } from "./classifier/toolEvents.ts";
 import { SCORE_AIRPORTS_TOOL_NAME, type ScoreAirportsTool } from "./flow/scoreAirports.ts";
 import { MAX_TOOL_STEPS, runToolLoop } from "./flow/toolLoop.ts";
+import { buildMemorySystemBlock, DEFAULT_MAX_RECORDS, selectFocusedRecords } from "./memory/assemble.ts";
+import { ConversationMemory, rankedCodes, withMemory } from "./memory/conversationMemory.ts";
+import { resolveFocus } from "./memory/focus.ts";
 import { buildToolLoopPrompt } from "./prompts/toolLoop.ts";
 import { CAPABILITIES_ANSWER } from "./responses/capabilities.ts";
 import { GREETING_ANSWER } from "./responses/greeting.ts";
@@ -39,6 +42,10 @@ export interface AgentOptions {
   readonly rng?: Rng;
   /** Replaces the registry's score_airports in the loop's tools. Tests pass a fake. */
   readonly scoreAirports?: ScoreAirportsTool;
+  /** Replace the registry tools of the same names (after `scoreAirports`). Tests pass fakes. */
+  readonly toolOverrides?: readonly RegisteredTool[];
+  /** The per-conversation memory (#50). Default: a bounded in-process store (LRU 200 chats, 1 h TTL). */
+  readonly memory?: ConversationMemory;
 }
 
 /**
@@ -47,12 +54,16 @@ export interface AgentOptions {
  * - every other label (`in_scope`, `grading`): the ReAct tool loop (`flow/toolLoop.ts`) with ALL registry tools,
  *   score_airports included (at most 5 codes, enforced in the loop). The loop's system prompt carries the compare
  *   skill always, and the grading skill for `grading`.
+ * Memory (#25, #50): only with the request's `conversationId`. The focused airport records cached by earlier
+ * turns of that chat go into the loop's system prompt, a tool call already cached in it returns the cached output
+ * (no re-fetch), and new results are recorded. With no conversationId the memory is never read or written.
  * The classify step is held until the main LLM's first event, so an LlmError before it is still an HttpError
  * (normal 4xx/5xx); after it, an `error` event.
  */
 export class LlmPassthroughAgent implements Agent {
   private readonly rng: Rng;
   private readonly tools: readonly RegisteredTool[];
+  private readonly memory: ConversationMemory;
 
   constructor(
     private readonly clients: Readonly<Record<ModelProvider, LlmClient>>,
@@ -62,7 +73,10 @@ export class LlmPassthroughAgent implements Agent {
   ) {
     this.rng = options.rng ?? Math.random;
     const score = options.scoreAirports;
-    this.tools = score === undefined ? TOOLS : TOOLS.map((tool) => (tool.name === SCORE_AIRPORTS_TOOL_NAME ? score : tool));
+    this.memory = options.memory ?? new ConversationMemory();
+    const overrides = new Map((options.toolOverrides ?? []).map((tool) => [tool.name, tool]));
+    if (score !== undefined) overrides.set(SCORE_AIRPORTS_TOOL_NAME, score);
+    this.tools = TOOLS.map((tool) => overrides.get(tool.name) ?? tool);
   }
 
   async *run(input: AgentRunInput): AsyncGenerator<AgentEvent> {
@@ -92,15 +106,38 @@ export class LlmPassthroughAgent implements Agent {
       return;
     }
 
+    // Memory (#50): keyed ONLY by the client's conversationId, never by message content; none without an id.
+    const { conversationId } = input.request;
+    const session = conversationId === undefined ? undefined : this.memory.session(conversationId);
+    const systemPrompt = buildToolLoopPrompt(this.tools, MAX_TOOL_STEPS, { grading: classification.label === "grading" });
+    let system = systemPrompt;
+    let tools = this.tools;
+    const touched: string[] = [];
+    let presented: readonly string[] | undefined;
+    if (session !== undefined) {
+      const state = session.state();
+      const focus = resolveFocus(lastUserMessage, state);
+      touched.push(...focus.codes);
+      // The whole updated focus stack (the codes named or referred to first), so "why is LAX higher?" also
+      // brings back SNA from the compare turn. The codes named in this message are pinned past the K-cap.
+      const focusedRecords = selectFocusedRecords(state.workingSet, focus.focusStack, DEFAULT_MAX_RECORDS, undefined, focus.explicitCodes);
+      system = buildMemorySystemBlock(systemPrompt, { focusedRecords });
+      const onRecord = (name: string, output: JsonValue, codes: readonly string[]): void => {
+        touched.push(...codes);
+        presented = rankedCodes(name, output) ?? presented;
+      };
+      tools = this.tools.map((tool) => withMemory(tool, session, onRecord));
+    }
+
     let started = false;
     const loop = runToolLoop({
       client,
       model: mainModel(client.provider, this.claudeMainModel),
-      system: buildToolLoopPrompt(this.tools, MAX_TOOL_STEPS, { grading: classification.label === "grading" }),
+      system,
       messages,
       messageId,
       signal: input.signal,
-      tools: this.tools,
+      tools,
     });
     try {
       for (;;) {
@@ -123,6 +160,8 @@ export class LlmPassthroughAgent implements Agent {
       yield { type: "error", error: { code: API_CODE[err.code], message: err.message } };
     } finally {
       await loop.return("cancelled");
+      // Commit the turn's focus on every path (answer, error, abort), so the turn counter never drifts.
+      session?.commit(touched, presented);
     }
   }
 }
