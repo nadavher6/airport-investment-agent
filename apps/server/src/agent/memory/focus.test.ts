@@ -1,12 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { extractExplicitCodes, resolveFocus } from "./focus.ts";
 import { selectFocusedRecords } from "./assemble.ts";
-import { findAirportsByCityTool } from "../tools/findAirportsByCity.ts";
-import { findAirportsByRegionTool } from "../tools/findAirportsByRegion.ts";
+import { findAirportsByCity, findAirportsByRegion } from "../../data/places/airports.ts";
 
 /** The codes #23's city tool returns for one name: the single source of truth for places. */
 const cityCodes = (city: string): string[] =>
-  findAirportsByCityTool.run({ cities: [city] }).results[city]?.airports.map((a) => a.code) ?? [];
+  findAirportsByCity([city]).results[city]?.airports.map((a) => a.code) ?? [];
 import type { AirportRecord, MemoryState } from "./types.ts";
 
 const unique = (xs: readonly string[]): string[] => [...new Set(xs)];
@@ -100,7 +99,7 @@ describe("extractExplicitCodes", () => {
   });
 
   it("resolves region names with find_airports_by_region (#23)", () => {
-    const region = findAirportsByRegionTool.run({ region: "Pacific Northwest" });
+    const region = findAirportsByRegion("Pacific Northwest");
     const expected = [...new Set(region.cities.flatMap((c) => region.results[c]?.airports.map((a) => a.code) ?? []))];
     expect(expected.length).toBeGreaterThan(0);
     expect(extractExplicitCodes("invest in the Pacific Northwest")).toEqual(expected);
