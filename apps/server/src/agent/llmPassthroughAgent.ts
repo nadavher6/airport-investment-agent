@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { asMessageId, type AgentEvent, type ApiErrorCode, type ModelProvider } from "@airport/shared";
 import { HttpError } from "../http/errors.ts";
 import { LlmError, type LlmClient } from "../llm/llmClient.ts";
+import { mainModel } from "../llm/models.ts";
 import type { Agent, AgentRunInput } from "./agent.ts";
 import { classifyMessage } from "./classifier/classifier.ts";
 import { classificationToolEvents } from "./classifier/toolEvents.ts";
@@ -21,7 +22,11 @@ const API_CODE: Record<LlmError["code"], ApiErrorCode> = {
  * An LlmError before the first event becomes an HttpError (normal 4xx/5xx); after it, an `error` event.
  */
 export class LlmPassthroughAgent implements Agent {
-  constructor(private readonly clients: Readonly<Record<ModelProvider, LlmClient>>) {}
+  constructor(
+    private readonly clients: Readonly<Record<ModelProvider, LlmClient>>,
+    /** CLAUDE_MODEL: replaces the Claude main model only. */
+    private readonly claudeMainModel?: string,
+  ) {}
 
   async *run(input: AgentRunInput): AsyncGenerator<AgentEvent> {
     const client = this.clients[input.model.provider];
@@ -42,7 +47,7 @@ export class LlmPassthroughAgent implements Agent {
       return [{ type: "thinking_end", messageId, durationMs }];
     };
     try {
-      for await (const event of client.stream({ messages, signal: input.signal })) {
+      for await (const event of client.stream({ messages, signal: input.signal, model: mainModel(client.provider, this.claudeMainModel) })) {
         // The classify step is held until the LLM's first event, so a failure to start is still an HttpError.
         if (!started) {
           yield { type: "message_start", messageId, modelId: input.model.id };

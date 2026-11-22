@@ -74,6 +74,14 @@ describe("GeminiClient.stream", () => {
     ]);
   });
 
+  it("puts request.model in the URL, and falls back to the default model (#17)", async () => {
+    const calls: Call[] = [];
+    await collect(client(fakeFetch(200, sse([part("ok")]), calls)).stream(req({ model: "gemini-flash-lite-latest" })));
+    await collect(client(fakeFetch(200, sse([part("ok")]), calls)).stream(req()));
+    expect(calls[0]?.url).toContain("/models/gemini-flash-lite-latest:streamGenerateContent");
+    expect(calls[1]?.url).toContain(`/models/${GEMINI_MODEL}:streamGenerateContent`);
+  });
+
   it("reports max_tokens as the stop reason", async () => {
     const events = await collect(client(fakeFetch(200, sse([part("x", { finishReason: "MAX_TOKENS" })]))).stream(req()));
     expect(events.at(-1)).toEqual({ type: "done", stopReason: "max_tokens" });

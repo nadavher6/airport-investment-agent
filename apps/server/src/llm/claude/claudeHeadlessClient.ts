@@ -77,7 +77,7 @@ export class ClaudeHeadlessClient implements LlmClient {
     return { status: "ok", detail: version ? `Claude Code ${version} is installed.` : "Claude Code is installed." };
   }
 
-  async *stream({ messages, system, signal }: LlmRequest): AsyncGenerator<LlmStreamEvent> {
+  async *stream({ messages, system, signal, model }: LlmRequest): AsyncGenerator<LlmStreamEvent> {
     const { config, home } = this.options;
     const bin = findClaudeBinary(config);
     if (!bin) throw new LlmError("unavailable", notFound);
@@ -112,7 +112,7 @@ export class ClaudeHeadlessClient implements LlmClient {
 
     try {
       if (signal.aborted) return; // aborted while the sandbox was being made: never spawn
-      const spawned = spawn(bin, chatClaudeArgs(config.model, system), { cwd, env: childEnv(), stdio: ["pipe", "pipe", "pipe"] });
+      const spawned = spawn(bin, chatClaudeArgs(model ?? config.model, system), { cwd, env: childEnv(), stdio: ["pipe", "pipe", "pipe"] });
       child = spawned;
       this.running.add(spawned);
       exited = whenExited(spawned).finally(() => this.running.delete(spawned));

@@ -136,7 +136,7 @@ export class GeminiClient implements LlmClient {
     if (!this.apiKey) throw new LlmError("unavailable", "GEMINI_API_KEY is not set in .env");
     let response: Response;
     try {
-      response = await this.fetchFn(`${this.baseUrl}/models/${GEMINI_MODEL}:streamGenerateContent?alt=sse`, {
+      response = await this.fetchFn(`${this.baseUrl}/models/${request.model ?? GEMINI_MODEL}:streamGenerateContent?alt=sse`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "x-goog-api-key": this.apiKey },
         body: JSON.stringify(requestBody(request)),

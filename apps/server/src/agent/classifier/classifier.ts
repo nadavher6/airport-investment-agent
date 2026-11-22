@@ -1,4 +1,5 @@
 import { type LlmClient, type LlmMessage } from "../../llm/llmClient.ts";
+import { MODELS } from "../../llm/models.ts";
 import {
   CLASSIFIER_LAST_MESSAGE_HEAD_CHARS,
   CLASSIFIER_LAST_MESSAGE_TAIL_CHARS,
@@ -85,6 +86,7 @@ export async function classifyMessage(
   try {
     const request = {
       system: CLASSIFIER_PROMPT,
+      model: MODELS[client.provider].classifier,
       messages: [{ role: "user", content: buildClassifierInput(messages) }] as const,
       signal,
     };
