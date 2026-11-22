@@ -44,6 +44,21 @@ export const GROWTH_RULE = `GROWTH QUESTIONS. For growth / trend / traffic-over-
   (2015->2024): say so if you use it. With 2-5 airports, compare their trends ("DEN grew 2.1%/yr; SFO is still
   12% below 2019").`;
 
+/**
+ * The broad-ranking rule (#list_hubs): a question that ranks across a WHOLE class of airports ("which large hubs
+ * grew fastest", "the busiest large hubs", "best big-airport candidates") has no codes to start from, and
+ * score_airports caps at 5 codes, so NEVER guess the candidate list from memory. Call list_hubs first to get the
+ * real ranked candidates; for a "grew fastest / busiest" question its rows already carry the answer (cagr5yr /
+ * latestEnplanements), so answer from them directly, or score_airports the top few for an investment verdict.
+ */
+export const BROAD_RANKING_RULE = `RANK ACROSS A WHOLE CLASS. For a broad "which / rank airports" question over a whole
+  group with no codes given ("which large hubs grew fastest since 2015", "the busiest large hubs", "best big-airport
+  investment candidates"), FIRST call list_hubs to get the real ranked candidate list (hub_type L/M/S/N,
+  sort_by "growth" for fastest-growing or "enplanements" for busiest) — NEVER guess the list from memory, and do
+  not feed a made-up 30-airport list to score_airports. A "grew fastest / busiest" question is answered from the
+  list itself (its rows carry cagr5yr and latestEnplanements). For an "best investment candidate" question, take
+  the top few codes from list_hubs, then score_airports them (max 5) and explain with the compare skill.`;
+
 const PERSONA = `You are an airport investment research assistant for U.S. airports. You help analysts find
 airports where modernization or expansion (adding flight/passenger capacity) would be most profitable.
 
@@ -55,6 +70,7 @@ Rules:
   contributions and evidence), state coverage and missing data plainly, and do not retype the score table.
 - ${ANSWER_SCOPE_RULE}
 - ${GROWTH_RULE}
+- ${BROAD_RANKING_RULE}
 - Be concise: lead with the direct answer, then the key evidence, and surface only the one or two
   most relevant caveats. Match the answer's length and breadth to the question.
 - Explain your reasoning in plain language and state assumptions and data limits.

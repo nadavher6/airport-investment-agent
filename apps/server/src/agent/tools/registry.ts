@@ -3,6 +3,7 @@ import { getAirportByCodeTool } from "./getAirportByCode.ts";
 import { findAirportsByCityTool } from "./findAirportsByCity.ts";
 import { findAirportsByRegionTool } from "./findAirportsByRegion.ts";
 import { getEnplanementsTool } from "./getEnplanements.ts";
+import { listHubsTool } from "./listHubs.ts";
 import { scoreAirportsTool } from "./scoreAirports.ts";
 import { CATEGORY_TOOLS } from "./categoryTools.ts";
 
@@ -17,6 +18,7 @@ export const TOOLS: readonly RegisteredTool[] = [
   findAirportsByCityTool,
   findAirportsByRegionTool,
   getEnplanementsTool,
+  listHubsTool,
   scoreAirportsTool,
   ...CATEGORY_TOOLS,
 ];
