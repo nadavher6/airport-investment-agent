@@ -1,23 +1,25 @@
 import { API_ROUTES } from "@airport/shared";
 import request from "supertest";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterAll, afterEach, describe, expect, it } from "vitest";
 import { LlmPassthroughAgent } from "../agent/llmPassthroughAgent.ts";
 import { MockAgent } from "../agent/mockAgent.ts";
 import { createApp } from "../app.ts";
 import { ClaudeHeadlessClient } from "../llm/claude/claudeHeadlessClient.ts";
-import { fakeClaude, fixtureLines, type FakeClaude, type FakeClaudeSpec } from "../test/fakeClaude.ts";
+import { fakeClaude, fakeHome, fixtureLines, type FakeClaude, type FakeClaudeSpec } from "../test/fakeClaude.ts";
 import { parseSse, testConfig } from "../test/helpers.ts";
 
 const body = (modelId: string) => ({ modelId, messages: [{ role: "user", content: "Hi" }] });
 
 let fake: FakeClaude | undefined;
+const home = fakeHome();
 afterEach(() => fake?.cleanup());
+afterAll(() => home.cleanup());
 
 /** The wiring from index.ts, with a fake `claude` (or none). */
 function wiredApp(spec: FakeClaudeSpec | null) {
   fake = spec ? fakeClaude(spec) : undefined;
   const config = testConfig([], { bin: fake?.bin ?? "/nope/claude" });
-  const llmClients = { "claude-headless": new ClaudeHeadlessClient({ config: config.claude, killGraceMs: 200 }) };
+  const llmClients = { "claude-headless": new ClaudeHeadlessClient({ config: config.claude, home: home.home, killGraceMs: 200 }) };
   return createApp({ config, agent: new LlmPassthroughAgent(llmClients, new MockAgent(0)), llmClients });
 }
 

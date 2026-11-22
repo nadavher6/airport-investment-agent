@@ -16,6 +16,58 @@ type Json = Record<string, unknown>;
 const isObject = (value: unknown): value is Json => typeof value === "object" && value !== null;
 const str = (value: unknown): string | undefined => (typeof value === "string" ? value : undefined);
 
+/** The stream-json lines we act on, checked at the boundary. Every other line parses to undefined. */
+export type StreamLine =
+  | { readonly kind: "thinking_delta"; readonly text: string }
+  | { readonly kind: "text_delta"; readonly text: string }
+  | { readonly kind: "stop_reason"; readonly stopReason: string }
+  | { readonly kind: "assistant"; readonly text: string }
+  | { readonly kind: "result"; readonly isError: boolean; readonly subtype?: string; readonly result?: string };
+
+function parseStreamEvent(event: Json): StreamLine | undefined {
+  const delta = isObject(event.delta) ? event.delta : undefined;
+  if (!delta) return undefined;
+  if (event.type === "message_delta") {
+    const stopReason = str(delta.stop_reason);
+    return stopReason ? { kind: "stop_reason", stopReason } : undefined;
+  }
+  if (event.type !== "content_block_delta") return undefined;
+  if (delta.type === "thinking_delta") {
+    const text = str(delta.thinking);
+    return text ? { kind: "thinking_delta", text } : undefined;
+  }
+  if (delta.type === "text_delta") {
+    const text = str(delta.text);
+    return text ? { kind: "text_delta", text } : undefined;
+  }
+  return undefined;
+}
+
+/** Validates one parsed JSON line against the shapes above. */
+export function parseStreamLine(line: unknown): StreamLine | undefined {
+  if (!isObject(line)) return undefined;
+  switch (line.type) {
+    case "stream_event":
+      return isObject(line.event) ? parseStreamEvent(line.event) : undefined;
+    case "assistant": {
+      const { message } = line;
+      if (!isObject(message) || !Array.isArray(message.content)) return undefined;
+      const text = message.content
+        .filter((block): block is Json => isObject(block) && block.type === "text")
+        .map((block) => str(block.text) ?? "")
+        .join("");
+      return text ? { kind: "assistant", text } : undefined;
+    }
+    case "result": {
+      const subtype = str(line.subtype);
+      const result = str(line.result);
+      return { kind: "result", isError: line.is_error === true, ...(subtype !== undefined ? { subtype } : {}), ...(result !== undefined ? { result } : {}) };
+    }
+    default:
+      return undefined;
+  }
+}
+
 export type MapperOutcome =
   | { readonly kind: "running" }
   | { readonly kind: "done" }
@@ -26,60 +78,33 @@ export class StreamJsonMapper {
   private stopReason = "end_turn";
   outcome: MapperOutcome = { kind: "running" };
 
-  map(line: unknown): LlmStreamEvent[] {
-    if (!isObject(line) || this.outcome.kind !== "running") return [];
-    switch (line.type) {
-      case "stream_event":
-        return isObject(line.event) ? this.mapStreamEvent(line.event) : [];
-      case "assistant":
-        return this.mapAssistant(line.message);
-      case "result":
-        return this.mapResult(line);
-      default:
+  /** Takes one parsed JSON line (anything), returns the events to emit. */
+  map(raw: unknown): LlmStreamEvent[] {
+    if (this.outcome.kind !== "running") return [];
+    const line = parseStreamLine(raw);
+    if (!line) return [];
+    switch (line.kind) {
+      case "thinking_delta":
+        return [{ type: "thinking_delta", text: line.text }];
+      case "text_delta":
+        this.sawText = true;
+        return [{ type: "text_delta", text: line.text }];
+      case "stop_reason":
+        this.stopReason = line.stopReason;
         return [];
+      case "assistant":
+        // Fallback when partial messages were not streamed: emit the whole message's text once.
+        if (this.sawText) return [];
+        this.sawText = true;
+        return [{ type: "text_delta", text: line.text }];
+      case "result":
+        if (line.isError || (line.subtype !== undefined && line.subtype !== "success")) {
+          this.outcome = { kind: "failed", error: claudeFailure(line.result ?? line.subtype ?? "") };
+          return [];
+        }
+        this.outcome = { kind: "done" };
+        return [{ type: "done", stopReason: this.stopReason }];
     }
-  }
-
-  private mapStreamEvent(event: Json): LlmStreamEvent[] {
-    if (event.type === "message_delta") {
-      const stop = isObject(event.delta) ? str(event.delta.stop_reason) : undefined;
-      if (stop) this.stopReason = stop;
-      return [];
-    }
-    if (event.type !== "content_block_delta" || !isObject(event.delta)) return [];
-    const { delta } = event;
-    if (delta.type === "thinking_delta") {
-      const text = str(delta.thinking);
-      return text ? [{ type: "thinking_delta", text }] : [];
-    }
-    if (delta.type === "text_delta") {
-      const text = str(delta.text);
-      if (!text) return [];
-      this.sawText = true;
-      return [{ type: "text_delta", text }];
-    }
-    return [];
-  }
-
-  /** Fallback when partial messages were not streamed: emit the whole message's text once. */
-  private mapAssistant(message: unknown): LlmStreamEvent[] {
-    if (this.sawText || !isObject(message) || !Array.isArray(message.content)) return [];
-    const text = message.content
-      .filter((block): block is Json => isObject(block) && block.type === "text")
-      .map((block) => str(block.text) ?? "")
-      .join("");
-    if (!text) return [];
-    this.sawText = true;
-    return [{ type: "text_delta", text }];
-  }
-
-  private mapResult(line: Json): LlmStreamEvent[] {
-    if (line.is_error === true || (line.subtype !== undefined && line.subtype !== "success")) {
-      this.outcome = { kind: "failed", error: claudeFailure(str(line.result) ?? str(line.subtype) ?? "") };
-      return [];
-    }
-    this.outcome = { kind: "done" };
-    return [{ type: "done", stopReason: this.stopReason }];
   }
 }
 

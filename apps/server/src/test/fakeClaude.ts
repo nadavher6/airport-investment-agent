@@ -1,4 +1,4 @@
-import { chmodSync, mkdtempSync, readFileSync, rmSync, writeFileSync, existsSync } from "node:fs";
+import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -18,6 +18,11 @@ export interface FakeClaudeSpec {
   readonly hang?: boolean;
   /** Ignore SIGTERM, so only SIGKILL stops it. */
   readonly ignoreSigterm?: boolean;
+  /**
+   * Like real Claude Code, create `<projectsRoot>/<cwd with non-alphanumerics as "-">/memory` at start.
+   * Tests point it at a temp fake home, never the real ~/.claude.
+   */
+  readonly projectsRoot?: string;
 }
 
 /** What one `-p` run of the fake saw, written to `record.json` next to the script. */
@@ -28,6 +33,9 @@ export interface FakeClaudeRecord {
   readonly cwdEntries: string[];
   readonly stdin: string;
   readonly pid: number;
+  /** Names of the env variables the fake was started with (names only, never values). */
+  readonly envNames: string[];
+  readonly disableAutoMemory: string | null;
 }
 
 const SCRIPT = String.raw`
@@ -44,10 +52,11 @@ if (argv[0] === "--version") {
   }
 } else {
   if (spec.ignoreSigterm) process.on("SIGTERM", () => {});
+  if (spec.projectsRoot) fs.mkdirSync(path.join(spec.projectsRoot, process.cwd().replace(/[^a-zA-Z0-9]/g, "-"), "memory"), { recursive: true });
   let stdin = "";
   process.stdin.on("data", (d) => (stdin += d));
   process.stdin.on("end", async () => {
-    fs.writeFileSync(path.join(__dirname, "record.json"), JSON.stringify({ argv, cwd: process.cwd(), cwdEntries: fs.readdirSync(process.cwd()), stdin, pid: process.pid }));
+    fs.writeFileSync(path.join(__dirname, "record.json"), JSON.stringify({ argv, cwd: process.cwd(), cwdEntries: fs.readdirSync(process.cwd()), stdin, pid: process.pid, envNames: Object.keys(process.env), disableAutoMemory: process.env.CLAUDE_CODE_DISABLE_AUTO_MEMORY ?? null }));
     for (const line of spec.lines ?? []) {
       process.stdout.write(line + "\n");
       if (spec.lineDelayMs) await sleep(spec.lineDelayMs);
@@ -82,6 +91,14 @@ export function fakeClaude(spec: FakeClaudeSpec = {}): FakeClaude {
     readRecord: () => (existsSync(recordPath) ? (JSON.parse(readFileSync(recordPath, "utf8")) as FakeClaudeRecord) : undefined),
     cleanup: () => rmSync(dir, { recursive: true, force: true }),
   };
+}
+
+/** A temp dir to use as the client's `home`, so no test ever touches the real ~/.claude. */
+export function fakeHome(): { readonly home: string; readonly projectsRoot: string; cleanup(): void } {
+  const home = realpathSync(mkdtempSync(join(tmpdir(), "fake-home-")));
+  const projectsRoot = join(home, ".claude", "projects");
+  mkdirSync(projectsRoot, { recursive: true });
+  return { home, projectsRoot, cleanup: () => rmSync(home, { recursive: true, force: true }) };
 }
 
 /** True while a process with this pid exists. */

@@ -1,28 +1,42 @@
-import { existsSync, realpathSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, realpathSync } from "node:fs";
+import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { afterEach, describe, expect, it } from "vitest";
-import { fakeClaude, fixtureLines, isAlive, waitFor, type FakeClaude, type FakeClaudeSpec } from "../../test/fakeClaude.ts";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { fakeClaude, fakeHome, fixtureLines, isAlive, waitFor, type FakeClaude, type FakeClaudeSpec } from "../../test/fakeClaude.ts";
 import { collect, testConfig } from "../../test/helpers.ts";
 import { describeLlmClientContract } from "../llmClientContract.ts";
 import { LlmError, type LlmRequest, type LlmStreamEvent } from "../llmClient.ts";
-import { ClaudeHeadlessClient } from "./claudeHeadlessClient.ts";
+import { DEFAULT_SYSTEM_PROMPT } from "./args.ts";
+import { ClaudeHeadlessClient, type ClaudeHeadlessOptions } from "./claudeHeadlessClient.ts";
 
 const textLine = (text: string) =>
   JSON.stringify({ type: "stream_event", event: { type: "content_block_delta", delta: { type: "text_delta", text } } });
 const authError = JSON.stringify({ type: "result", subtype: "success", is_error: true, result: "Not logged in · Please run /login" });
 
-let fakes: FakeClaude[] = [];
+let cleanups: (() => void)[] = [];
 afterEach(() => {
-  for (const fake of fakes) fake.cleanup();
-  fakes = [];
+  for (const cleanup of cleanups) cleanup();
+  cleanups = [];
+  vi.unstubAllEnvs();
 });
 
-function clientWith(spec: FakeClaudeSpec | null, claude: Parameters<typeof testConfig>[1] = {}) {
-  const fake = spec ? fakeClaude(spec) : undefined;
-  if (fake) fakes.push(fake);
+/** A client on a fake `claude` and a temp fake home (never the real ~/.claude). */
+function clientWith(
+  spec: FakeClaudeSpec | null,
+  claude: Parameters<typeof testConfig>[1] = {},
+  options: Partial<Pick<ClaudeHeadlessOptions, "idleTimeoutMs">> = {},
+) {
+  const home = fakeHome();
+  cleanups.push(home.cleanup);
+  const fake = spec ? fakeClaude({ projectsRoot: home.projectsRoot, ...spec }) : undefined;
+  if (fake) cleanups.push(fake.cleanup);
   const config = testConfig([], { bin: fake?.bin ?? "/nope/claude", ...claude }).claude;
-  return { fake: fake!, client: new ClaudeHeadlessClient({ config, killGraceMs: 200, healthTimeoutMs: 500 }) };
+  const client = new ClaudeHeadlessClient({ config, home: home.home, killGraceMs: 200, healthTimeoutMs: 500, ...options });
+  return { fake: fake!, client, home };
 }
+
+/** The project dir name Claude Code uses for a cwd, written out independently of the code under test. */
+const projectName = (cwd: string) => cwd.replaceAll("/", "-").replaceAll("_", "-").replaceAll(".", "-");
 
 const request = (signal = new AbortController().signal, system?: string): LlmRequest => ({
   messages: [{ role: "user", content: "Which airport?" }],
@@ -72,7 +86,8 @@ describe("ClaudeHeadlessClient", () => {
     expect(record.argv).toContain("--no-session-persistence");
     expect(valueOf("--setting-sources")).toBe("");
     expect(valueOf("--output-format")).toBe("stream-json");
-    expect(record.argv).not.toContain("--system-prompt"); // nothing sets one yet
+    expect(valueOf("--system-prompt")).toBe(DEFAULT_SYSTEM_PROMPT); // replaces Claude Code's own prompt
+    expect(record.argv).not.toContain("--append-system-prompt");
     expect(record.argv).not.toContain("--dangerously-skip-permissions");
     expect(record.stdin).toBe("Which airport?");
 
@@ -89,6 +104,73 @@ describe("ClaudeHeadlessClient", () => {
     const { argv } = fake.readRecord()!;
     expect(argv[argv.indexOf("--system-prompt") + 1]).toBe("Be brief.");
     expect(argv[argv.indexOf("--model") + 1]).toBe("sonnet");
+  });
+
+  it("always replaces the default system prompt: the neutral one-liner, or `system` when given", async () => {
+    const { client, fake } = clientWith({ lines: fixtureLines("stream-thinking-text.jsonl") });
+    await collect(client.stream(request()));
+    let { argv } = fake.readRecord()!;
+    expect(argv.filter((arg) => arg === "--system-prompt")).toHaveLength(1);
+    expect(argv[argv.indexOf("--system-prompt") + 1]).toBe("You are a helpful assistant.");
+    expect(argv.some((arg) => arg.startsWith("--append-system-prompt"))).toBe(false);
+
+    await collect(client.stream(request(undefined, "Answer in French.")));
+    ({ argv } = fake.readRecord()!);
+    expect(argv.filter((arg) => arg === "--system-prompt")).toHaveLength(1);
+    expect(argv[argv.indexOf("--system-prompt") + 1]).toBe("Answer in French.");
+    expect(argv.some((arg) => arg.startsWith("--append-system-prompt"))).toBe(false);
+  });
+
+  it("removes only this run's own ~/.claude/projects dir; siblings survive", async () => {
+    const { client, fake, home } = clientWith({ lines: fixtureLines("stream-thinking-text.jsonl") });
+    const siblings = [
+      projectName(join(realpathSync(tmpdir()), "airport-claude-OTHER1")), // another run's dir
+      "-Users-someone-code-my-project", // a real project
+    ];
+    for (const name of siblings) mkdirSync(join(home.projectsRoot, name, "memory"), { recursive: true });
+
+    await collect(client.stream(request()));
+    const { cwd } = fake.readRecord()!;
+    expect(readdirSync(home.projectsRoot).sort()).toEqual([...siblings].sort());
+    expect(existsSync(join(home.projectsRoot, projectName(cwd)))).toBe(false);
+    expect(existsSync(cwd)).toBe(false);
+  });
+
+  it("passes an allowlisted env: no provider keys, auto-memory off", async () => {
+    vi.stubEnv("ANTHROPIC_API_KEY", "test-not-a-key");
+    vi.stubEnv("GEMINI_API_KEY", "test-not-a-key");
+    vi.stubEnv("CLAUDE_CODE_ENTRYPOINT", "cli");
+    const { client, fake } = clientWith({ lines: fixtureLines("stream-thinking-text.jsonl") });
+    await collect(client.stream(request()));
+    const record = fake.readRecord()!;
+    expect(record.envNames).not.toContain("ANTHROPIC_API_KEY");
+    expect(record.envNames).not.toContain("GEMINI_API_KEY");
+    expect(record.envNames).not.toContain("CLAUDE_CODE_ENTRYPOINT");
+    expect(record.envNames).toContain("PATH");
+    expect(record.disableAutoMemory).toBe("1");
+  });
+
+  it("stops with an unavailable LlmError when claude sends nothing for idleTimeoutMs", { timeout: 5000 }, async () => {
+    const { client, fake } = clientWith({ hang: true }, {}, { idleTimeoutMs: 300 });
+    const err = await collect(client.stream(request())).catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(LlmError);
+    expect(err).toMatchObject({ code: "unavailable", message: expect.stringMatching(/sent nothing/) });
+    const { pid, cwd } = fake.readRecord()!;
+    expect(isAlive(pid)).toBe(false);
+    expect(existsSync(cwd)).toBe(false);
+    expect(client.runningCount).toBe(0);
+  });
+
+  it("never starts the child when the abort comes while the sandbox dir is made", async () => {
+    const { client, fake, home } = clientWith({ lines: [textLine("Hello")], hang: true });
+    const controller = new AbortController();
+    const iterator = client.stream(request(controller.signal))[Symbol.asyncIterator]();
+    const step = iterator.next(); // runs up to the mkdtemp await
+    controller.abort();
+    expect(await step).toEqual({ done: true, value: undefined });
+    expect(fake.readRecord()).toBeUndefined();
+    expect(client.runningCount).toBe(0);
+    expect(readdirSync(home.projectsRoot)).toEqual([]);
   });
 
   it("kills the child when the request is aborted, leaving no process", async () => {
@@ -125,13 +207,26 @@ describe("ClaudeHeadlessClient", () => {
     expect(isAlive(pid)).toBe(false);
   });
 
-  it("shutdown() kills every running child", async () => {
-    const { client, fake } = clientWith({ lines: [textLine("Hello")], hang: true });
+  it("removes the run's project dir after an abort too", async () => {
+    const { client, fake, home } = clientWith({ lines: [textLine("Hello")], hang: true });
+    const controller = new AbortController();
+    const iterator = client.stream(request(controller.signal))[Symbol.asyncIterator]();
+    await startStreaming(iterator);
+    expect(readdirSync(home.projectsRoot)).toEqual([projectName(fake.readRecord()!.cwd)]);
+    controller.abort();
+    await iterator.next();
+    expect(readdirSync(home.projectsRoot)).toEqual([]);
+  });
+
+  it("shutdown() kills every running child and cleans up its dirs", async () => {
+    const { client, fake, home } = clientWith({ lines: [textLine("Hello")], hang: true });
     const iterator = client.stream(request())[Symbol.asyncIterator]();
     await startStreaming(iterator);
     const { pid } = fake.readRecord()!;
     await client.shutdown();
     expect(isAlive(pid)).toBe(false);
+    expect(existsSync(fake.readRecord()!.cwd)).toBe(false); // cleaned before shutdown() resolves
+    expect(readdirSync(home.projectsRoot)).toEqual([]);
     await waitFor(() => client.runningCount === 0);
     await iterator.return?.(undefined);
   });

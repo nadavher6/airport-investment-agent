@@ -4,15 +4,22 @@ import type { ClaudeConfig } from "../../config.ts";
 import { LlmError, type LlmClient, type LlmRequest, type LlmStreamEvent } from "../llmClient.ts";
 import { chatClaudeArgs, childEnv, formatPrompt } from "./args.ts";
 import { findClaudeBinary } from "./binary.ts";
-import { makeSandboxDir, removeSandboxDir, runCommand, terminate, whenExited, type ChildExit } from "./process.ts";
+import { cleanupRun, cleanupRunSync, makeSandboxDir, runCommand, terminate, whenExited, type ChildExit } from "./process.ts";
 import { claudeFailure, StreamJsonMapper } from "./streamJson.ts";
 
 export interface ClaudeHeadlessOptions {
   readonly config: ClaudeConfig;
+  /**
+   * The home dir whose `.claude/projects` holds the per-cwd dir Claude Code makes for each run; it is
+   * removed after the run. Required, so tests always pass a temp fake home (index.ts: os.homedir()).
+   */
+  readonly home: string;
   /** How long a child gets between SIGTERM and SIGKILL. */
   readonly killGraceMs?: number;
   /** How long `claude --version` may take in health(). */
   readonly healthTimeoutMs?: number;
+  /** stream() gives up (and kills the child) after this long without a stdout line. */
+  readonly idleTimeoutMs?: number;
 }
 
 function parseLine(line: string): unknown {
@@ -40,10 +47,14 @@ const notFound = "The claude binary was not found on PATH. Install Claude Code o
 export class ClaudeHeadlessClient implements LlmClient {
   readonly provider = "claude-headless";
   private readonly running = new Set<ChildProcess>();
+  /** Sandbox dirs of the stream() calls not yet cleaned up, so shutdown() can clean them too. */
+  private readonly sandboxes = new Set<string>();
   private readonly killGraceMs: number;
+  private readonly idleTimeoutMs: number;
 
   constructor(private readonly options: ClaudeHeadlessOptions) {
     this.killGraceMs = options.killGraceMs ?? 2000;
+    this.idleTimeoutMs = options.idleTimeoutMs ?? 120_000;
   }
 
   /** How many `claude` children are alive right now. */
@@ -65,30 +76,58 @@ export class ClaudeHeadlessClient implements LlmClient {
   }
 
   async *stream({ messages, system, signal }: LlmRequest): AsyncGenerator<LlmStreamEvent> {
-    const { config } = this.options;
+    const { config, home } = this.options;
     const bin = findClaudeBinary(config);
     if (!bin) throw new LlmError("unavailable", notFound);
     if (signal.aborted) return;
 
-    const cwd = await makeSandboxDir();
-    const child = spawn(bin, chatClaudeArgs(config.model, system), { cwd, env: childEnv(), stdio: ["pipe", "pipe", "pipe"] });
-    this.running.add(child);
-    const exited = whenExited(child).finally(() => this.running.delete(child));
-    const onAbort = () => terminate(child, this.killGraceMs);
+    let child: ChildProcess | undefined;
+    const onAbort = () => {
+      if (child) terminate(child, this.killGraceMs);
+    };
+    // Listen before the first await, so an abort while the sandbox is made is never missed.
     signal.addEventListener("abort", onAbort, { once: true });
-
-    let stderr = "";
-    child.stderr.on("data", (chunk: Buffer) => {
-      if (stderr.length < 4000) stderr += chunk.toString();
-    });
-    child.stdin.on("error", () => {}); // EPIPE when the child dies before reading its prompt
-    child.stdin.end(formatPrompt(messages));
-
-    const mapper = new StreamJsonMapper();
-    let stray = "";
+    let cwd: string;
     try {
-      for await (const raw of createInterface({ input: child.stdout, crlfDelay: Infinity })) {
+      cwd = await makeSandboxDir();
+    } catch (err) {
+      signal.removeEventListener("abort", onAbort);
+      throw new LlmError("internal", `Could not create a temp dir for claude: ${(err as Error).message}`);
+    }
+    this.sandboxes.add(cwd);
+
+    let exited: Promise<ChildExit> | undefined;
+    let idleTimer: NodeJS.Timeout | undefined;
+    let idle = false;
+    const armIdleTimer = () => {
+      clearTimeout(idleTimer);
+      idleTimer = setTimeout(() => {
+        idle = true;
+        if (child) terminate(child, this.killGraceMs);
+      }, this.idleTimeoutMs);
+      idleTimer.unref();
+    };
+
+    try {
+      if (signal.aborted) return; // aborted while the sandbox was being made: never spawn
+      const spawned = spawn(bin, chatClaudeArgs(config.model, system), { cwd, env: childEnv(), stdio: ["pipe", "pipe", "pipe"] });
+      child = spawned;
+      this.running.add(spawned);
+      exited = whenExited(spawned).finally(() => this.running.delete(spawned));
+      armIdleTimer();
+
+      let stderr = "";
+      spawned.stderr.on("data", (chunk: Buffer) => {
+        if (stderr.length < 4000) stderr += chunk.toString();
+      });
+      spawned.stdin.on("error", () => {}); // EPIPE when the child dies before reading its prompt
+      spawned.stdin.end(formatPrompt(messages));
+
+      const mapper = new StreamJsonMapper();
+      let stray = "";
+      for await (const raw of createInterface({ input: spawned.stdout, crlfDelay: Infinity })) {
         if (signal.aborted) return;
+        armIdleTimer();
         const line = parseLine(raw);
         if (line === undefined) {
           if (stray.length < 4000) stray += `${raw}\n`;
@@ -99,26 +138,34 @@ export class ClaudeHeadlessClient implements LlmClient {
       }
       if (mapper.outcome.kind === "done" || signal.aborted) return;
       if (mapper.outcome.kind === "failed") throw mapper.outcome.error;
+      if (idle) throw new LlmError("unavailable", `Claude sent nothing for ${Math.round(this.idleTimeoutMs / 1000)} s, so the call was stopped.`);
       const exit = await exited;
       if (signal.aborted) return;
       throw exitError(exit, stderr, stray);
     } finally {
+      clearTimeout(idleTimer);
       signal.removeEventListener("abort", onAbort);
-      terminate(child, this.killGraceMs);
-      await exited;
-      await removeSandboxDir(cwd);
+      if (child) terminate(child, this.killGraceMs);
+      if (exited) await exited;
+      await cleanupRun(home, cwd);
+      this.sandboxes.delete(cwd);
     }
   }
 
-  /** Kills every child still running (server shutdown) and waits until they are gone. */
+  /**
+   * Server shutdown: kills every child still running, waits until they are gone, then removes every
+   * sandbox (and its Claude project dir) still on disk, so process.exit() cannot outrun the cleanup.
+   */
   async shutdown(): Promise<void> {
     const children = [...this.running];
     for (const child of children) terminate(child, this.killGraceMs);
     await Promise.all(children.map(whenExited));
+    await Promise.all([...this.sandboxes].map((cwd) => cleanupRun(this.options.home, cwd)));
   }
 
-  /** Last resort on process exit: synchronous SIGKILL, so no child outlives the server. */
+  /** Last resort on process exit: synchronous SIGKILL and synchronous cleanup, so nothing outlives the server. */
   killAllNow(): void {
     for (const child of this.running) child.kill("SIGKILL");
+    for (const cwd of this.sandboxes) cleanupRunSync(this.options.home, cwd);
   }
 }
