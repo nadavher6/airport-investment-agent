@@ -6,8 +6,8 @@ type ModelDefinition = Omit<ModelInfo, "available">;
 
 const MODEL_DEFINITIONS: readonly ModelDefinition[] = [
   {
-    id: asModelId("gemini-2.5-flash"),
-    label: "Gemini 2.5 Flash",
+    id: asModelId("gemini-3.8-flash"),
+    label: "Gemini 3.8 Flash",
     provider: "gemini",
     description: "Fast, free-tier default with reasoning and tool calls.",
     capabilities: { thinking: true, toolUse: true },

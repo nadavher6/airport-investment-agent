@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { collect } from "../test/helpers.ts";
-import { GeminiClient, toGeminiContents, type FetchLike } from "./geminiClient.ts";
+import { GEMINI_MODEL, GeminiClient, toGeminiContents, type FetchLike } from "./geminiClient.ts";
 import { describeLlmClientContract } from "./llmClientContract.ts";
 import { LlmError, type LlmRequest, type LlmStreamEvent } from "./llmClient.ts";
 
@@ -86,7 +86,7 @@ describe("GeminiClient.stream", () => {
     expect(calls).toHaveLength(1);
     const [call] = calls;
     expect(call?.url).toBe(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse",
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:streamGenerateContent?alt=sse",
     );
     expect(call?.url).not.toContain(KEY);
     expect(new Headers(call?.init.headers).get("x-goog-api-key")).toBe(KEY);
@@ -254,5 +254,18 @@ describe("toGeminiContents", () => {
       { role: "user", parts: [{ text: "Q1" }, { text: "Q2" }] },
       { role: "model", parts: [{ text: "A2" }] },
     ]);
+  });
+});
+
+describe("configured Gemini model", () => {
+  it("is listed with streamGenerateContent in a Gemini models-list response (fake, no network)", () => {
+    const list: { models: { name: string; supportedGenerationMethods: string[] }[] } = {
+      models: [
+        { name: "models/gemini-2.5-flash-lite", supportedGenerationMethods: ["generateContent"] },
+        { name: `models/${GEMINI_MODEL}`, supportedGenerationMethods: ["generateContent", "streamGenerateContent"] },
+      ],
+    };
+    const entry = list.models.find((m) => m.name === `models/${GEMINI_MODEL}`);
+    expect(entry?.supportedGenerationMethods).toContain("streamGenerateContent");
   });
 });

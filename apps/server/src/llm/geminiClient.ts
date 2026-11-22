@@ -4,7 +4,7 @@ import { LlmError, type LlmClient, type LlmMessage, type LlmRequest, type LlmStr
 
 export const GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta";
 /** The catalog's existing Gemini model. */
-export const GEMINI_MODEL = "gemini-2.5-flash";
+export const GEMINI_MODEL = "gemini-3.8-flash";
 
 export type FetchLike = (input: string, init: RequestInit) => Promise<Response>;
 
