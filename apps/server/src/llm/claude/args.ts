@@ -1,11 +1,16 @@
-import type { ChatTurn } from "@airport/shared";
+import type { LlmMessage } from "../llmClient.ts";
 
 /**
- * Arguments for one streamed chat turn. The prompt itself goes to stdin (see formatPrompt).
- * Safety: no built-in tools (no Bash, file edits or web), no MCP servers, no user/project settings,
- * nothing saved to disk. The caller also runs the child in an empty temp directory.
+ * Arguments for one streamed call. The prompt itself goes to stdin (see formatPrompt).
+ * It must behave like an API-key endpoint: prompt in, streamed text and thinking out.
+ *   built-in tools off ........ --tools ""
+ *   no MCP servers ............ --strict-mcp-config (and never --mcp-config)
+ *   no session persistence .... --no-session-persistence
+ *   empty temp working dir .... not a flag: the caller spawns the child with cwd = a fresh mkdtemp dir
+ * `--setting-sources ""` keeps user/project settings (hooks, permissions) out, as the issue lists.
+ * `system` is passed through only when given; nothing in this repo sets it yet.
  */
-export function chatClaudeArgs(model: string | undefined): string[] {
+export function chatClaudeArgs(model: string | undefined, system?: string): string[] {
   return [
     "-p",
     "--no-session-persistence",
@@ -19,6 +24,7 @@ export function chatClaudeArgs(model: string | undefined): string[] {
     "--verbose",
     "--include-partial-messages",
     ...(model ? ["--model", model] : []),
+    ...(system !== undefined ? ["--system-prompt", system] : []),
   ];
 }
 
@@ -26,7 +32,7 @@ export function chatClaudeArgs(model: string | undefined): string[] {
  * The whole conversation as one prompt, so every turn is a fresh, stateless `claude -p` run.
  * A single user turn is sent as is; a longer history is sent as a tagged transcript.
  */
-export function formatPrompt(messages: readonly ChatTurn[]): string {
+export function formatPrompt(messages: readonly LlmMessage[]): string {
   const turns = messages.filter((turn) => turn.content.trim() !== "");
   if (turns.length === 1) return turns[0]!.content;
   const transcript = turns.map((turn) => `<${turn.role}>\n${turn.content}\n</${turn.role}>`).join("\n\n");

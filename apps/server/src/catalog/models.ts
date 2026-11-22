@@ -1,5 +1,5 @@
 import { asModelId, type ModelId, type ModelInfo } from "@airport/shared";
-import { findClaudeBinary } from "../agent/claude/binary.ts";
+import { findClaudeBinary } from "../llm/claude/binary.ts";
 import type { ServerConfig } from "../config.ts";
 
 type ModelDefinition = Omit<ModelInfo, "available">;

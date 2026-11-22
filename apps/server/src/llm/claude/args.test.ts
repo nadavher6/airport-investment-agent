@@ -27,6 +27,11 @@ describe("chatClaudeArgs", () => {
     expect(args).not.toContain("--model");
     expect(valueOf(chatClaudeArgs("sonnet"), "--model")).toBe("sonnet");
   });
+
+  it("passes the system prompt through only when one is given", () => {
+    expect(args).not.toContain("--system-prompt");
+    expect(valueOf(chatClaudeArgs(undefined, "Be brief."), "--system-prompt")).toBe("Be brief.");
+  });
 });
 
 describe("formatPrompt", () => {

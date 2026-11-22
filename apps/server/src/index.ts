@@ -1,6 +1,6 @@
-import { AgentRouter } from "./agent/agentRouter.ts";
-import { ClaudeHeadlessAgent } from "./agent/claude/claudeHeadlessAgent.ts";
+import { LlmPassthroughAgent } from "./agent/llmPassthroughAgent.ts";
 import { MockAgent } from "./agent/mockAgent.ts";
+import { ClaudeHeadlessClient } from "./llm/claude/claudeHeadlessClient.ts";
 import { createApp } from "./app.ts";
 import { loadConfig } from "./config.ts";
 
@@ -13,9 +13,10 @@ try {
 
 const config = loadConfig();
 // Selecting the claude-headless model sends every LLM call to a `claude -p` child; the rest use the mock.
-const claude = new ClaudeHeadlessAgent({ config: config.claude });
-const agent = new AgentRouter({ "claude-headless": claude }, new MockAgent());
-const app = createApp({ config, agent });
+const claude = new ClaudeHeadlessClient({ config: config.claude });
+const llmClients = { "claude-headless": claude };
+const agent = new LlmPassthroughAgent(llmClients, new MockAgent());
+const app = createApp({ config, agent, llmClients });
 
 // Express 5 also calls this callback on the server's "error" event (e.g. EADDRINUSE).
 const server = app.listen(config.port, (err?: Error) => {

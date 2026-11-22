@@ -29,8 +29,8 @@ export function chatRouter(config: ServerConfig, agent: Agent): Router {
 
     const { signal } = controller;
     const events = agent.run({ request, model, signal })[Symbol.asyncIterator]();
-    // Pull the first event before opening the stream, so an agent that fails to start (binary missing,
-    // not logged in) throws an HttpError that becomes a normal 4xx/5xx response.
+    // Pull the first event before opening the stream, so an agent that fails to start (e.g. the LLM is
+    // unavailable or not logged in) throws an HttpError that becomes a normal 4xx/5xx response.
     let first: IteratorResult<AgentEvent>;
     try {
       first = await events.next();

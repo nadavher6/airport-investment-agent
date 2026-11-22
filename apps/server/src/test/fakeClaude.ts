@@ -104,6 +104,6 @@ export async function waitFor(check: () => boolean, timeoutMs = 3000): Promise<v
 
 /** The recorded fixture as stdout lines. */
 export function fixtureLines(name: string): string[] {
-  const file = new URL(`../agent/claude/fixtures/${name}`, import.meta.url);
+  const file = new URL(`../llm/claude/fixtures/${name}`, import.meta.url);
   return readFileSync(file, "utf8").split("\n").filter((line) => line.trim() !== "");
 }
