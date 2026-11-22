@@ -106,6 +106,13 @@ describe("ClaudeHeadlessClient", () => {
     expect(argv[argv.indexOf("--model") + 1]).toBe("sonnet");
   });
 
+  it("uses request.model for --model, ahead of the configured model (#17)", async () => {
+    const { client, fake } = clientWith({ lines: fixtureLines("stream-thinking-text.jsonl") }, { model: "sonnet" });
+    await collect(client.stream({ ...request(), model: "haiku" }));
+    const { argv } = fake.readRecord()!;
+    expect(argv[argv.indexOf("--model") + 1]).toBe("haiku");
+  });
+
   it("always replaces the default system prompt: the neutral one-liner, or `system` when given", async () => {
     const { client, fake } = clientWith({ lines: fixtureLines("stream-thinking-text.jsonl") });
     await collect(client.stream(request()));
