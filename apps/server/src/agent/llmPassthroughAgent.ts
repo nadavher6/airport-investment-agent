@@ -3,6 +3,8 @@ import { asMessageId, type AgentEvent, type ApiErrorCode, type ModelProvider } f
 import { HttpError } from "../http/errors.ts";
 import { LlmError, type LlmClient } from "../llm/llmClient.ts";
 import type { Agent, AgentRunInput } from "./agent.ts";
+import { classifyMessage } from "./classifier/classifier.ts";
+import { classificationToolEvents } from "./classifier/toolEvents.ts";
 
 const API_CODE: Record<LlmError["code"], ApiErrorCode> = {
   unavailable: "model_unavailable",
@@ -13,7 +15,8 @@ const API_CODE: Record<LlmError["code"], ApiErrorCode> = {
 };
 
 /**
- * Placeholder agent until the owner's agent replaces it: sends the conversation to the LlmClient for the
+ * Placeholder agent until the owner's agent replaces it: classifies the user's message (shown as a
+ * classify_message tool_call/tool_result), then sends the conversation to the LlmClient for the
  * model's provider (every provider has one) and maps its stream to AgentEvents.
  * An LlmError before the first event becomes an HttpError (normal 4xx/5xx); after it, an `error` event.
  */
@@ -25,6 +28,11 @@ export class LlmPassthroughAgent implements Agent {
 
     const messageId = asMessageId(randomUUID());
     const { messages } = input.request;
+    // First agent step (#13): classify the latest user message. It never throws an LlmError (it falls back
+    // to in_scope), only an abort. No per-label behaviour yet: the message continues to the LLM as before.
+    const classification = await classifyMessage(client, messages, input.signal);
+    const lastUserMessage = [...messages].reverse().find((m) => m.role === "user")?.content ?? "";
+    const classified = classificationToolEvents(messageId, lastUserMessage, classification);
     let started = false;
     let thinkingSince: number | undefined;
     const endThinking = (): AgentEvent[] => {
@@ -35,7 +43,11 @@ export class LlmPassthroughAgent implements Agent {
     };
     try {
       for await (const event of client.stream({ messages, signal: input.signal })) {
-        if (!started) yield { type: "message_start", messageId, modelId: input.model.id };
+        // The classify step is held until the LLM's first event, so a failure to start is still an HttpError.
+        if (!started) {
+          yield { type: "message_start", messageId, modelId: input.model.id };
+          yield* classified;
+        }
         started = true;
         if (event.type === "thinking_delta") {
           thinkingSince ??= Date.now();

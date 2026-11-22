@@ -29,9 +29,11 @@ describe("POST /api/chat with gemini", () => {
     const { app, urls } = wiredApp(200, sse(["Good candidates ", "are congested."]));
     const res = await request(app).post(API_ROUTES.chat).send(body).expect(200);
     const events = parseSse(res.text);
-    expect(events.map((e) => e.type)).toEqual(["message_start", "text_delta", "text_delta", "message_end"]);
+    expect(events.map((e) => e.type)).toEqual(["message_start", "tool_call", "tool_result", "text_delta", "text_delta", "message_end"]);
     expect(events.flatMap((e) => (e.type === "text_delta" ? [e.delta] : [])).join("")).toBe("Good candidates are congested.");
-    expect(urls).toEqual(["https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:streamGenerateContent?alt=sse"]);
+    // One call for the classify step (#13), one for the answer.
+    const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:streamGenerateContent?alt=sse";
+    expect(urls).toEqual([url, url]);
   });
 
   it("returns 503 JSON before the stream when Gemini rejects the key, without echoing it", async () => {
