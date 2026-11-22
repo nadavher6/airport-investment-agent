@@ -7,7 +7,8 @@ import { DataTable } from "./DataTable";
 import { KpiTiles } from "./KpiTiles";
 import { VisualBoundary, VisualFallback } from "./fallback";
 
-function SpecView({ spec }: { spec: VisualSpec }) {
+/** Draws a checked #33 spec with its component. Also used by the ```compare cells (#39). */
+export function SpecView({ spec }: { spec: VisualSpec }) {
   switch (spec.type) {
     case "line":
       return <LineChart spec={spec} />;
