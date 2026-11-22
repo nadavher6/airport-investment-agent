@@ -14,7 +14,8 @@
     "build": "npm run build -w @airport/web",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
-    "test:coverage": "npm run test --workspaces --if-present -- --coverage"
+    "test:coverage": "npm run test --workspaces --if-present -- --coverage",
+    "data:download": "bash scripts/download-faa-enplanements.sh"
   },
   "author": "nadavher6",
   "license": "MIT",
