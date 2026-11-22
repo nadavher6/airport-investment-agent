@@ -3,6 +3,7 @@ export type ApiErrorCode =
   | "not_found"
   | "payload_too_large"
   | "model_unavailable"
+  | "too_many_requests"
   | "internal";
 
 export interface ApiError {
