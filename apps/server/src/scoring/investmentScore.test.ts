@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { findAirport } from "../data/enplanements/dataset.ts";
-import { INVESTMENT_KPIS, rankAirports, rankAirportsRelative, scoreAirport } from "./investmentScore.ts";
+import { enplanementsDataset } from "../data/enplanements/dataset.ts";
+import { INVESTMENT_KPIS, growthPctPerYear, rankAirports, rankAirportsRelative, scoreAirport } from "./investmentScore.ts";
 
 const records = (...codes: string[]) =>
   codes.map((c) => findAirport(c)).filter((r): r is NonNullable<typeof r> => r !== null);
@@ -52,5 +53,40 @@ describe("investment score", () => {
     expect(ev("long_haul").inputs).toHaveProperty("internationalShare");
     expect(ev("congestion").inputs).toHaveProperty("departures");
     expect(ev("growth").inputs).toHaveProperty("cagr5yr");
+  });
+
+  it("gives the same ranking for forward and reversed input, ties ordered by airport code", () => {
+    const all = Object.values(enplanementsDataset.airports);
+    const codes = (xs: ReturnType<typeof rankAirports>) => xs.map((s) => s.item.airportCode);
+    for (const rank of [rankAirports, rankAirportsRelative]) {
+      const forward = rank(all);
+      expect(codes(rank([...all].reverse()))).toEqual(codes(forward));
+      for (let i = 1; i < forward.length; i++) {
+        const [a, b] = [forward[i - 1]!, forward[i]!];
+        if (a.score === b.score) expect(a.item.airportCode < b.item.airportCode).toBe(true);
+      }
+    }
+  });
+
+  it("growth is always 5-year CAGR in % per year: an airport with no CAGR (FNL, latest FAA year 2022) is missing growth", () => {
+    const growth = (code: string) => scoreAirport(findAirport(code)!).kpis.find((k) => k.key === "growth")!;
+    // FNL used to get the recovery ratio as "total % change since 2019" (+332); now growth is missing.
+    const fnl = findAirport("FNL")!;
+    expect(fnl.trend.cagr5yr).toBeNull();
+    expect(fnl.trend.recoveryVs2019).not.toBeNull();
+    const g = growth("FNL");
+    expect(g.available).toBe(false);
+    expect(g.raw).toBeNull();
+    expect(g.evidence!.value).toBeNull();
+    expect(scoreAirport(fnl).missing).toContain("growth");
+
+    // An airport with a CAGR: raw value, evidence value and the dataset's cagr5yr are the same number, in % per year.
+    const den = growth("DEN");
+    expect(den.raw).toBe(findAirport("DEN")!.trend.cagr5yr);
+    expect(den.evidence!.value).toBe(den.raw);
+    expect(den.evidence!.inputs.unit).toBe("% per year");
+
+    // Over the whole dataset the KPI never takes any value other than cagr5yr.
+    for (const a of Object.values(enplanementsDataset.airports)) expect(growthPctPerYear(a)).toBe(a.trend.cagr5yr);
   });
 });
