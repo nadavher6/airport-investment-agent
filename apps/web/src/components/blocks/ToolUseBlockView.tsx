@@ -38,9 +38,13 @@ export function ToolUseBlockView({ block }: { block: ToolUseBlock }) {
 }
 
 function ToolCard({ block, score }: { block: ToolUseBlock; score?: ScoreResult }) {
-  const [open, setOpen] = useState(false);
+  // A score card opens by default so the result is visible; every other card starts closed.
+  const [open, setOpen] = useState(score !== undefined);
+  const [showData, setShowData] = useState(false);
   const bodyId = useId();
-  const summary: ReactNode = score ? (open ? "Hide data" : "Show data") : summarize(block.input);
+  const dataId = useId();
+  const summary: ReactNode = summarize(block.input);
+  const details = <ToolDetails block={block} />;
 
   return (
     <section className="tool-card" data-status={block.status} data-open={open}>
@@ -65,30 +69,50 @@ function ToolCard({ block, score }: { block: ToolUseBlock; score?: ScoreResult }
         <ChevronIcon size={14} className="tool-card__chevron" />
       </button>
 
-      {score && (
-        <div className="tool-card__score">
+      {score ? (
+        <div id={bodyId} className="tool-card__score" hidden={!open}>
           <ScoreView result={score} />
+          <button
+            type="button"
+            className="tool-card__show-data"
+            aria-expanded={showData}
+            aria-controls={dataId}
+            onClick={() => setShowData(!showData)}
+          >
+            {showData ? "Hide data" : "Show data"}
+          </button>
+          <div id={dataId} className="tool-card__body" hidden={!showData}>
+            {details}
+          </div>
+        </div>
+      ) : (
+        <div id={bodyId} className="tool-card__body" hidden={!open}>
+          {details}
         </div>
       )}
-
-      <div id={bodyId} className="tool-card__body" hidden={!open}>
-        <div className="tool-card__section">
-          <span className="eyebrow">Input</span>
-          <pre>{pretty(block.input)}</pre>
-        </div>
-        {block.status === "succeeded" && block.output !== undefined && (
-          <div className="tool-card__section">
-            <span className="eyebrow">Output</span>
-            <pre>{pretty(block.output)}</pre>
-          </div>
-        )}
-        {block.status === "failed" && (
-          <div className="tool-card__section">
-            <span className="eyebrow">Error</span>
-            <pre className="tool-card__error">{block.errorMessage ?? "Unknown error"}</pre>
-          </div>
-        )}
-      </div>
     </section>
+  );
+}
+
+function ToolDetails({ block }: { block: ToolUseBlock }) {
+  return (
+    <>
+      <div className="tool-card__section">
+        <span className="eyebrow">Input</span>
+        <pre>{pretty(block.input)}</pre>
+      </div>
+      {block.status === "succeeded" && block.output !== undefined && (
+        <div className="tool-card__section">
+          <span className="eyebrow">Output</span>
+          <pre>{pretty(block.output)}</pre>
+        </div>
+      )}
+      {block.status === "failed" && (
+        <div className="tool-card__section">
+          <span className="eyebrow">Error</span>
+          <pre className="tool-card__error">{block.errorMessage ?? "Unknown error"}</pre>
+        </div>
+      )}
+    </>
   );
 }

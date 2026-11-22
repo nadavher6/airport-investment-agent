@@ -72,14 +72,66 @@ describe("score_airports: 1 airport is a report", () => {
     expect(screen.getByText("88.4")).toBeInTheDocument();
   });
 
-  it("keeps the raw JSON behind a Show data toggle", async () => {
+  it("keeps the raw JSON behind a Show data toggle inside the open card", async () => {
     render(<ToolUseBlockView block={block(SCORE_ONE)} />);
-    const toggle = screen.getByRole("button", { name: /score_airports Show data/ });
+    const toggle = screen.getByRole("button", { name: "Show data" });
     expect(toggle).toHaveAttribute("aria-expanded", "false");
     expect(screen.getByText(/"airportCode": "LAX"/)).not.toBeVisible();
     await userEvent.click(toggle);
-    expect(screen.getByRole("button", { name: /Hide data/ })).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("button", { name: "Hide data" })).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByText(/"airportCode": "LAX"/)).toBeVisible();
+  });
+});
+
+describe("score_airports: the card collapses and expands (#58)", () => {
+  const header = () => screen.getByRole("button", { name: /^score_airports/ });
+
+  it("is open by default, with the score view visible", () => {
+    render(<ToolUseBlockView block={block(SCORE_ONE)} />);
+    expect(header()).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByTestId("score-view")).toBeVisible();
+  });
+
+  it("clicking the header collapses it, clicking again expands it; aria-expanded follows", async () => {
+    render(<ToolUseBlockView block={block(SCORE_ONE)} />);
+    await userEvent.click(header());
+    expect(header()).toHaveAttribute("aria-expanded", "false");
+    expect(screen.getByTestId("score-view")).not.toBeVisible();
+    await userEvent.click(header());
+    expect(header()).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByTestId("score-view")).toBeVisible();
+  });
+
+  it("toggles with Enter and Space from the keyboard", async () => {
+    render(<ToolUseBlockView block={block(SCORE_ONE)} />);
+    header().focus();
+    await userEvent.keyboard("{Enter}");
+    expect(header()).toHaveAttribute("aria-expanded", "false");
+    expect(screen.getByTestId("score-view")).not.toBeVisible();
+    await userEvent.keyboard(" ");
+    expect(header()).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByTestId("score-view")).toBeVisible();
+  });
+
+  it("collapses the 2-airport and 3-airport views too", async () => {
+    for (const output of [SCORE_TWO, SCORE_THREE]) {
+      const { unmount } = render(<ToolUseBlockView block={block(output)} />);
+      expect(screen.getByTestId("score-view")).toBeVisible();
+      await userEvent.click(header());
+      expect(screen.getByTestId("score-view")).not.toBeVisible();
+      unmount();
+    }
+  });
+
+  it("a generic tool card is unchanged: closed by default, toggles its JSON", async () => {
+    render(<ToolUseBlockView block={block({ intent: "in_scope" }, "classify_message")} />);
+    const h = screen.getByRole("button", { name: /classify_message/ });
+    expect(h).toHaveAttribute("aria-expanded", "false");
+    expect(screen.queryByTestId("score-view")).toBeNull();
+    expect(screen.getByText("Output")).not.toBeVisible();
+    await userEvent.click(h);
+    expect(h).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByText("Output")).toBeVisible();
   });
 });
 
