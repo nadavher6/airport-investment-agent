@@ -1,10 +1,15 @@
 {
   "meta": {
-    "source": "FAA NASR 28-day subscription, APT_RWY.csv + APT_RWY_END.csv (nfdc.faa.gov)",
+    "source": "FAA NASR 28-day subscription, APT_RWY.csv + APT_RWY_END.csv (nfdc.faa.gov); FAA Airport Capacity Profiles (May 2014), Table 1 \"Capacity Rate Ranges for Current Operations at the Core Airports\", p. 9",
     "nasrCycle": "2026-10-29",
-    "method": "FAA AC 150/5060-5 Chg 2, Figure 2-1: highest-ASV runway-use configuration the layout contains; ASV = midpoint of its row",
+    "method": "ASV used (capacity): Core 30 airports = FAA Airport Capacity Profiles 2014 hourly rates × AC 150/5060-5 para 3-6 (ASV = Cw × D × H); else FAA AC 150/5060-5 Chg 2, Figure 2-1: highest-ASV runway-use configuration the layout contains, ASV = midpoint of its row, extended by the figure's own increments for 3+ independent parallel streams (not an FAA figure)",
     "airportCount": 575,
-    "mappedCount": 569
+    "mappedCount": 569,
+    "capacitySources": {
+      "faa-capacity-profile": 30,
+      "figure-2-1-extended": 1,
+      "figure-2-1": 538
+    }
   },
   "airports": {
     "0AK": {
@@ -28,6 +33,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "16A": {
@@ -51,6 +61,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "1G4": {
@@ -74,6 +89,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "2A3": {
@@ -97,6 +117,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "2A9": {
@@ -120,6 +145,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "2C7": {
@@ -143,6 +173,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "4A2": {
@@ -166,6 +201,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "4KA": {
@@ -189,6 +229,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "6R7": {
@@ -212,6 +257,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "7AK": {
@@ -235,6 +285,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "A61": {
@@ -258,6 +313,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "ABE": {
@@ -286,6 +346,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "ABI": {
@@ -318,6 +383,11 @@
         ],
         "asv": 320000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 320000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 3 (two parallel runways 2,500-4,299 ft apart), row midpoint"
       }
     },
     "ABQ": {
@@ -351,6 +421,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "ABR": {
@@ -379,6 +454,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "ABY": {
@@ -407,6 +487,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "ACK": {
@@ -435,6 +520,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "ACT": {
@@ -463,6 +553,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "ACV": {
@@ -491,6 +586,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "ACY": {
@@ -519,6 +619,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "ADK": {
@@ -542,6 +647,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "ADQ": {
@@ -575,6 +685,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "AEX": {
@@ -603,6 +718,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "AFE": {
@@ -626,6 +746,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "AFM": {
@@ -654,6 +779,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "AGS": {
@@ -682,6 +812,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "AIA": {
@@ -715,6 +850,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "AKI": {
@@ -738,6 +878,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "AKN": {
@@ -766,6 +911,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "AKP": {
@@ -789,6 +939,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "AKW": {
@@ -812,6 +967,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "ALB": {
@@ -840,6 +1000,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "ALO": {
@@ -868,6 +1033,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "ALS": {
@@ -891,6 +1061,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "ALW": {
@@ -914,6 +1089,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "AMA": {
@@ -942,6 +1122,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "ANC": {
@@ -979,6 +1164,11 @@
         ],
         "asv": 330000,
         "runwaysUsed": 3
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 330000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 16 (close parallel pair and a divergent runway (open V), operations away), row midpoint"
       }
     },
     "ANI": {
@@ -1002,6 +1192,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "AOO": {
@@ -1030,6 +1225,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "APN": {
@@ -1058,6 +1258,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "AQH": {
@@ -1081,6 +1286,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "AQT": {
@@ -1104,6 +1314,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "ART": {
@@ -1132,6 +1347,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "ASE": {
@@ -1155,6 +1375,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "ATK": {
@@ -1178,6 +1403,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "ATL": {
@@ -1228,6 +1458,17 @@
         ],
         "asv": 615000,
         "runwaysUsed": 4
+      },
+      "capacity": {
+        "source": "faa-capacity-profile",
+        "asv": 949800,
+        "basis": "FAA Airport Capacity Profiles (May 2014), Table 1 \"Capacity Rate Ranges for Current Operations at the Core Airports\", p. 9: 221 visual and 184.5 instrument operations an hour (range midpoints), weighted 90/10 = 217.4/h, × 4,370 (AC 150/5060-5 Table 2-1 D × H)",
+        "profile": {
+          "visualPerHour": 221,
+          "instrumentPerHour": 184.5,
+          "weightedPerHour": 217.4,
+          "demandFactor": 4370
+        }
       }
     },
     "ATW": {
@@ -1256,6 +1497,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "ATY": {
@@ -1284,6 +1530,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "AUG": {
@@ -1312,6 +1563,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "AUK": {
@@ -1335,6 +1591,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "AUS": {
@@ -1367,6 +1628,11 @@
         ],
         "asv": 337500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 337500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 4 (two parallel runways 4,300 ft or more apart), row midpoint"
       }
     },
     "AVL": {
@@ -1390,6 +1656,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "AVP": {
@@ -1418,6 +1689,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "AWI": {
@@ -1441,6 +1717,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "AZO": {
@@ -1474,6 +1755,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "BBG": {
@@ -1497,6 +1783,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "BDL": {
@@ -1525,6 +1816,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "BED": {
@@ -1553,6 +1849,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "BET": {
@@ -1581,6 +1882,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "BFD": {
@@ -1609,6 +1915,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "BFF": {
@@ -1637,6 +1948,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "BFI": {
@@ -1665,6 +1981,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "BFL": {
@@ -1697,6 +2018,11 @@
         ],
         "asv": 307500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 307500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 2 (two parallel runways 700-2,499 ft apart), row midpoint"
       }
     },
     "BFM": {
@@ -1725,6 +2051,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "BGM": {
@@ -1753,6 +2084,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "BGR": {
@@ -1776,6 +2112,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "BHB": {
@@ -1804,6 +2145,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "BHM": {
@@ -1832,6 +2178,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "BID": {
@@ -1855,6 +2206,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "BIH": {
@@ -1888,6 +2244,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "BIL": {
@@ -1925,6 +2286,11 @@
         ],
         "asv": 307500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 307500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 2 (two parallel runways 700-2,499 ft apart), row midpoint"
       }
     },
     "BIS": {
@@ -1953,6 +2319,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "BJI": {
@@ -1981,6 +2352,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "BKL": {
@@ -2009,6 +2385,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "BKW": {
@@ -2037,6 +2418,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "BLI": {
@@ -2060,6 +2446,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "BLV": {
@@ -2092,6 +2483,11 @@
         ],
         "asv": 337500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 337500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 4 (two parallel runways 4,300 ft or more apart), row midpoint"
       }
     },
     "BMI": {
@@ -2120,6 +2516,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "BNA": {
@@ -2163,6 +2564,11 @@
         ],
         "asv": 550000,
         "runwaysUsed": 3
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 550000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 7 (three parallel runways, gaps 700-2,499 ft and 4,300 ft or more), row midpoint"
       }
     },
     "BOI": {
@@ -2195,6 +2601,11 @@
         ],
         "asv": 307500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 307500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 2 (two parallel runways 700-2,499 ft apart), row midpoint"
       }
     },
     "BOS": {
@@ -2251,6 +2662,17 @@
         ],
         "asv": 550000,
         "runwaysUsed": 3
+      },
+      "capacity": {
+        "source": "faa-capacity-profile",
+        "asv": 511100,
+        "basis": "FAA Airport Capacity Profiles (May 2014), Table 1 \"Capacity Rate Ranges for Current Operations at the Core Airports\", p. 9: 120.5 visual and 85 instrument operations an hour (range midpoints), weighted 90/10 = 117/h, × 4,370 (AC 150/5060-5 Table 2-1 D × H)",
+        "profile": {
+          "visualPerHour": 120.5,
+          "instrumentPerHour": 85,
+          "weightedPerHour": 117,
+          "demandFactor": 4370
+        }
       }
     },
     "BPT": {
@@ -2279,6 +2701,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "BQK": {
@@ -2302,6 +2729,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "BQN": {
@@ -2325,6 +2757,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "BRD": {
@@ -2353,6 +2790,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "BRL": {
@@ -2381,6 +2823,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "BRO": {
@@ -2409,6 +2856,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "BRW": {
@@ -2432,6 +2884,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "BTI": {
@@ -2455,6 +2912,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "BTM": {
@@ -2483,6 +2945,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "BTR": {
@@ -2511,6 +2978,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "BTV": {
@@ -2539,6 +3011,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "BUF": {
@@ -2567,6 +3044,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "BUR": {
@@ -2595,6 +3077,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "BVK": {
@@ -2618,6 +3105,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "BVU": {
@@ -2646,6 +3138,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "BWI": {
@@ -2683,6 +3180,17 @@
         ],
         "asv": 337500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "faa-capacity-profile",
+        "asv": 318600,
+        "basis": "FAA Airport Capacity Profiles (May 2014), Table 1 \"Capacity Rate Ranges for Current Operations at the Core Airports\", p. 9: 74 visual and 63 instrument operations an hour (range midpoints), weighted 90/10 = 72.9/h, × 4,370 (AC 150/5060-5 Table 2-1 D × H)",
+        "profile": {
+          "visualPerHour": 74,
+          "instrumentPerHour": 63,
+          "weightedPerHour": 72.9,
+          "demandFactor": 4370
+        }
       }
     },
     "BZN": {
@@ -2720,6 +3228,11 @@
         ],
         "asv": 307500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 307500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 2 (two parallel runways 700-2,499 ft apart), row midpoint"
       }
     },
     "CAE": {
@@ -2748,6 +3261,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "CAK": {
@@ -2776,6 +3294,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "CCR": {
@@ -2814,6 +3337,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "CDB": {
@@ -2842,6 +3370,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "CDC": {
@@ -2870,6 +3403,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "CDR": {
@@ -2898,6 +3436,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "CDV": {
@@ -2921,6 +3464,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "CEC": {
@@ -2949,6 +3497,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "CEZ": {
@@ -2972,6 +3525,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "CFK": {
@@ -2995,6 +3553,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "CGA": {
@@ -3004,6 +3567,7 @@
       "crossing": null,
       "layoutRunways": 0,
       "configuration": null,
+      "capacity": null,
       "missingReason": "no land runway for this airport in FAA NASR (closed, renamed, or a seaplane base / heliport)"
     },
     "CGI": {
@@ -3032,6 +3596,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "CHA": {
@@ -3060,6 +3629,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "CHO": {
@@ -3083,6 +3657,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "CHS": {
@@ -3111,6 +3690,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "CID": {
@@ -3139,6 +3723,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "CIU": {
@@ -3167,6 +3756,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "CKB": {
@@ -3190,6 +3784,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "CLE": {
@@ -3227,6 +3826,11 @@
         ],
         "asv": 330000,
         "runwaysUsed": 3
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 330000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 16 (close parallel pair and a divergent runway (open V), operations away), row midpoint"
       }
     },
     "CLL": {
@@ -3255,6 +3859,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "CLT": {
@@ -3293,6 +3902,17 @@
         ],
         "asv": 337500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "faa-capacity-profile",
+        "asv": 766300,
+        "basis": "FAA Airport Capacity Profiles (May 2014), Table 1 \"Capacity Rate Ranges for Current Operations at the Core Airports\", p. 9: 179 visual and 142.5 instrument operations an hour (range midpoints), weighted 90/10 = 175.4/h, × 4,370 (AC 150/5060-5 Table 2-1 D × H)",
+        "profile": {
+          "visualPerHour": 179,
+          "instrumentPerHour": 142.5,
+          "weightedPerHour": 175.4,
+          "demandFactor": 4370
+        }
       }
     },
     "CMH": {
@@ -3325,6 +3945,11 @@
         ],
         "asv": 320000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 320000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 3 (two parallel runways 2,500-4,299 ft apart), row midpoint"
       }
     },
     "CMI": {
@@ -3362,6 +3987,11 @@
         ],
         "asv": 307500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 307500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 2 (two parallel runways 700-2,499 ft apart), row midpoint"
       }
     },
     "CMX": {
@@ -3390,6 +4020,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "CNM": {
@@ -3432,6 +4067,11 @@
         ],
         "asv": 320000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 320000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 3 (two parallel runways 2,500-4,299 ft apart), row midpoint"
       }
     },
     "CNY": {
@@ -3455,6 +4095,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "COD": {
@@ -3478,6 +4123,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "COS": {
@@ -3515,6 +4165,11 @@
         ],
         "asv": 337500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 337500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 4 (two parallel runways 4,300 ft or more apart), row midpoint"
       }
     },
     "COU": {
@@ -3543,6 +4198,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "CPR": {
@@ -3571,6 +4231,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "CPX": {
@@ -3594,6 +4259,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "CRP": {
@@ -3622,6 +4292,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "CRQ": {
@@ -3645,6 +4320,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "CRW": {
@@ -3668,6 +4348,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "CSG": {
@@ -3696,6 +4381,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "CVG": {
@@ -3739,6 +4429,16 @@
         ],
         "asv": 337500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1-extended",
+        "asv": 550000,
+        "basis": "extension of AC 150/5060-5 Figure 2-1 (not an FAA figure): configuration 7, with the intermediate pair counted as a close pair",
+        "extension": {
+          "baseFigure21No": 7,
+          "addedPairs": 0,
+          "addedSingles": 0
+        }
       }
     },
     "CVN": {
@@ -3767,6 +4467,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "CWA": {
@@ -3795,6 +4500,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "CXF": {
@@ -3818,6 +4528,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "CYS": {
@@ -3846,6 +4561,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "D76": {
@@ -3869,6 +4589,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "DAB": {
@@ -3906,6 +4631,11 @@
         ],
         "asv": 307500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 307500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 2 (two parallel runways 700-2,499 ft apart), row midpoint"
       }
     },
     "DAL": {
@@ -3938,6 +4668,11 @@
         ],
         "asv": 320000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 320000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 3 (two parallel runways 2,500-4,299 ft apart), row midpoint"
       }
     },
     "DAY": {
@@ -3975,6 +4710,11 @@
         ],
         "asv": 337500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 337500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 4 (two parallel runways 4,300 ft or more apart), row midpoint"
       }
     },
     "DBQ": {
@@ -4003,6 +4743,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "DCA": {
@@ -4036,6 +4781,17 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "faa-capacity-profile",
+        "asv": 303100,
+        "basis": "FAA Airport Capacity Profiles (May 2014), Table 1 \"Capacity Rate Ranges for Current Operations at the Core Airports\", p. 9: 70.5 visual and 59 instrument operations an hour (range midpoints), weighted 90/10 = 69.4/h, × 4,370 (AC 150/5060-5 Table 2-1 D × H)",
+        "profile": {
+          "visualPerHour": 70.5,
+          "instrumentPerHour": 59,
+          "weightedPerHour": 69.4,
+          "demandFactor": 4370
+        }
       }
     },
     "DDC": {
@@ -4064,6 +4820,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "DEC": {
@@ -4097,6 +4858,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "DEN": {
@@ -4154,6 +4920,17 @@
         ],
         "asv": 337500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "faa-capacity-profile",
+        "asv": 1211100,
+        "basis": "FAA Airport Capacity Profiles (May 2014), Table 1 \"Capacity Rate Ranges for Current Operations at the Core Airports\", p. 9: 282 visual and 233.5 instrument operations an hour (range midpoints), weighted 90/10 = 277.2/h, × 4,370 (AC 150/5060-5 Table 2-1 D × H)",
+        "profile": {
+          "visualPerHour": 282,
+          "instrumentPerHour": 233.5,
+          "weightedPerHour": 277.2,
+          "demandFactor": 4370
+        }
       }
     },
     "DFW": {
@@ -4217,6 +4994,17 @@
         ],
         "asv": 615000,
         "runwaysUsed": 4
+      },
+      "capacity": {
+        "source": "faa-capacity-profile",
+        "asv": 1037900,
+        "basis": "FAA Airport Capacity Profiles (May 2014), Table 1 \"Capacity Rate Ranges for Current Operations at the Core Airports\", p. 9: 245 visual and 170 instrument operations an hour (range midpoints), weighted 90/10 = 237.5/h, × 4,370 (AC 150/5060-5 Table 2-1 D × H)",
+        "profile": {
+          "visualPerHour": 245,
+          "instrumentPerHour": 170,
+          "weightedPerHour": 237.5,
+          "demandFactor": 4370
+        }
       }
     },
     "DHN": {
@@ -4245,6 +5033,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "DIK": {
@@ -4273,6 +5066,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "DLG": {
@@ -4296,6 +5094,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "DLH": {
@@ -4324,6 +5127,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "DRO": {
@@ -4347,6 +5155,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "DRT": {
@@ -4370,6 +5183,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "DSM": {
@@ -4398,6 +5216,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "DTS": {
@@ -4421,6 +5244,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "DTW": {
@@ -4478,6 +5306,17 @@
         ],
         "asv": 550000,
         "runwaysUsed": 3
+      },
+      "capacity": {
+        "source": "faa-capacity-profile",
+        "asv": 771300,
+        "basis": "FAA Airport Capacity Profiles (May 2014), Table 1 \"Capacity Rate Ranges for Current Operations at the Core Airports\", p. 9: 181 visual and 136 instrument operations an hour (range midpoints), weighted 90/10 = 176.5/h, × 4,370 (AC 150/5060-5 Table 2-1 D × H)",
+        "profile": {
+          "visualPerHour": 181,
+          "instrumentPerHour": 136,
+          "weightedPerHour": 176.5,
+          "demandFactor": 4370
+        }
       }
     },
     "DUJ": {
@@ -4501,6 +5340,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "DUT": {
@@ -4524,6 +5368,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "DUY": {
@@ -4547,6 +5396,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "DVL": {
@@ -4575,6 +5429,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "EAR": {
@@ -4603,6 +5462,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "EAT": {
@@ -4626,6 +5490,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "EAU": {
@@ -4654,6 +5523,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "ECP": {
@@ -4677,6 +5551,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "EEK": {
@@ -4700,6 +5579,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "EGE": {
@@ -4723,6 +5607,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "EKO": {
@@ -4751,6 +5640,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "ELD": {
@@ -4779,6 +5673,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "ELI": {
@@ -4802,6 +5701,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "ELM": {
@@ -4830,6 +5734,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "ELP": {
@@ -4867,6 +5776,11 @@
         ],
         "asv": 330000,
         "runwaysUsed": 3
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 330000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 16 (close parallel pair and a divergent runway (open V), operations away), row midpoint"
       }
     },
     "ENA": {
@@ -4890,6 +5804,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "ENM": {
@@ -4913,6 +5832,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "ERI": {
@@ -4941,6 +5865,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "ESC": {
@@ -4969,6 +5898,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "EUG": {
@@ -5001,6 +5935,11 @@
         ],
         "asv": 320000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 320000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 3 (two parallel runways 2,500-4,299 ft apart), row midpoint"
       }
     },
     "EVV": {
@@ -5034,6 +5973,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "EWB": {
@@ -5062,6 +6006,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "EWN": {
@@ -5090,6 +6039,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "EWR": {
@@ -5127,6 +6081,17 @@
         ],
         "asv": 307500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "faa-capacity-profile",
+        "asv": 411700,
+        "basis": "FAA Airport Capacity Profiles (May 2014), Table 1 \"Capacity Rate Ranges for Current Operations at the Core Airports\", p. 9: 97 visual and 69 instrument operations an hour (range midpoints), weighted 90/10 = 94.2/h, × 4,370 (AC 150/5060-5 Table 2-1 D × H)",
+        "profile": {
+          "visualPerHour": 97,
+          "instrumentPerHour": 69,
+          "weightedPerHour": 94.2,
+          "demandFactor": 4370
+        }
       }
     },
     "EWU": {
@@ -5150,6 +6115,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "EYW": {
@@ -5173,6 +6143,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "FAI": {
@@ -5205,6 +6180,11 @@
         ],
         "asv": 307500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 307500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 2 (two parallel runways 700-2,499 ft apart), row midpoint"
       }
     },
     "FAQ": {
@@ -5228,6 +6208,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "FAR": {
@@ -5261,6 +6246,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "FAT": {
@@ -5289,6 +6279,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "FAY": {
@@ -5317,6 +6312,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "FHR": {
@@ -5340,6 +6340,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "FLG": {
@@ -5363,6 +6368,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "FLL": {
@@ -5395,6 +6405,17 @@
         ],
         "asv": 320000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "faa-capacity-profile",
+        "asv": 333400,
+        "basis": "FAA Airport Capacity Profiles (May 2014), Table 1 \"Capacity Rate Ranges for Current Operations at the Core Airports\", p. 9: 78 visual and 61 instrument operations an hour (range midpoints), weighted 90/10 = 76.3/h, × 4,370 (AC 150/5060-5 Table 2-1 D × H)",
+        "profile": {
+          "visualPerHour": 78,
+          "instrumentPerHour": 61,
+          "weightedPerHour": 76.3,
+          "demandFactor": 4370
+        }
       }
     },
     "FLO": {
@@ -5423,6 +6444,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "FMN": {
@@ -5451,6 +6477,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "FNL": {
@@ -5479,6 +6510,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "FNT": {
@@ -5507,6 +6543,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "FOD": {
@@ -5535,6 +6576,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "FOE": {
@@ -5563,6 +6609,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "FSD": {
@@ -5596,6 +6647,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "FSM": {
@@ -5624,6 +6680,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "FWA": {
@@ -5657,6 +6718,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "FXE": {
@@ -5685,6 +6751,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "FYU": {
@@ -5708,6 +6779,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "GAL": {
@@ -5731,6 +6807,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "GAM": {
@@ -5754,6 +6835,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "GCC": {
@@ -5782,6 +6868,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "GCK": {
@@ -5810,6 +6901,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "GCN": {
@@ -5833,6 +6929,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "GDV": {
@@ -5861,6 +6962,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "GEG": {
@@ -5889,6 +6995,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "GFK": {
@@ -5934,6 +7045,11 @@
         ],
         "asv": 337500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 337500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 4 (two parallel runways 4,300 ft or more apart), row midpoint"
       }
     },
     "GGG": {
@@ -5962,6 +7078,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "GGV": {
@@ -5985,6 +7106,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "GGW": {
@@ -6013,6 +7139,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "GJT": {
@@ -6041,6 +7172,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "GLH": {
@@ -6073,6 +7209,11 @@
         ],
         "asv": 307500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 307500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 2 (two parallel runways 700-2,499 ft apart), row midpoint"
       }
     },
     "GNV": {
@@ -6101,6 +7242,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "GPI": {
@@ -6129,6 +7275,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "GPT": {
@@ -6157,6 +7308,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "GRB": {
@@ -6185,6 +7341,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "GRI": {
@@ -6213,6 +7374,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "GRK": {
@@ -6236,6 +7402,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "GRO": {
@@ -6259,6 +7430,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "GRR": {
@@ -6296,6 +7472,11 @@
         ],
         "asv": 337500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 337500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 4 (two parallel runways 4,300 ft or more apart), row midpoint"
       }
     },
     "GSN": {
@@ -6328,6 +7509,11 @@
         ],
         "asv": 307500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 307500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 2 (two parallel runways 700-2,499 ft apart), row midpoint"
       }
     },
     "GSO": {
@@ -6365,6 +7551,11 @@
         ],
         "asv": 337500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 337500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 4 (two parallel runways 4,300 ft or more apart), row midpoint"
       }
     },
     "GSP": {
@@ -6388,6 +7579,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "GST": {
@@ -6416,6 +7612,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "GTF": {
@@ -6444,6 +7645,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "GTR": {
@@ -6467,6 +7673,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "GUC": {
@@ -6490,6 +7701,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "GUM": {
@@ -6522,6 +7738,11 @@
         ],
         "asv": 307500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 307500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 2 (two parallel runways 700-2,499 ft apart), row midpoint"
       }
     },
     "GUP": {
@@ -6545,6 +7766,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "GYY": {
@@ -6573,6 +7799,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "HDN": {
@@ -6596,6 +7827,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "HGR": {
@@ -6624,6 +7860,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "HHR": {
@@ -6647,6 +7888,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "HIB": {
@@ -6675,6 +7921,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "HLA": {
@@ -6698,6 +7949,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "HLN": {
@@ -6731,6 +7987,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "HND": {
@@ -6759,6 +8020,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "HNH": {
@@ -6782,6 +8048,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "HNL": {
@@ -6824,6 +8095,17 @@
         ],
         "asv": 337500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "faa-capacity-profile",
+        "asv": 496000,
+        "basis": "FAA Airport Capacity Profiles (May 2014), Table 1 \"Capacity Rate Ranges for Current Operations at the Core Airports\", p. 9: 118.5 visual and 68.5 instrument operations an hour (range midpoints), weighted 90/10 = 113.5/h, × 4,370 (AC 150/5060-5 Table 2-1 D × H)",
+        "profile": {
+          "visualPerHour": 118.5,
+          "instrumentPerHour": 68.5,
+          "weightedPerHour": 113.5,
+          "demandFactor": 4370
+        }
       }
     },
     "HNM": {
@@ -6847,6 +8129,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "HNS": {
@@ -6870,6 +8157,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "HOB": {
@@ -6903,6 +8195,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "HOM": {
@@ -6926,6 +8223,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "HOT": {
@@ -6954,6 +8256,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "HOU": {
@@ -6991,6 +8298,11 @@
         ],
         "asv": 307500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 307500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 2 (two parallel runways 700-2,499 ft apart), row midpoint"
       }
     },
     "HPB": {
@@ -7014,6 +8326,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "HPN": {
@@ -7042,6 +8359,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "HRL": {
@@ -7079,6 +8401,11 @@
         ],
         "asv": 320000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 320000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 3 (two parallel runways 2,500-4,299 ft apart), row midpoint"
       }
     },
     "HRO": {
@@ -7102,6 +8429,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "HSV": {
@@ -7134,6 +8466,11 @@
         ],
         "asv": 337500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 337500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 4 (two parallel runways 4,300 ft or more apart), row midpoint"
       }
     },
     "HTS": {
@@ -7157,6 +8494,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "HVN": {
@@ -7180,6 +8522,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "HVR": {
@@ -7208,6 +8555,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "HXD": {
@@ -7231,6 +8583,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "HYA": {
@@ -7259,6 +8616,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "HYS": {
@@ -7287,6 +8649,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "IAD": {
@@ -7330,6 +8697,17 @@
         ],
         "asv": 337500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "faa-capacity-profile",
+        "asv": 685400,
+        "basis": "FAA Airport Capacity Profiles (May 2014), Table 1 \"Capacity Rate Ranges for Current Operations at the Core Airports\", p. 9: 160 visual and 128.5 instrument operations an hour (range midpoints), weighted 90/10 = 156.9/h, × 4,370 (AC 150/5060-5 Table 2-1 D × H)",
+        "profile": {
+          "visualPerHour": 160,
+          "instrumentPerHour": 128.5,
+          "weightedPerHour": 156.9,
+          "demandFactor": 4370
+        }
       }
     },
     "IAG": {
@@ -7358,6 +8736,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "IAH": {
@@ -7409,6 +8792,17 @@
         ],
         "asv": 337500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "faa-capacity-profile",
+        "asv": 794000,
+        "basis": "FAA Airport Capacity Profiles (May 2014), Table 1 \"Capacity Rate Ranges for Current Operations at the Core Airports\", p. 9: 185.5 visual and 147.5 instrument operations an hour (range midpoints), weighted 90/10 = 181.7/h, × 4,370 (AC 150/5060-5 Table 2-1 D × H)",
+        "profile": {
+          "visualPerHour": 185.5,
+          "instrumentPerHour": 147.5,
+          "weightedPerHour": 181.7,
+          "demandFactor": 4370
+        }
       }
     },
     "IAN": {
@@ -7432,6 +8826,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "ICT": {
@@ -7469,6 +8868,11 @@
         ],
         "asv": 337500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 337500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 4 (two parallel runways 4,300 ft or more apart), row midpoint"
       }
     },
     "IDA": {
@@ -7497,6 +8901,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "IFP": {
@@ -7520,6 +8929,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "IGT": {
@@ -7543,6 +8957,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "IIK": {
@@ -7566,6 +8985,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "ILG": {
@@ -7599,6 +9023,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "ILI": {
@@ -7627,6 +9056,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "ILM": {
@@ -7655,6 +9089,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "IMT": {
@@ -7683,6 +9122,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "IND": {
@@ -7720,6 +9164,11 @@
         ],
         "asv": 337500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 337500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 4 (two parallel runways 4,300 ft or more apart), row midpoint"
       }
     },
     "INL": {
@@ -7748,6 +9197,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "IPL": {
@@ -7776,6 +9230,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "IPT": {
@@ -7804,6 +9263,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "IRK": {
@@ -7827,6 +9291,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "ISN": {
@@ -7836,6 +9305,7 @@
       "crossing": null,
       "layoutRunways": 0,
       "configuration": null,
+      "capacity": null,
       "missingReason": "no land runway for this airport in FAA NASR (closed, renamed, or a seaplane base / heliport)"
     },
     "ISP": {
@@ -7873,6 +9343,11 @@
         ],
         "asv": 307500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 307500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 2 (two parallel runways 700-2,499 ft apart), row midpoint"
       }
     },
     "ITH": {
@@ -7896,6 +9371,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "ITO": {
@@ -7924,6 +9404,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "IWA": {
@@ -7962,6 +9447,11 @@
         ],
         "asv": 335000,
         "runwaysUsed": 3
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 335000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 5 (three parallel runways, both gaps 700-2,499 ft), row midpoint"
       }
     },
     "IWD": {
@@ -7985,6 +9475,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "JAC": {
@@ -8008,6 +9503,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "JAN": {
@@ -8040,6 +9540,11 @@
         ],
         "asv": 320000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 320000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 3 (two parallel runways 2,500-4,299 ft apart), row midpoint"
       }
     },
     "JAX": {
@@ -8068,6 +9573,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "JBR": {
@@ -8096,6 +9606,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "JFK": {
@@ -8141,6 +9656,17 @@
         ],
         "asv": 337500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "faa-capacity-profile",
+        "asv": 394400,
+        "basis": "FAA Airport Capacity Profiles (May 2014), Table 1 \"Capacity Rate Ranges for Current Operations at the Core Airports\", p. 9: 91.5 visual and 79 instrument operations an hour (range midpoints), weighted 90/10 = 90.3/h, × 4,370 (AC 150/5060-5 Table 2-1 D × H)",
+        "profile": {
+          "visualPerHour": 91.5,
+          "instrumentPerHour": 79,
+          "weightedPerHour": 90.3,
+          "demandFactor": 4370
+        }
       }
     },
     "JLN": {
@@ -8169,6 +9695,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "JMS": {
@@ -8197,6 +9728,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "JNU": {
@@ -8220,6 +9756,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "JQF": {
@@ -8243,6 +9784,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "JRF": {
@@ -8276,6 +9822,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "JST": {
@@ -8304,6 +9855,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "KAE": {
@@ -8313,6 +9869,7 @@
       "crossing": null,
       "layoutRunways": 0,
       "configuration": null,
+      "capacity": null,
       "missingReason": "no land runway for this airport in FAA NASR (closed, renamed, or a seaplane base / heliport)"
     },
     "KKA": {
@@ -8336,6 +9893,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "KLG": {
@@ -8359,6 +9921,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "KOA": {
@@ -8382,6 +9949,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "KSM": {
@@ -8410,6 +9982,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "KTN": {
@@ -8433,6 +10010,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "KTS": {
@@ -8461,6 +10043,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "KVC": {
@@ -8484,6 +10071,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "KVL": {
@@ -8507,6 +10099,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "KWT": {
@@ -8530,6 +10127,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "LAF": {
@@ -8558,6 +10160,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "LAL": {
@@ -8586,6 +10193,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "LAN": {
@@ -8623,6 +10235,11 @@
         ],
         "asv": 307500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 307500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 2 (two parallel runways 700-2,499 ft apart), row midpoint"
       }
     },
     "LAR": {
@@ -8651,6 +10268,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "LAS": {
@@ -8696,6 +10318,17 @@
         ],
         "asv": 312500,
         "runwaysUsed": 4
+      },
+      "capacity": {
+        "source": "faa-capacity-profile",
+        "asv": 526800,
+        "basis": "FAA Airport Capacity Profiles (May 2014), Table 1 \"Capacity Rate Ranges for Current Operations at the Core Airports\", p. 9: 125 visual and 80.5 instrument operations an hour (range midpoints), weighted 90/10 = 120.6/h, × 4,370 (AC 150/5060-5 Table 2-1 D × H)",
+        "profile": {
+          "visualPerHour": 125,
+          "instrumentPerHour": 80.5,
+          "weightedPerHour": 120.6,
+          "demandFactor": 4370
+        }
       }
     },
     "LAW": {
@@ -8719,6 +10352,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "LAX": {
@@ -8763,6 +10401,17 @@
         ],
         "asv": 615000,
         "runwaysUsed": 4
+      },
+      "capacity": {
+        "source": "faa-capacity-profile",
+        "asv": 734800,
+        "basis": "FAA Airport Capacity Profiles (May 2014), Table 1 \"Capacity Rate Ranges for Current Operations at the Core Airports\", p. 9: 171.5 visual and 138 instrument operations an hour (range midpoints), weighted 90/10 = 168.2/h, × 4,370 (AC 150/5060-5 Table 2-1 D × H)",
+        "profile": {
+          "visualPerHour": 171.5,
+          "instrumentPerHour": 138,
+          "weightedPerHour": 168.2,
+          "demandFactor": 4370
+        }
       }
     },
     "LBB": {
@@ -8800,6 +10449,11 @@
         ],
         "asv": 320000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 320000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 3 (two parallel runways 2,500-4,299 ft apart), row midpoint"
       }
     },
     "LBE": {
@@ -8823,6 +10477,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "LBF": {
@@ -8851,6 +10510,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "LBL": {
@@ -8879,6 +10543,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "LCH": {
@@ -8907,6 +10576,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "LCK": {
@@ -8939,6 +10613,11 @@
         ],
         "asv": 307500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 307500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 2 (two parallel runways 700-2,499 ft apart), row midpoint"
       }
     },
     "LEB": {
@@ -8967,6 +10646,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "LEX": {
@@ -8995,6 +10679,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "LFT": {
@@ -9032,6 +10721,11 @@
         ],
         "asv": 307500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 307500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 2 (two parallel runways 700-2,499 ft apart), row midpoint"
       }
     },
     "LGA": {
@@ -9060,6 +10754,17 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "faa-capacity-profile",
+        "asv": 359200,
+        "basis": "FAA Airport Capacity Profiles (May 2014), Table 1 \"Capacity Rate Ranges for Current Operations at the Core Airports\", p. 9: 83 visual and 75 instrument operations an hour (range midpoints), weighted 90/10 = 82.2/h, × 4,370 (AC 150/5060-5 Table 2-1 D × H)",
+        "profile": {
+          "visualPerHour": 83,
+          "instrumentPerHour": 75,
+          "weightedPerHour": 82.2,
+          "demandFactor": 4370
+        }
       }
     },
     "LGB": {
@@ -9097,6 +10802,11 @@
         ],
         "asv": 320000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 320000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 3 (two parallel runways 2,500-4,299 ft apart), row midpoint"
       }
     },
     "LHD": {
@@ -9120,6 +10830,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "LIH": {
@@ -9148,6 +10863,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "LIT": {
@@ -9185,6 +10905,11 @@
         ],
         "asv": 337500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 337500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 4 (two parallel runways 4,300 ft or more apart), row midpoint"
       }
     },
     "LMT": {
@@ -9213,6 +10938,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "LNK": {
@@ -9250,6 +10980,11 @@
         ],
         "asv": 320000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 320000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 3 (two parallel runways 2,500-4,299 ft apart), row midpoint"
       }
     },
     "LNS": {
@@ -9278,6 +11013,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "LNY": {
@@ -9301,6 +11041,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "LRD": {
@@ -9338,6 +11083,11 @@
         ],
         "asv": 307500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 307500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 2 (two parallel runways 700-2,499 ft apart), row midpoint"
       }
     },
     "LSE": {
@@ -9371,6 +11121,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "LUK": {
@@ -9399,6 +11154,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "LUP": {
@@ -9422,6 +11182,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "LWB": {
@@ -9445,6 +11210,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "LWS": {
@@ -9473,6 +11243,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "LYH": {
@@ -9501,6 +11276,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "MAF": {
@@ -9543,6 +11323,11 @@
         ],
         "asv": 307500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 307500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 2 (two parallel runways 700-2,499 ft apart), row midpoint"
       }
     },
     "MAZ": {
@@ -9566,6 +11351,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "MBA": {
@@ -9589,6 +11379,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "MBL": {
@@ -9617,6 +11412,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "MBS": {
@@ -9645,6 +11445,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "MCE": {
@@ -9668,6 +11473,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "MCG": {
@@ -9691,6 +11501,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "MCI": {
@@ -9728,6 +11543,11 @@
         ],
         "asv": 337500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 337500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 4 (two parallel runways 4,300 ft or more apart), row midpoint"
       }
     },
     "MCK": {
@@ -9756,6 +11576,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "MCN": {
@@ -9784,6 +11609,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "MCO": {
@@ -9828,6 +11658,17 @@
         ],
         "asv": 550000,
         "runwaysUsed": 3
+      },
+      "capacity": {
+        "source": "faa-capacity-profile",
+        "asv": 713800,
+        "basis": "FAA Airport Capacity Profiles (May 2014), Table 1 \"Capacity Rate Ranges for Current Operations at the Core Airports\", p. 9: 165.5 visual and 144 instrument operations an hour (range midpoints), weighted 90/10 = 163.4/h, × 4,370 (AC 150/5060-5 Table 2-1 D × H)",
+        "profile": {
+          "visualPerHour": 165.5,
+          "instrumentPerHour": 144,
+          "weightedPerHour": 163.4,
+          "demandFactor": 4370
+        }
       }
     },
     "MCW": {
@@ -9856,6 +11697,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "MDM": {
@@ -9879,6 +11725,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "MDT": {
@@ -9902,6 +11753,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "MDW": {
@@ -9944,6 +11800,17 @@
         ],
         "asv": 307500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "faa-capacity-profile",
+        "asv": 317700,
+        "basis": "FAA Airport Capacity Profiles (May 2014), Table 1 \"Capacity Rate Ranges for Current Operations at the Core Airports\", p. 9: 74 visual and 61 instrument operations an hour (range midpoints), weighted 90/10 = 72.7/h, × 4,370 (AC 150/5060-5 Table 2-1 D × H)",
+        "profile": {
+          "visualPerHour": 74,
+          "instrumentPerHour": 61,
+          "weightedPerHour": 72.7,
+          "demandFactor": 4370
+        }
       }
     },
     "MEI": {
@@ -9972,6 +11839,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "MEM": {
@@ -10015,6 +11887,17 @@
         ],
         "asv": 337500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "faa-capacity-profile",
+        "asv": 651300,
+        "basis": "FAA Airport Capacity Profiles (May 2014), Table 1 \"Capacity Rate Ranges for Current Operations at the Core Airports\", p. 9: 152 visual and 122.5 instrument operations an hour (range midpoints), weighted 90/10 = 149.1/h, × 4,370 (AC 150/5060-5 Table 2-1 D × H)",
+        "profile": {
+          "visualPerHour": 152,
+          "instrumentPerHour": 122.5,
+          "weightedPerHour": 149.1,
+          "demandFactor": 4370
+        }
       }
     },
     "MFE": {
@@ -10043,6 +11926,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "MFR": {
@@ -10066,6 +11954,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "MGM": {
@@ -10094,6 +11987,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "MGW": {
@@ -10117,6 +12015,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "MHK": {
@@ -10145,6 +12048,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "MHT": {
@@ -10173,6 +12081,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "MIA": {
@@ -10216,6 +12129,17 @@
         ],
         "asv": 550000,
         "runwaysUsed": 3
+      },
+      "capacity": {
+        "source": "faa-capacity-profile",
+        "asv": 599100,
+        "basis": "FAA Airport Capacity Profiles (May 2014), Table 1 \"Capacity Rate Ranges for Current Operations at the Core Airports\", p. 9: 141 visual and 102 instrument operations an hour (range midpoints), weighted 90/10 = 137.1/h, × 4,370 (AC 150/5060-5 Table 2-1 D × H)",
+        "profile": {
+          "visualPerHour": 141,
+          "instrumentPerHour": 102,
+          "weightedPerHour": 137.1,
+          "demandFactor": 4370
+        }
       }
     },
     "MKE": {
@@ -10266,6 +12190,11 @@
         ],
         "asv": 320000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 320000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 3 (two parallel runways 2,500-4,299 ft apart), row midpoint"
       }
     },
     "MKG": {
@@ -10294,6 +12223,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "MKK": {
@@ -10322,6 +12256,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "MKL": {
@@ -10350,6 +12289,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "MLB": {
@@ -10387,6 +12331,11 @@
         ],
         "asv": 330000,
         "runwaysUsed": 3
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 330000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 16 (close parallel pair and a divergent runway (open V), operations away), row midpoint"
       }
     },
     "MLI": {
@@ -10420,6 +12369,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "MLU": {
@@ -10448,6 +12402,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "MMH": {
@@ -10471,6 +12430,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "MOB": {
@@ -10499,6 +12463,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "MOT": {
@@ -10527,6 +12496,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "MOU": {
@@ -10550,6 +12524,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "MRI": {
@@ -10583,6 +12562,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "MRY": {
@@ -10611,6 +12595,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "MSL": {
@@ -10639,6 +12628,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "MSN": {
@@ -10672,6 +12666,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "MSO": {
@@ -10700,6 +12699,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "MSP": {
@@ -10742,6 +12746,17 @@
         ],
         "asv": 320000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "faa-capacity-profile",
+        "asv": 690900,
+        "basis": "FAA Airport Capacity Profiles (May 2014), Table 1 \"Capacity Rate Ranges for Current Operations at the Core Airports\", p. 9: 161.5 visual and 127.5 instrument operations an hour (range midpoints), weighted 90/10 = 158.1/h, × 4,370 (AC 150/5060-5 Table 2-1 D × H)",
+        "profile": {
+          "visualPerHour": 161.5,
+          "instrumentPerHour": 127.5,
+          "weightedPerHour": 158.1,
+          "demandFactor": 4370
+        }
       }
     },
     "MSS": {
@@ -10770,6 +12785,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "MSY": {
@@ -10798,6 +12818,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "MTJ": {
@@ -10826,6 +12851,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "MTM": {
@@ -10835,6 +12865,7 @@
       "crossing": null,
       "layoutRunways": 0,
       "configuration": null,
+      "capacity": null,
       "missingReason": "no land runway for this airport in FAA NASR (closed, renamed, or a seaplane base / heliport)"
     },
     "MUE": {
@@ -10858,6 +12889,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "MVY": {
@@ -10886,6 +12922,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "MWA": {
@@ -10914,6 +12955,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "MYR": {
@@ -10937,6 +12983,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "NUL": {
@@ -10960,6 +13011,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "NYL": {
@@ -10997,6 +13053,11 @@
         ],
         "asv": 307500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 307500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 2 (two parallel runways 700-2,499 ft apart), row midpoint"
       }
     },
     "OAJ": {
@@ -11020,6 +13081,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "OAK": {
@@ -11062,6 +13128,11 @@
         ],
         "asv": 330000,
         "runwaysUsed": 3
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 330000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 16 (close parallel pair and a divergent runway (open V), operations away), row midpoint"
       }
     },
     "OGD": {
@@ -11090,6 +13161,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "OGG": {
@@ -11118,6 +13194,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "OGS": {
@@ -11141,6 +13222,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "OKC": {
@@ -11183,6 +13269,11 @@
         ],
         "asv": 337500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 337500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 4 (two parallel runways 4,300 ft or more apart), row midpoint"
       }
     },
     "OLF": {
@@ -11206,6 +13297,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "OMA": {
@@ -11243,6 +13339,11 @@
         ],
         "asv": 307500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 307500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 2 (two parallel runways 700-2,499 ft apart), row midpoint"
       }
     },
     "OME": {
@@ -11271,6 +13372,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "ONT": {
@@ -11303,6 +13409,11 @@
         ],
         "asv": 307500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 307500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 2 (two parallel runways 700-2,499 ft apart), row midpoint"
       }
     },
     "OOK": {
@@ -11326,6 +13437,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "ORD": {
@@ -11395,6 +13511,17 @@
         ],
         "asv": 615000,
         "runwaysUsed": 4
+      },
+      "capacity": {
+        "source": "faa-capacity-profile",
+        "asv": 938900,
+        "basis": "FAA Airport Capacity Profiles (May 2014), Table 1 \"Capacity Rate Ranges for Current Operations at the Core Airports\", p. 9: 219.5 visual and 173 instrument operations an hour (range midpoints), weighted 90/10 = 214.9/h, × 4,370 (AC 150/5060-5 Table 2-1 D × H)",
+        "profile": {
+          "visualPerHour": 219.5,
+          "instrumentPerHour": 173,
+          "weightedPerHour": 214.9,
+          "demandFactor": 4370
+        }
       }
     },
     "ORF": {
@@ -11418,6 +13545,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "ORH": {
@@ -11446,6 +13578,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "ORS": {
@@ -11469,6 +13606,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "OTH": {
@@ -11497,6 +13639,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "OTZ": {
@@ -11520,6 +13667,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "OWB": {
@@ -11548,6 +13700,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "PAE": {
@@ -11580,6 +13737,11 @@
         ],
         "asv": 320000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 320000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 3 (two parallel runways 2,500-4,299 ft apart), row midpoint"
       }
     },
     "PAH": {
@@ -11608,6 +13770,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "PBG": {
@@ -11631,6 +13798,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "PBI": {
@@ -11640,6 +13812,7 @@
       "crossing": null,
       "layoutRunways": 0,
       "configuration": null,
+      "capacity": null,
       "missingReason": "no land runway for this airport in FAA NASR (closed, renamed, or a seaplane base / heliport)"
     },
     "PDK": {
@@ -11673,6 +13846,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "PDT": {
@@ -11701,6 +13879,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "PDX": {
@@ -11738,6 +13921,11 @@
         ],
         "asv": 320000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 320000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 3 (two parallel runways 2,500-4,299 ft apart), row midpoint"
       }
     },
     "PGA": {
@@ -11766,6 +13954,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "PGD": {
@@ -11799,6 +13992,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "PGV": {
@@ -11827,6 +14025,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "PHF": {
@@ -11855,6 +14058,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "PHL": {
@@ -11898,6 +14106,17 @@
         ],
         "asv": 335000,
         "runwaysUsed": 3
+      },
+      "capacity": {
+        "source": "faa-capacity-profile",
+        "asv": 521300,
+        "basis": "FAA Airport Capacity Profiles (May 2014), Table 1 \"Capacity Rate Ranges for Current Operations at the Core Airports\", p. 9: 123 visual and 86 instrument operations an hour (range midpoints), weighted 90/10 = 119.3/h, × 4,370 (AC 150/5060-5 Table 2-1 D × H)",
+        "profile": {
+          "visualPerHour": 123,
+          "instrumentPerHour": 86,
+          "weightedPerHour": 119.3,
+          "demandFactor": 4370
+        }
       }
     },
     "PHO": {
@@ -11921,6 +14140,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "PHX": {
@@ -11959,6 +14183,17 @@
         ],
         "asv": 337500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "faa-capacity-profile",
+        "asv": 599600,
+        "basis": "FAA Airport Capacity Profiles (May 2014), Table 1 \"Capacity Rate Ranges for Current Operations at the Core Airports\", p. 9: 141.5 visual and 98.5 instrument operations an hour (range midpoints), weighted 90/10 = 137.2/h, × 4,370 (AC 150/5060-5 Table 2-1 D × H)",
+        "profile": {
+          "visualPerHour": 141.5,
+          "instrumentPerHour": 98.5,
+          "weightedPerHour": 137.2,
+          "demandFactor": 4370
+        }
       }
     },
     "PIA": {
@@ -11987,6 +14222,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "PIB": {
@@ -12010,6 +14250,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "PIE": {
@@ -12038,6 +14283,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "PIH": {
@@ -12066,6 +14316,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "PIR": {
@@ -12094,6 +14349,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "PIT": {
@@ -12137,6 +14397,11 @@
         ],
         "asv": 550000,
         "runwaysUsed": 3
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 550000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 7 (three parallel runways, gaps 700-2,499 ft and 4,300 ft or more), row midpoint"
       }
     },
     "PKB": {
@@ -12165,6 +14430,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "PLN": {
@@ -12193,6 +14463,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "PNS": {
@@ -12221,6 +14496,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "PPG": {
@@ -12249,6 +14529,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "PQI": {
@@ -12277,6 +14562,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "PRC": {
@@ -12310,6 +14600,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "PSC": {
@@ -12347,6 +14642,11 @@
         ],
         "asv": 307500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 307500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 2 (two parallel runways 700-2,499 ft apart), row midpoint"
       }
     },
     "PSE": {
@@ -12370,6 +14670,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "PSG": {
@@ -12393,6 +14698,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "PSM": {
@@ -12416,6 +14726,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "PSP": {
@@ -12444,6 +14759,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "PTK": {
@@ -12477,6 +14797,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "PUB": {
@@ -12514,6 +14839,11 @@
         ],
         "asv": 307500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 307500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 2 (two parallel runways 700-2,499 ft apart), row midpoint"
       }
     },
     "PUW": {
@@ -12537,6 +14867,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "PVC": {
@@ -12560,6 +14895,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "PVD": {
@@ -12588,6 +14928,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "PVU": {
@@ -12616,6 +14961,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "PWM": {
@@ -12644,6 +14994,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "RAP": {
@@ -12672,6 +15027,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "RDD": {
@@ -12700,6 +15060,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "RDM": {
@@ -12728,6 +15093,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "RDU": {
@@ -12765,6 +15135,11 @@
         ],
         "asv": 320000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 320000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 3 (two parallel runways 2,500-4,299 ft apart), row midpoint"
       }
     },
     "RFD": {
@@ -12793,6 +15168,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "RHI": {
@@ -12821,6 +15201,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "RIC": {
@@ -12849,6 +15234,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "RIW": {
@@ -12877,6 +15267,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "RKD": {
@@ -12905,6 +15300,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "RKS": {
@@ -12933,6 +15333,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "RNO": {
@@ -12966,6 +15371,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "RNT": {
@@ -12989,6 +15399,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "ROA": {
@@ -13017,6 +15432,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "ROC": {
@@ -13050,6 +15470,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "ROW": {
@@ -13078,6 +15503,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "RSH": {
@@ -13101,6 +15531,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "RST": {
@@ -13129,6 +15564,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "RSW": {
@@ -13152,6 +15592,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "RUT": {
@@ -13180,6 +15625,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "RVR": {
@@ -13203,6 +15653,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "S31": {
@@ -13226,6 +15681,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "SAF": {
@@ -13259,6 +15719,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "SAN": {
@@ -13282,6 +15747,17 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "faa-capacity-profile",
+        "asv": 227500,
+        "basis": "FAA Airport Capacity Profiles (May 2014), Table 1 \"Capacity Rate Ranges for Current Operations at the Core Airports\", p. 9: 52.5 visual and 48 instrument operations an hour (range midpoints), weighted 90/10 = 52.1/h, × 4,370 (AC 150/5060-5 Table 2-1 D × H)",
+        "profile": {
+          "visualPerHour": 52.5,
+          "instrumentPerHour": 48,
+          "weightedPerHour": 52.1,
+          "demandFactor": 4370
+        }
       }
     },
     "SAT": {
@@ -13319,6 +15795,11 @@
         ],
         "asv": 307500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 307500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 2 (two parallel runways 700-2,499 ft apart), row midpoint"
       }
     },
     "SAV": {
@@ -13347,6 +15828,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "SAW": {
@@ -13370,6 +15856,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "SBA": {
@@ -13403,6 +15894,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "SBD": {
@@ -13426,6 +15922,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "SBN": {
@@ -13463,6 +15964,11 @@
         ],
         "asv": 320000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 320000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 3 (two parallel runways 2,500-4,299 ft apart), row midpoint"
       }
     },
     "SBP": {
@@ -13491,6 +15997,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "SBY": {
@@ -13519,6 +16030,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "SCC": {
@@ -13542,6 +16058,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "SCK": {
@@ -13570,6 +16091,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "SCM": {
@@ -13593,6 +16119,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "SDF": {
@@ -13630,6 +16161,11 @@
         ],
         "asv": 337500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 337500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 4 (two parallel runways 4,300 ft or more apart), row midpoint"
       }
     },
     "SDP": {
@@ -13653,6 +16189,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "SDY": {
@@ -13681,6 +16222,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "SEA": {
@@ -13719,6 +16265,17 @@
         ],
         "asv": 335000,
         "runwaysUsed": 3
+      },
+      "capacity": {
+        "source": "faa-capacity-profile",
+        "asv": 450500,
+        "basis": "FAA Airport Capacity Profiles (May 2014), Table 1 \"Capacity Rate Ranges for Current Operations at the Core Airports\", p. 9: 106 visual and 77 instrument operations an hour (range midpoints), weighted 90/10 = 103.1/h, × 4,370 (AC 150/5060-5 Table 2-1 D × H)",
+        "profile": {
+          "visualPerHour": 106,
+          "instrumentPerHour": 77,
+          "weightedPerHour": 103.1,
+          "demandFactor": 4370
+        }
       }
     },
     "SFB": {
@@ -13762,6 +16319,11 @@
         ],
         "asv": 337500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 337500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 4 (two parallel runways 4,300 ft or more apart), row midpoint"
       }
     },
     "SFO": {
@@ -13807,6 +16369,17 @@
         ],
         "asv": 312500,
         "runwaysUsed": 4
+      },
+      "capacity": {
+        "source": "faa-capacity-profile",
+        "asv": 444000,
+        "basis": "FAA Airport Capacity Profiles (May 2014), Table 1 \"Capacity Rate Ranges for Current Operations at the Core Airports\", p. 9: 105 visual and 71 instrument operations an hour (range midpoints), weighted 90/10 = 101.6/h, × 4,370 (AC 150/5060-5 Table 2-1 D × H)",
+        "profile": {
+          "visualPerHour": 105,
+          "instrumentPerHour": 71,
+          "weightedPerHour": 101.6,
+          "demandFactor": 4370
+        }
       }
     },
     "SGF": {
@@ -13835,6 +16408,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "SGJ": {
@@ -13868,6 +16446,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "SGU": {
@@ -13891,6 +16474,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "SGY": {
@@ -13914,6 +16502,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "SHD": {
@@ -13937,6 +16530,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "SHG": {
@@ -13960,6 +16558,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "SHH": {
@@ -13983,6 +16586,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "SHR": {
@@ -14011,6 +16619,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "SHV": {
@@ -14039,6 +16652,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "SIG": {
@@ -14062,6 +16680,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "SIT": {
@@ -14085,6 +16708,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "SJC": {
@@ -14113,6 +16741,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "SJT": {
@@ -14146,6 +16779,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "SJU": {
@@ -14174,6 +16812,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "SKX": {
@@ -14202,6 +16845,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "SLC": {
@@ -14245,6 +16893,17 @@
         ],
         "asv": 337500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "faa-capacity-profile",
+        "asv": 637100,
+        "basis": "FAA Airport Capacity Profiles (May 2014), Table 1 \"Capacity Rate Ranges for Current Operations at the Core Airports\", p. 9: 149 visual and 117 instrument operations an hour (range midpoints), weighted 90/10 = 145.8/h, × 4,370 (AC 150/5060-5 Table 2-1 D × H)",
+        "profile": {
+          "visualPerHour": 149,
+          "instrumentPerHour": 117,
+          "weightedPerHour": 145.8,
+          "demandFactor": 4370
+        }
       }
     },
     "SLE": {
@@ -14273,6 +16932,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "SLK": {
@@ -14301,6 +16965,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "SLN": {
@@ -14343,6 +17012,11 @@
         ],
         "asv": 337500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 337500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 4 (two parallel runways 4,300 ft or more apart), row midpoint"
       }
     },
     "SMF": {
@@ -14375,6 +17049,11 @@
         ],
         "asv": 337500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 337500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 4 (two parallel runways 4,300 ft or more apart), row midpoint"
       }
     },
     "SMK": {
@@ -14398,6 +17077,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "SMX": {
@@ -14426,6 +17110,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "SNA": {
@@ -14454,6 +17143,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "SNP": {
@@ -14477,6 +17171,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "SOV": {
@@ -14500,6 +17199,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "SOW": {
@@ -14528,6 +17232,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "SPI": {
@@ -14556,6 +17265,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "SPS": {
@@ -14599,6 +17313,11 @@
         ],
         "asv": 335000,
         "runwaysUsed": 3
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 335000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 5 (three parallel runways, both gaps 700-2,499 ft), row midpoint"
       }
     },
     "SQL": {
@@ -14622,6 +17341,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "SRQ": {
@@ -14650,6 +17374,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "STC": {
@@ -14678,6 +17407,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "STL": {
@@ -14721,6 +17455,11 @@
         ],
         "asv": 337500,
         "runwaysUsed": 3
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 337500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 6 (three parallel runways, gaps 700-2,499 ft and 2,500-4,299 ft), row midpoint"
       }
     },
     "STS": {
@@ -14749,6 +17488,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "STT": {
@@ -14772,6 +17516,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "STX": {
@@ -14795,6 +17544,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "SUN": {
@@ -14818,6 +17572,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "SUX": {
@@ -14846,6 +17605,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "SVA": {
@@ -14869,6 +17633,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "SVC": {
@@ -14892,6 +17661,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "SWF": {
@@ -14920,6 +17694,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "SWO": {
@@ -14948,6 +17727,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "SYR": {
@@ -14976,6 +17760,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "TAL": {
@@ -14999,6 +17788,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "TBN": {
@@ -15022,6 +17816,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "TCL": {
@@ -15050,6 +17849,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "TEX": {
@@ -15073,6 +17877,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "TLH": {
@@ -15101,6 +17910,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "TLT": {
@@ -15124,6 +17938,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "TNI": {
@@ -15147,6 +17966,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "TOG": {
@@ -15175,6 +17999,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "TOL": {
@@ -15203,6 +18032,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "TPA": {
@@ -15240,6 +18074,17 @@
         ],
         "asv": 320000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "faa-capacity-profile",
+        "asv": 488800,
+        "basis": "FAA Airport Capacity Profiles (May 2014), Table 1 \"Capacity Rate Ranges for Current Operations at the Core Airports\", p. 9: 114 visual and 92.5 instrument operations an hour (range midpoints), weighted 90/10 = 111.9/h, × 4,370 (AC 150/5060-5 Table 2-1 D × H)",
+        "profile": {
+          "visualPerHour": 114,
+          "instrumentPerHour": 92.5,
+          "weightedPerHour": 111.9,
+          "demandFactor": 4370
+        }
       }
     },
     "TRI": {
@@ -15268,6 +18113,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "TTN": {
@@ -15296,6 +18146,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "TUL": {
@@ -15333,6 +18188,11 @@
         ],
         "asv": 337500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 337500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 4 (two parallel runways 4,300 ft or more apart), row midpoint"
       }
     },
     "TUP": {
@@ -15356,6 +18216,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "TUS": {
@@ -15384,6 +18249,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "TVC": {
@@ -15412,6 +18282,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "TVF": {
@@ -15440,6 +18315,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "TWF": {
@@ -15468,6 +18348,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "TXK": {
@@ -15496,6 +18381,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "TYR": {
@@ -15529,6 +18419,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "TYS": {
@@ -15561,6 +18456,11 @@
         ],
         "asv": 307500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 307500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 2 (two parallel runways 700-2,499 ft apart), row midpoint"
       }
     },
     "UIN": {
@@ -15589,6 +18489,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "UNK": {
@@ -15617,6 +18522,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "UNV": {
@@ -15640,6 +18550,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "UTA": {
@@ -15663,6 +18578,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "VAK": {
@@ -15686,6 +18606,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "VCT": {
@@ -15714,6 +18639,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "VDZ": {
@@ -15737,6 +18667,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "VEL": {
@@ -15760,6 +18695,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "VGT": {
@@ -15797,6 +18737,11 @@
         ],
         "asv": 307500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 307500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 2 (two parallel runways 700-2,499 ft apart), row midpoint"
       }
     },
     "VIS": {
@@ -15820,6 +18765,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "VLD": {
@@ -15848,6 +18798,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "VPS": {
@@ -15876,6 +18831,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "VQS": {
@@ -15899,6 +18859,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "VRB": {
@@ -15936,6 +18901,11 @@
         ],
         "asv": 307500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 307500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 2 (two parallel runways 700-2,499 ft apart), row midpoint"
       }
     },
     "W33": {
@@ -15945,6 +18915,7 @@
       "crossing": null,
       "layoutRunways": 0,
       "configuration": null,
+      "capacity": null,
       "missingReason": "no land runway for this airport in FAA NASR (closed, renamed, or a seaplane base / heliport)"
     },
     "WBB": {
@@ -15968,6 +18939,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "WLK": {
@@ -15996,6 +18972,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "WRG": {
@@ -16019,6 +19000,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "WST": {
@@ -16047,6 +19033,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "WTK": {
@@ -16070,6 +19061,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "WYS": {
@@ -16093,6 +19089,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "XNA": {
@@ -16121,6 +19122,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "XWA": {
@@ -16149,6 +19155,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "YAK": {
@@ -16177,6 +19188,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "YIP": {
@@ -16205,6 +19221,11 @@
         ],
         "asv": 245000,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 245000,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 14 (two non-intersecting divergent runways (open V), operations away from the V), row midpoint"
       }
     },
     "YKM": {
@@ -16233,6 +19254,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "YNG": {
@@ -16266,6 +19292,11 @@
         ],
         "asv": 232500,
         "runwaysUsed": 2
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 232500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 9 (two intersecting runways), row midpoint"
       }
     },
     "Z09": {
@@ -16289,6 +19320,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     },
     "Z13": {
@@ -16312,6 +19348,11 @@
         ],
         "asv": 217500,
         "runwaysUsed": 1
+      },
+      "capacity": {
+        "source": "figure-2-1",
+        "asv": 217500,
+        "basis": "AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint"
       }
     }
   }

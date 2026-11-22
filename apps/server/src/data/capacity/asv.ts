@@ -185,3 +185,65 @@ export function bestConfiguration(layout: RunwayLayout): CapacityConfiguration |
     .sort((x, y) => y.asv - x.asv || x.figure21No - y.figure21No)[0];
   return best ?? null;
 }
+
+/*
+ * Extension beyond Figure 2-1 (this project's rule, NOT an FAA figure). Figure 2-1 draws at most two independent
+ * parallel streams (runways 4,300 ft or more apart), configurations 4, 7 and 8, and only with close pairs (700-2,499
+ * ft). The extension covers what it does not draw:
+ * - two streams where a pair is intermediate (2,500-4,299 ft): valued as configuration 7 or 8, since the figure
+ *   values an intermediate pair (configuration 3) at least as high as a close pair (configuration 2);
+ * - three or more streams: the two strongest are configuration 4, 7 or 8, and each further stream adds the
+ *   increment the figure itself shows for adding an independent stream:
+ * - an independent pair adds configuration 8 − configuration 2 (two close pairs vs. one): 615,000 − 307,500 = 307,500
+ *   (in every mix-index band configuration 8 is within 1% of twice configuration 2);
+ * - an independent single runway adds configuration 4 − configuration 1 (two far singles vs. one): 337,500 − 217,500
+ *   = 120,000, the smallest increment the figure shows for one more runway.
+ * A stream is a run of runways whose neighbours are under 4,300 ft apart; a stream of 2+ runways counts as a close
+ * pair (an intermediate pair is worth more in the figure, so this errs low). Extra orientations add nothing: AC
+ * paragraph 2-4.b uses only the two most-used orientations. The extension is used only when it beats the matched
+ * Figure 2-1 configuration (so a layout the figure draws keeps the figure's value).
+ */
+
+/** Sizes of the independent streams of one parallel group: its sorted offsets split at gaps of 4,300 ft or more. */
+export function independentStreams(offsets: readonly number[]): number[] {
+  if (offsets.length === 0) return [];
+  const sizes = [1];
+  for (let i = 1; i < offsets.length; i++) {
+    if ((offsets[i] as number) - (offsets[i - 1] as number) >= FAR_SPACING_FT) sizes.push(1);
+    else sizes[sizes.length - 1] = (sizes[sizes.length - 1] as number) + 1;
+  }
+  return sizes;
+}
+
+/** The ASV an extra independent pair adds (configuration 8 − configuration 2). */
+export const INDEPENDENT_PAIR_INCREMENT = asvMidpoint(rowOf(8)) - asvMidpoint(rowOf(2));
+/** The ASV an extra independent single runway adds (configuration 4 − configuration 1). */
+export const INDEPENDENT_SINGLE_INCREMENT = asvMidpoint(rowOf(4)) - asvMidpoint(rowOf(1));
+
+export interface ParallelExtension {
+  /** The Figure 2-1 configuration (4, 7 or 8) that covers the two strongest streams. */
+  readonly baseFigure21No: number;
+  readonly addedPairs: number;
+  readonly addedSingles: number;
+  /** Base midpoint ASV + the increments, operations per year. */
+  readonly asv: number;
+}
+
+/** The extended ASV of one parallel group, or null with fewer than two independent streams (nothing to extend). */
+export function extendParallelGroup(offsets: readonly number[]): ParallelExtension | null {
+  const streams = independentStreams(offsets);
+  if (streams.length < 2) return null;
+  const pairs = streams.filter((n) => n >= 2).length;
+  const singles = streams.length - pairs;
+  const [baseFigure21No, addedPairs, addedSingles] =
+    pairs >= 2 ? [8, pairs - 2, singles] : pairs === 1 ? [7, 0, singles - 1] : [4, 0, singles - 2];
+  const asv =
+    asvMidpoint(rowOf(baseFigure21No)) + addedPairs * INDEPENDENT_PAIR_INCREMENT + addedSingles * INDEPENDENT_SINGLE_INCREMENT;
+  return { baseFigure21No, addedPairs, addedSingles, asv };
+}
+
+/** The best extension over a layout's parallel groups, or null when no group goes beyond Figure 2-1. */
+export function extendLayout(parallelGroups: readonly (readonly number[])[]): ParallelExtension | null {
+  const found = parallelGroups.map(extendParallelGroup).filter((e): e is ParallelExtension => e !== null);
+  return found.sort((x, y) => y.asv - x.asv)[0] ?? null;
+}
