@@ -75,11 +75,11 @@ export function scaleKind(scale: unknown): CategoryScale {
 
 /**
  * The unit of each category's raw value. KpiDef has no unit field, and the raw units are fixed by the KPI
- * definitions' own formulas (load factor %, international share %, CAGR % per year). Congestion is annual
- * departures until #54 turns it into a percent: the "percent scale => %" test fails then, so this is updated with it.
+ * definitions' own formulas (load factor %, international share %, CAGR % per year). Congestion is runway utilization
+ * in percent (#54).
  */
 export const CATEGORY_UNITS: Readonly<Record<CategoryKey, string>> = {
-  congestion: "departures/yr",
+  congestion: "%",
   unmet_demand: "%",
   long_haul: "%",
   growth: "% per year",
