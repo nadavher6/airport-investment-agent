@@ -4,7 +4,7 @@ import { HttpError } from "../http/errors.ts";
 import { LlmError, type LlmClient } from "../llm/llmClient.ts";
 import { mainModel } from "../llm/models.ts";
 import type { Agent, AgentRunInput } from "./agent.ts";
-import { classifyMessage, type ClassificationLabel } from "./classifier/classifier.ts";
+import { classifyMessage, type Classification, type ClassificationLabel } from "./classifier/classifier.ts";
 import { classificationToolEvents } from "./classifier/toolEvents.ts";
 import { CAPABILITIES_ANSWER } from "./responses/capabilities.ts";
 import { OFF_TOPIC_ANSWER } from "./responses/offTopic.ts";
@@ -41,9 +41,17 @@ export class LlmPassthroughAgent implements Agent {
 
     const messageId = asMessageId(randomUUID());
     const { messages } = input.request;
-    // First agent step (#13): classify the latest user message. It never throws an LlmError (it falls back
-    // to in_scope), only an abort. `capabilities` and `off_topic` get a fixed answer (no main LLM call); the other labels continue to the LLM.
-    const classification = await classifyMessage(client, messages, input.signal);
+    // First agent step (#13): classify the latest user message. A bad label falls back to in_scope (#19); a
+    // failed call is retried, and after the last try it throws an LlmError (#22): nothing has streamed yet, so it
+    // becomes an HttpError and the main LLM is never called. `capabilities` and `off_topic` get a fixed answer
+    // (no main LLM call); the other labels continue to the LLM.
+    let classification: Classification;
+    try {
+      classification = await classifyMessage(client, messages, input.signal);
+    } catch (err) {
+      if (err instanceof LlmError) throw new HttpError(API_CODE[err.code], err.message);
+      throw err;
+    }
     const lastUserMessage = [...messages].reverse().find((m) => m.role === "user")?.content ?? "";
     const classified = classificationToolEvents(messageId, lastUserMessage, classification);
     // #21: capabilities and off_topic (which covers prompt injection) get one fixed answer; the main LLM is not called.

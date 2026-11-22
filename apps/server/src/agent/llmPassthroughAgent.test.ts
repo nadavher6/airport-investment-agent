@@ -204,6 +204,30 @@ describe("LlmPassthroughAgent", () => {
     vi.restoreAllMocks();
   });
 
+  it("a classifier that fails 3 times gives a plain-English HttpError and never calls the main LLM (#22)", async () => {
+    vi.useFakeTimers();
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    const seen: LlmRequest[] = [];
+    const client: LlmClient = {
+      provider: "claude-headless",
+      health: async () => ({ status: "ok", detail: "fake" }),
+      async *stream(request) {
+        seen.push(request);
+        if (request.system !== CLASSIFIER_PROMPT) yield { type: "text_delta", text: "main LLM must not run" };
+        throw new LlmError("unavailable", "503 from the provider");
+      },
+    };
+    const result = runWith(client).catch((e: unknown) => e);
+    await vi.advanceTimersByTimeAsync(10_000);
+    const err = await result;
+    expect(err).toBeInstanceOf(HttpError);
+    expect(err).toMatchObject({ code: "model_unavailable", message: "The classifier is unavailable right now. Please try again." });
+    expect(seen).toHaveLength(3);
+    expect(seen.every((r) => r.system === CLASSIFIER_PROMPT)).toBe(true);
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  });
+
   it("an abort during classification stops the run before the main LLM call", async () => {
     const controller = new AbortController();
     const seen: LlmRequest[] = [];

@@ -66,12 +66,73 @@ describe("classifyMessage", () => {
     await expect(classifyMessage(client, [user("x")], signal())).resolves.toEqual({ ...FALLBACK_CLASSIFICATION, attempts: 2 });
   });
 
-  it("falls back to in_scope when the client throws, without logging the user's text", async () => {
-    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
-    const client = new FakeClient(() => new LlmError("rate_limit", "Too many requests."));
-    await expect(classifyMessage(client, [user("private")], signal())).resolves.toEqual({ ...FALLBACK_CLASSIFICATION, attempts: 1 });
-    expect(String(warn.mock.calls[0]?.[0])).toContain("Too many requests.");
-    expect(String(warn.mock.calls[0]?.[0])).not.toContain("private");
+  describe("failed call retry (#22)", () => {
+    const good = '{"label":"off_topic","reason":"Weather."}';
+    const down = (): LlmError => new LlmError("rate_limit", "Too many requests.");
+    /** Fails `failures` times, then answers `good`. */
+    const failingThen = (failures: number) => {
+      let n = 0;
+      return new FakeClient(() => (++n <= failures ? down() : good));
+    };
+
+    afterEach(() => vi.useRealTimers());
+
+    it.each([1, 2])("fails %i time(s), then succeeds: %i+1 calls, the label is used, 0.5 s then 1 s backoff", async (failures) => {
+      vi.useFakeTimers();
+      vi.spyOn(console, "warn").mockImplementation(() => {});
+      const client = failingThen(failures);
+      const done = classifyMessage(client, [user("x")], signal());
+      await vi.advanceTimersByTimeAsync(499);
+      expect(client.requests).toHaveLength(1);
+      await vi.advanceTimersByTimeAsync(1);
+      expect(client.requests).toHaveLength(2);
+      if (failures === 2) {
+        await vi.advanceTimersByTimeAsync(999);
+        expect(client.requests).toHaveLength(2);
+        await vi.advanceTimersByTimeAsync(1);
+      }
+      await expect(done).resolves.toEqual({ label: "off_topic", reason: "Weather.", attempts: 1 });
+      expect(client.requests).toHaveLength(failures + 1);
+    });
+
+    it("fails 3 times: exactly 3 calls, then an unavailable LlmError and no in_scope, without logging the user's text", async () => {
+      vi.useFakeTimers();
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+      const client = failingThen(99);
+      const done = classifyMessage(client, [user("private")], signal());
+      const assertion = expect(done).rejects.toMatchObject({
+        name: "LlmError",
+        code: "unavailable",
+        message: "The classifier is unavailable right now. Please try again.",
+      });
+      await vi.advanceTimersByTimeAsync(10_000);
+      await assertion;
+      expect(client.requests).toHaveLength(3);
+      expect(warn).toHaveBeenCalledTimes(3);
+      expect(String(warn.mock.calls[0]?.[0])).toContain("Too many requests.");
+      expect(warn.mock.calls.map((c) => String(c[0])).join("\n")).not.toContain("private");
+    });
+
+    it("abort during the backoff stops at once: no more calls", async () => {
+      vi.useFakeTimers();
+      vi.spyOn(console, "warn").mockImplementation(() => {});
+      const controller = new AbortController();
+      const client = failingThen(99);
+      const done = classifyMessage(client, [user("x")], controller.signal);
+      const assertion = expect(done).rejects.toThrow("stopped");
+      await vi.advanceTimersByTimeAsync(100);
+      controller.abort(new Error("stopped"));
+      await assertion;
+      await vi.advanceTimersByTimeAsync(10_000);
+      expect(client.requests).toHaveLength(1);
+    });
+
+    it("an invalid label uses the #19 retry path, not this one: no backoff, in_scope after 2 calls", async () => {
+      vi.spyOn(console, "warn").mockImplementation(() => {});
+      const client = replying("nope");
+      await expect(classifyMessage(client, [user("x")], signal())).resolves.toEqual({ ...FALLBACK_CLASSIFICATION, attempts: 2 });
+      expect(client.requests).toHaveLength(2);
+    });
   });
 
   describe("guardrail retry (#19)", () => {
