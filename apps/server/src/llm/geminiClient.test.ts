@@ -86,7 +86,7 @@ describe("GeminiClient.stream", () => {
     expect(calls).toHaveLength(1);
     const [call] = calls;
     expect(call?.url).toBe(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:streamGenerateContent?alt=sse",
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:streamGenerateContent?alt=sse",
     );
     expect(call?.url).not.toContain(KEY);
     expect(new Headers(call?.init.headers).get("x-goog-api-key")).toBe(KEY);
@@ -257,15 +257,12 @@ describe("toGeminiContents", () => {
   });
 });
 
-describe("configured Gemini model", () => {
-  it("is listed with streamGenerateContent in a Gemini models-list response (fake, no network)", () => {
-    const list: { models: { name: string; supportedGenerationMethods: string[] }[] } = {
-      models: [
-        { name: "models/gemini-2.5-flash-lite", supportedGenerationMethods: ["generateContent"] },
-        { name: `models/${GEMINI_MODEL}`, supportedGenerationMethods: ["generateContent", "streamGenerateContent"] },
-      ],
-    };
-    const entry = list.models.find((m) => m.name === `models/${GEMINI_MODEL}`);
-    expect(entry?.supportedGenerationMethods).toContain("streamGenerateContent");
+describe("unavailable Gemini model", () => {
+  it("a 404 NOT_FOUND names the model and says it is not available, without the key (fake fetch)", async () => {
+    const body = JSON.stringify({ error: { code: 404, status: "NOT_FOUND", message: `models/${GEMINI_MODEL} is no longer available to new users.` } });
+    const err = await collect(client(fakeFetch(404, body)).stream(req())).catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(LlmError);
+    expect(err).toMatchObject({ code: "unavailable", message: `Gemini model ${GEMINI_MODEL} is not available for this key.` });
+    expect((err as Error).message).not.toContain(KEY);
   });
 });

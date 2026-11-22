@@ -8,14 +8,14 @@ import { DEFAULT_MODEL_ID, findModel, listModels } from "./models.ts";
 describe("model catalog", () => {
   it("lists only Gemini and Claude headless, Gemini first (the default)", () => {
     expect(listModels(testConfig()).map((m) => [m.id, m.provider])).toEqual([
-      ["gemini-3.8-flash", "gemini"],
+      ["gemini-3.5-flash", "gemini"],
       ["claude-headless", "claude-headless"],
     ]);
-    expect(DEFAULT_MODEL_ID).toBe("gemini-3.8-flash");
+    expect(DEFAULT_MODEL_ID).toBe("gemini-3.5-flash");
   });
 
   it("marks Gemini available only when GEMINI_API_KEY is set, and never exposes the key", () => {
-    const gemini = (config: ReturnType<typeof testConfig>) => findModel(config, asModelId("gemini-3.8-flash"));
+    const gemini = (config: ReturnType<typeof testConfig>) => findModel(config, asModelId("gemini-3.5-flash"));
     expect(gemini(testConfig())?.available).toBe(false);
     const config = testConfig(["gemini"]);
     expect(gemini(config)?.available).toBe(true);

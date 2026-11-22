@@ -6,7 +6,7 @@ import { createApp } from "../app.ts";
 import { GeminiClient, type FetchLike } from "../llm/geminiClient.ts";
 import { offlineClients, parseSse, testConfig, TEST_GEMINI_KEY } from "../test/helpers.ts";
 
-const body = { modelId: "gemini-3.8-flash", messages: [{ role: "user", content: "What makes an airport a good expansion candidate?" }] };
+const body = { modelId: "gemini-3.5-flash", messages: [{ role: "user", content: "What makes an airport a good expansion candidate?" }] };
 
 const sse = (texts: string[]): string =>
   texts.map((text, i) => `data: ${JSON.stringify({ candidates: [{ content: { role: "model", parts: [{ text }] }, ...(i === texts.length - 1 ? { finishReason: "STOP" } : {}) }] })}\r\n\r\n`).join("");
@@ -32,7 +32,7 @@ describe("POST /api/chat with gemini", () => {
     expect(events.map((e) => e.type)).toEqual(["message_start", "tool_call", "tool_result", "text_delta", "text_delta", "message_end"]);
     expect(events.flatMap((e) => (e.type === "text_delta" ? [e.delta] : [])).join("")).toBe("Good candidates are congested.");
     // One call for the classify step (#13), one for the answer.
-    const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:streamGenerateContent?alt=sse";
+    const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:streamGenerateContent?alt=sse";
     expect(urls).toEqual([url, url]);
   });
 

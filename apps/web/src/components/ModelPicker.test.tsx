@@ -26,7 +26,7 @@ describe("ModelPicker", () => {
     const options = screen.getAllByRole("option");
     expect(options).toHaveLength(2);
     expect(options[0]).toHaveAttribute("aria-selected", "true");
-    expect(options[0]).toHaveTextContent("Gemini 3.8 Flash");
+    expect(options[0]).toHaveTextContent("Gemini 3.5 Flash");
     expect(options[1]).toHaveTextContent("Claude (headless session)");
     expect(options[1]).toHaveTextContent("Thinking");
     expect(options[1]).toHaveTextContent("Tools");
