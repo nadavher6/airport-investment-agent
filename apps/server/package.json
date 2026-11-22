@@ -8,7 +8,8 @@
     "start": "tsx src/index.ts",
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "data:build-t100": "tsx src/data/t100/build.ts"
   },
   "dependencies": {
     "@airport/shared": "*",

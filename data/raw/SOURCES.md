@@ -182,3 +182,31 @@ in `data/enplanements.json` (provenance: the sections above).
 - Every city listed must be a metro name in `metros.json` (checked by the integrity test).
 - States are not covered; the owner did not ask for them.
 - A region lists metros, not airports: the airports come from the metro list at query time.
+
+## BTS T-100: `data/t100.json`
+
+Congestion, unmet demand (load factor) and long-haul share come from the **BTS T-100 Segment** data, not from
+the FAA files above.
+
+- **Publisher:** US Bureau of Transportation Statistics (BTS), on its Socrata open-data portal.
+- **Dataset:** T-100 Segment Summary by Origin Airport, dataset ID `r495-tyji`.
+- **Source URL (API):** https://data.bts.gov/resource/r495-tyji.json (dataset page: https://data.bts.gov/d/r495-tyji).
+- **Keyless:** the build uses plain `fetch` with no app token, no `X-App-Token` header and no `.env` value.
+  Socrata throttles anonymous clients, so a rebuild can fail with HTTP 429; it does not return different data.
+- **Build-only network:** `npm run data:build-t100` (`apps/server/src/data/t100/build.ts`) is the only code that
+  calls BTS. The server and the tests read the committed `data/t100.json` (`apps/server/src/data/t100/dataset.ts`),
+  so nothing at runtime or in `npm test` touches the network.
+- **Query:** one server-side aggregated request, grouped by `origin_airport_code`, summing `total_departures`,
+  `total_passengers`, `total_seats` and `domestic_seats` over the window. Per airport: `loadFactor` =
+  passengers ÷ seats and `internationalShare` = (seats − domestic seats) ÷ seats, both in percent with 1 decimal;
+  airports with no seats are dropped.
+- **Window: the trailing 12 months** ending at the newest `reporting_month` BTS has when the build runs (not a
+  calendar year). The committed file covers **2025-09 to 2026-08** (`meta.periodStart`/`meta.periodEnd`), built
+  2026-11-22, **1,312 airports**. A rebuild later moves the window and changes the scores.
+- **Deterministic output:** airports are written in airport-code order (`aggregate.ts`), so two builds of the same
+  window give byte-identical files apart from `meta.builtAt`.
+- **Window mismatch with the FAA data:** FAA enplanements are **calendar years** (growth uses CY2019→CY2024); T-100
+  is the **trailing 12 months** above. The sources also count differently (enplanements vs segment passengers), so
+  one airport's T-100 passengers can differ from its FAA enplanements by around 10% (ORD +10%, ATL −3%).
+- **Known quirk, accepted:** a tiny airport can have a load factor above 100% (more passengers than seats). In the
+  committed file only **ODW** does: **108.3% from 2 departures**. It is kept as reported, not capped; see DESIGN.md §4.
