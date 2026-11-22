@@ -62,11 +62,29 @@ of both saturating at 100); a **single** airport is scored *absolute* vs. all US
 ### The in-scope flow: candidates -> lookup -> score -> explain
 
 1. **Classify** the message (greeting, capabilities, off_topic, grading, in_scope). Only `in_scope` continues below.
-2. **Candidates (AI, fast model):** one call returns strict JSON `{ codes, cities, region }` (zod-checked, one retry, then "no candidates"). The model only names places; it never scores.
+2. **Candidates (AI, fast model):** one call returns strict JSON `{ codes, cities, region, intent }` (zod-checked, one retry, then "no candidates"). The model only names places; it never scores. `intent` picks the path (#48): `"score"` (rank, compare, find candidates) continues with steps 3-6 below; `"lookup"` (traffic, passengers, codes, "what airports serve...") goes to **the tool loop** below. A missing intent or a failed candidate step also goes to the loop ("when unsure, the loop").
 3. **Lookup (deterministic):** `get_airport_by_code`, `find_airports_by_city` and `find_airports_by_region` confirm and expand them. Unknown codes are dropped, and a failed lookup is reported as a failed lookup, not as a wrong code. Model-returned codes are never copied into the answer model's instructions.
 4. **Cap:** at most 5 airports are scored (`MAX_SCORED_AIRPORTS` in `agent/flow/resolve.ts`; the owner can change it). Airports named in the question are kept first; free slots go to the busiest (latest enplanements) airports of the named places. The answer says when the cap cut the list.
 5. **Score (deterministic):** the real `score_airports` tool. Every step is shown as a `tool_call` / `tool_result` pair.
 6. **Explain (AI, main model):** the results are in the system context; the model explains them and does not invent numbers.
+
+### The lookup path: the tool loop (#48)
+
+For `in_scope` questions that are not scoring questions, the main model runs a small ReAct loop
+(`agent/flow/toolLoop.ts`). The LlmClient has no native function calling, so the model writes one
+`{"tool": ..., "input": {...}}` object per step. The agent parses the whole step (bare, in a ```json fence or
+after a lead-in; `agent/toolCall.ts`), runs it through the registry tool (`getTool`, whose zod schema validates
+the input before the tool's code runs), shows it as a `tool_call` / `tool_result` pair, and sends the result back
+wrapped as `<tool_result>` data, never as instructions.
+- **Tools:** `get_airport_by_code`, `find_airports_by_city`, `find_airports_by_region` and `get_enplanements`.
+  `score_airports` is not a loop tool: if the model asks for it, the turn goes to the scoring flow above, so the
+  5-airport cap always applies.
+- **Guard (minimal):** tool JSON is never shown to the user (a step is held from its first `{` or backtick until
+  it is parsed). An unreadable call or an unknown tool is fed back once; a second one ends the turn with a plain
+  sentence. #49 replaces this with the full policy.
+- **Cap:** at most 6 tool runs, then one call that must answer in prose; if it still does not, a plain
+  "limit reached" sentence. The answer is never empty.
+- **Memory** is not wired in yet (a follow-up: it needs a conversation id in the contract).
 
 Two **skills** (Markdown in `agent/skills/`) are added to the system context when they apply:
 - **Grading** (`grading.md`, for the `grading` label, no tools): explains how airports are scored, in the owner's plain-language wording. Its How/Status lines are tested against `INVESTMENT_KPIS`.

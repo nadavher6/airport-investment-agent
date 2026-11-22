@@ -58,7 +58,7 @@ Once streaming starts, failures arrive as an `error` event.
 Stream event order:
 
 ```
-message_start → (tool_call(classify_message) → tool_result)? → (server tool_call → tool_result)* → (thinking_delta* → thinking_end)? → (tool_call → tool_result)* → text_delta* → message_end
+message_start → (tool_call(classify_message) → tool_result)? → (server tool_call → tool_result)* → ((thinking_delta* → thinking_end)? → (tool_call → tool_result)* → text_delta*)* → message_end
 ```
 
 The optional first `classify_message` pair (LLM-backed models only) and the server-run agent steps after it
@@ -72,6 +72,12 @@ message `greeting`, `capabilities`, `off_topic`, `in_scope` (the fallback) or `g
 - `greeting`, `capabilities` and `off_topic`: the agent streams one fixed answer (`apps/server/src/agent/responses/greeting.ts`, `capabilities.ts`, `offTopic.ts`) as a single `text_delta` and does not call the main model (off_topic covers prompt injection). The off_topic answer suggests one of the 15 `OFF_TOPIC_SUGGESTIONS`, picked at random.
 - `in_scope`: the agent runs its tool steps, each shown as a `tool_call`/`tool_result` pair, in this order:
   `pick_candidates` (one fast-model call returning strict JSON `{ codes, cities, region }`; an invalid reply gets one retry, then no candidates), then `get_airport_by_code` for each code and `find_airports_by_city` / `find_airports_by_region` for the places, then `score_airports` on at most 5 codes (the 5 busiest by latest enplanements when more resolve; skipped when none do). The main model then answers with the score results in its system context (`agent/prompts/scoreAnswer.ts`), plus the compare skill (`agent/skills/compare.md`) when 2–5 airports were scored. A failed tool is a `tool_result` with `ok: false`, and the answer says why.
+  The candidate reply also carries `intent` (#48): the steps above run for `"score"`. For `"lookup"` (or no
+  intent, or no valid reply), the main model instead runs the tool loop (`agent/flow/toolLoop.ts`): it may call
+  `get_airport_by_code`, `find_airports_by_city`, `find_airports_by_region` and `get_enplanements`, one per step,
+  each shown as a `tool_call`/`tool_result` pair, at most 6, then answers. Each step may start with thinking and a
+  short lead-in, hence the repeat group in the order above. Tool JSON is never streamed. If the loop asks for
+  `score_airports`, the scoring steps above run instead (still at most 5 airports).
 - `grading`: one main-model call with the grading skill (`agent/skills/grading.md`) in its system context; no tools.
 
 The steps are held until the main model's first event, so a main model that fails to start is still a normal pre-stream error. If the classifier's LLM call itself fails (an API or transport error, not a bad label), it is tried up to 3 times in total with a 0.5 s then 1 s backoff (an abort stops it at once); after the 3rd failure the turn ends with a pre-stream `503 model_unavailable` error ("The classifier is unavailable right now. Please try again.") and the main model is not called. There is no silent `in_scope` fallback for a failed call.
