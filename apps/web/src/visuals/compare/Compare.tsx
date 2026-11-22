@@ -29,8 +29,23 @@ function BlockView({ block }: { block: CompareBlock }) {
   return <VisualFallback body={JSON.stringify(block.spec, null, 2)} reason={result.reason} json={block.spec} />;
 }
 
-function CompareView({ spec }: { spec: CompareSpec }) {
-  const { columns, rows, title } = spec;
+export interface GridRow {
+  label: string;
+  /** One node per column, in column order. */
+  cells: readonly ReactNode[];
+}
+
+interface GridProps {
+  columns: readonly string[];
+  rows: readonly GridRow[];
+  title?: string | undefined;
+}
+
+/**
+ * The borderless compare layout: column headers, then per row a shared label and one cell per
+ * column on the same grid row. Used by the ```compare fence and by the score_airports view (#41).
+ */
+export function CompareGrid({ columns, rows, title }: GridProps) {
   // Items per column in the stacked order: its header, then one cell per row.
   const perColumn = rows.length + 1;
   const name = title ?? columns.join(" vs ");
@@ -61,20 +76,30 @@ function CompareView({ spec }: { spec: CompareSpec }) {
               <div className="viz-compare__cell-label" aria-hidden="true">
                 {row.label}
               </div>
-              {cell.map((block, b) => {
-                const key = JSON.stringify(block);
-                return (
-                  <VisualBoundary key={`${b}:${key}`} body={key}>
-                    <BlockView block={block} />
-                  </VisualBoundary>
-                );
-              })}
+              {cell}
             </div>
           )),
         ])}
       </div>
     </div>
   );
+}
+
+function CompareView({ spec }: { spec: CompareSpec }) {
+  const rows = spec.rows.map((row) => ({
+    label: row.label,
+    cells: row.cells.map((cell) =>
+      cell.map((block, b) => {
+        const key = JSON.stringify(block);
+        return (
+          <VisualBoundary key={`${b}:${key}`} body={key}>
+            <BlockView block={block} />
+          </VisualBoundary>
+        );
+      }),
+    ),
+  }));
+  return <CompareGrid columns={spec.columns} rows={rows} title={spec.title} />;
 }
 
 /** The whole-fence fallback: the raw body as code, with the note. */
