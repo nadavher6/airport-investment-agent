@@ -44,9 +44,11 @@ describe("score_airports tool", () => {
       expect(cat.subScore).not.toBeNull(); // all four computed now
     }
 
-    // contributions sum to the final score
-    const sum = Object.values(lax.breakdown).reduce((s, c) => s + (c.contribution ?? 0), 0);
-    expect(Math.round(sum * 10) / 10).toBe(lax.score);
+    // contributions sum to the final score, up to their rounding: each is rounded to one decimal (±0.05), so four
+    // of them can differ from the rounded total by up to 0.2 (LAX: 26 + 24.6 + 12.3 + 8.8 = 71.7 vs 71.75 -> 71.8)
+    const parts = Object.values(lax.breakdown);
+    const sum = parts.reduce((s, c) => s + (c.contribution ?? 0), 0);
+    expect(Math.abs(sum - lax.score)).toBeLessThanOrEqual(0.05 * parts.length + 1e-9);
   });
 
   it("evidence carries the real T-100 inputs", async () => {
