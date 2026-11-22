@@ -13,7 +13,8 @@
     "dev:web": "npm run dev -w @airport/web",
     "build": "npm run build -w @airport/web",
     "typecheck": "npm run typecheck --workspaces --if-present",
-    "test": "npm run test --workspaces --if-present"
+    "test": "npm run test --workspaces --if-present",
+    "data:download": "bash scripts/download-faa-enplanements.sh"
   },
   "author": "nadavher6",
   "license": "MIT",

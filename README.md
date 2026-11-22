@@ -78,6 +78,16 @@ npm run typecheck       # all workspaces
 npm run build           # production build of the web app
 ```
 
+## Data
+
+Passenger volumes come from the FAA's official **Commercial Service Enplanements** files, CY2015–CY2024.
+
+```bash
+npm run data:download   # fetch the 10 workbooks into data/raw/ (gitignored)
+```
+
+Where each file came from, its checksum, and format notes are in [`data/raw/SOURCES.md`](./data/raw/SOURCES.md).
+
 ## Tests
 
 [Vitest](https://vitest.dev) in both apps. Test files sit next to the code they cover (`*.test.ts(x)`).
