@@ -16,7 +16,8 @@
     "test": "npm run test --workspaces --if-present",
     "test:coverage": "npm run test --workspaces --if-present -- --coverage",
     "data:download": "bash scripts/download-faa-enplanements.sh",
-    "data:build-enplanements": "tsx apps/server/src/data/enplanements/build.ts"
+    "data:build-enplanements": "tsx apps/server/src/data/enplanements/build.ts",
+    "data:build-capacity": "bash scripts/download-faa-nasr.sh && tsx apps/server/src/data/capacity/build.ts"
   },
   "author": "nadavher6",
   "license": "MIT",
