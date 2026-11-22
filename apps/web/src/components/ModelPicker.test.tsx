@@ -9,6 +9,7 @@ import { ModelPicker } from "./ModelPicker";
 const gemini = model();
 const llama = model({ id: asModelId("llama"), label: "Llama 3.3 70B", provider: "groq", capabilities: { thinking: false, toolUse: true } });
 const gpt = model({ id: asModelId("gpt"), label: "GPT-OSS 120B", provider: "openrouter", available: false });
+const claude = model({ id: asModelId("claude-headless"), label: "Claude (headless session)", provider: "claude-headless" });
 const ready: ModelsState = { status: "ready", models: [gemini, llama, gpt] };
 
 function setup(state: ModelsState = ready) {
@@ -67,6 +68,15 @@ describe("ModelPicker", () => {
     await user.click(trigger);
     fireEvent.pointerDown(document.body);
     expect(screen.queryByRole("listbox")).toBeNull();
+  });
+
+  it("lists Claude (headless session) as a selectable option", async () => {
+    const onSelect = vi.fn();
+    render(<ModelPicker state={{ status: "ready", models: [gemini, claude] }} selected={gemini} onSelect={onSelect} />);
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: /Gemini/ }));
+    await user.click(screen.getByRole("option", { name: /Claude \(headless session\)/ }));
+    expect(onSelect).toHaveBeenCalledWith(claude.id);
   });
 
   it("is disabled while models load or failed to load", () => {

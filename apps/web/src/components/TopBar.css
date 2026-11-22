@@ -86,6 +86,11 @@
   color: var(--ink-2);
 }
 
+/* The selected model (and its health check) reads as a name, not a status code. */
+.status-pill--model {
+  text-transform: none;
+  letter-spacing: 0.02em;
+}
 .status-pill[data-status="online"] {
   --dot: var(--ok);
 }

@@ -1,12 +1,14 @@
 import type { ChatTurn } from "./chat.ts";
-import type { ModelId } from "./ids.ts";
-import type { ModelInfo } from "./models.ts";
+import type { IsoDateString, ModelId } from "./ids.ts";
+import type { ModelInfo, ModelProvider } from "./models.ts";
 
 /** Single source of truth for paths, so client and server can't drift apart. */
 export const API_ROUTES = {
   health: "/api/health",
   models: "/api/models",
   chat: "/api/chat",
+  /** Replace `:provider` with a ModelProvider. */
+  providerHealth: "/api/providers/:provider/health",
 } as const;
 
 export type ApiRoute = (typeof API_ROUTES)[keyof typeof API_ROUTES];
@@ -16,6 +18,18 @@ export interface HealthResponse {
   readonly status: "ok";
   readonly version: string;
   readonly uptimeSeconds: number;
+}
+
+// GET /api/providers/:provider/health
+/** ok: usable. unavailable: not installed/configured (e.g. no `claude` binary). error: installed but failing. */
+export type ProviderHealthStatus = "ok" | "unavailable" | "error";
+
+export interface ProviderHealthResponse {
+  readonly provider: ModelProvider;
+  readonly status: ProviderHealthStatus;
+  /** Plain-English explanation, e.g. "Claude Code 2.1.3 is installed". */
+  readonly detail: string;
+  readonly checkedAt: IsoDateString;
 }
 
 // GET /api/models
