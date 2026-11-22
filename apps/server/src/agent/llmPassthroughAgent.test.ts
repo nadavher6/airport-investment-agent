@@ -28,8 +28,8 @@ const modelOf = (provider: ModelProvider): ModelInfo => ({
 
 const CLASSIFIED = '{"label":"in_scope","reason":"Asks about airports."}';
 
-/** The candidate step's reply when a test does not care: no airports, so score_airports is not called (#42). */
-const NO_CANDIDATES_REPLY = '{"codes":[],"cities":[],"region":null}';
+/** The candidate step's reply when a test does not care: the scoring flow (#48 intent) with no airports, so score_airports is not called (#42). */
+const NO_CANDIDATES_REPLY = '{"codes":[],"cities":[],"region":null,"intent":"score"}';
 
 /**
  * A fake LlmClient. The classifier's call (system = CLASSIFIER_PROMPT) gets `classifierReply`, the candidate

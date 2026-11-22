@@ -51,7 +51,9 @@ function flowClient(label: string, candidateReplies: string[], onMain?: () => vo
   return { client, main, candidates };
 }
 
-const json = (codes: string[], cities: string[] = [], region: string | null = null) => JSON.stringify({ codes, cities, region });
+/** A candidate reply; intent "score" (#48) sends it down the #42 scoring flow. */
+const json = (codes: string[], cities: string[] = [], region: string | null = null, intent: "score" | "lookup" = "score") =>
+  JSON.stringify({ codes, cities, region, intent });
 
 function runFlow(client: LlmClient, message: string, score = fakeScoreAirports(), signal = new AbortController().signal) {
   const agent = new LlmPassthroughAgent({ "claude-headless": client, gemini: client }, undefined, { scoreAirports: score.tool });
@@ -114,7 +116,7 @@ describe("agent flow: in_scope -> candidates -> lookups -> score_airports -> ans
     expect(score.calls).toEqual([["ORD", "MDW"]]);
   });
 
-  it("an invalid candidate JSON gets one retry with the previous answer, then falls back to no candidates", async () => {
+  it("an invalid candidate JSON gets one retry with the previous answer, then falls back to the tool loop (#48: unsure -> loop)", async () => {
     vi.spyOn(console, "warn").mockImplementation(() => {});
     const { client, main, candidates } = flowClient("in_scope", ["Sure! LAX and SFO.", '{"codes":"LAX"}']);
     const score = fakeScoreAirports();
@@ -123,7 +125,9 @@ describe("agent flow: in_scope -> candidates -> lookups -> score_airports -> ans
     expect(candidates[1]!.messages[0]!.content).toContain("Sure! LAX and SFO.");
     expect(events[4]).toMatchObject({ result: { ok: true, output: { codes: [], attempts: 2, fallback: true } } });
     expect(score.calls).toEqual([]);
-    expect(main[0]!.system).toBe(NO_CANDIDATES_PROMPT);
+    // No usable candidates is "unsure": the lookup tool loop answers, with its own prompt (no scores).
+    expect(main[0]!.system).toContain("## How to use tools");
+    expect(main[0]!.system).not.toContain(NO_CANDIDATES_PROMPT);
   });
 
   it("a valid retry is used", async () => {

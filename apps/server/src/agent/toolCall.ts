@@ -15,8 +15,8 @@ export type ParsedStep =
   | { readonly kind: "call"; readonly name: string; readonly input: JsonObject; readonly extra: boolean }
   | { readonly kind: "bad"; readonly reason: string };
 
-/** A `"tool":` key anywhere: the step meant to call a tool, even if its JSON is broken. */
-const LOOKS_LIKE_CALL = /"tool"\s*:/;
+/** A `"tool":` (or `'tool':`) key anywhere: the step meant to call a tool, even if its JSON is broken. */
+const LOOKS_LIKE_CALL = /["']tool["']\s*:/;
 
 /** Every balanced top-level `{...}` in the text (string-aware), in order. */
 function jsonObjects(text: string): string[] {
