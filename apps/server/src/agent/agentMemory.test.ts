@@ -208,3 +208,56 @@ describe("agent memory (#50)", () => {
     });
   });
 });
+
+/** A fake client that plays a fixed list of main-loop replies in order (classifier answers in_scope). */
+function scriptedClient(script: readonly string[]) {
+  const seen: LlmRequest[] = [];
+  let next = 0;
+  const client: LlmClient = {
+    provider: "claude-headless",
+    health: async () => ({ status: "ok", detail: "fake" }),
+    async *stream(request) {
+      if (request.system === CLASSIFIER_PROMPT) {
+        yield { type: "text_delta", text: JSON.stringify({ label: "in_scope", reason: "x" }) };
+        yield { type: "done", stopReason: "end_turn" };
+        return;
+      }
+      seen.push({ ...request, messages: [...request.messages] });
+      yield { type: "text_delta", text: script[next++] ?? "done" };
+      yield { type: "done", stopReason: "end_turn" };
+    },
+  };
+  return { client, seen };
+}
+
+describe("memory cache and the #49 tool-call guard (#50)", () => {
+  const call = JSON.stringify({ tool: "get_enplanements", input: { airport_code: "LAX" } });
+  const resultsOf = (events: AgentEvent[]) => events.flatMap((e) => (e.type === "tool_result" ? [e.result.ok] : [])).slice(1); // [0] is the classifier card
+
+  it("a call served from the conversation cache is not a repeat_call; a repeat within the turn still is", async () => {
+    // Turn 1: call, answer. Turn 2: the same call (cache hit), the same call again (repeat in this turn), answer.
+    const { client, seen } = scriptedClient([call, "LAX had a lot.", call, call, "Final answer."]);
+    const enplanements = fakeEnplanements();
+    const agent = new LlmPassthroughAgent({ "claude-headless": client, gemini: client }, undefined, {
+      scoreAirports: fakeScoreAirports().tool,
+      toolOverrides: [enplanements.tool],
+      memory: new ConversationMemory(),
+    });
+    const say = chat(agent, "chat-guard-0001-abcdef");
+
+    const first = await say("How many passengers did LAX have?");
+    expect(resultsOf(first)).toEqual([true]);
+    const second = await say("Look LAX up again please");
+
+    expect(enplanements.calls).toEqual(["LAX"]); // the second turn's first call came from the cache
+    // Turn 2: the cached call succeeds (no error, no retry); only the identical second call is a repeat_call.
+    expect(resultsOf(second)).toEqual([true, false]);
+    const turn2 = seen.slice(2);
+    expect(turn2).toHaveLength(3); // call, repeat, final answer: the first cached call asked for no retry
+    expect(turn2[1]!.messages.at(-1)!.content).not.toContain("TOOL_CALL_ERROR");
+    expect(turn2[2]!.messages.at(-1)!.content).toContain("repeat_call");
+    expect(text(second)).toContain("Final answer.");
+    // The first turn never saw a guard error either.
+    expect(seen.slice(0, 2).some((r) => r.messages.some((m) => m.content.includes("TOOL_CALL_ERROR")))).toBe(false);
+  });
+});
