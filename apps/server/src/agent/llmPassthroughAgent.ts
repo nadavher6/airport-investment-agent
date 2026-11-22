@@ -1,18 +1,29 @@
 import { randomUUID } from "node:crypto";
-import { asMessageId, type AgentEvent, type ApiErrorCode, type ModelProvider } from "@airport/shared";
+import { asMessageId, type AgentEvent, type ApiErrorCode, type MessageId, type ModelProvider } from "@airport/shared";
 import { HttpError } from "../http/errors.ts";
 import { LlmError, type LlmClient } from "../llm/llmClient.ts";
 import { mainModel } from "../llm/models.ts";
 import type { Agent, AgentRunInput } from "./agent.ts";
 import { classifyMessage, type Classification, type ClassificationLabel } from "./classifier/classifier.ts";
 import { classificationToolEvents } from "./classifier/toolEvents.ts";
+import { answerSystemContext } from "./flow/answerContext.ts";
+import { candidateToolEvents, pickCandidates } from "./flow/candidates.ts";
+import { registryLookupTools, resolveCandidates, type LookupTools } from "./flow/resolve.ts";
+import { defaultScoreAirportsTool, type ScoreAirportsTool } from "./flow/scoreAirports.ts";
+import { runToolStep } from "./flow/toolStep.ts";
+import { gradingSystemPrompt } from "./prompts/grading.ts";
 import { CAPABILITIES_ANSWER } from "./responses/capabilities.ts";
-import { OFF_TOPIC_ANSWER } from "./responses/offTopic.ts";
+import { GREETING_ANSWER } from "./responses/greeting.ts";
+import { offTopicAnswer, type Rng } from "./responses/offTopic.ts";
 
-/** Labels answered with one fixed text and no main LLM call (#21). greeting and in_scope go to the LLM. */
-const STATIC_ANSWERS: Readonly<Partial<Record<ClassificationLabel, string>>> = {
-  capabilities: CAPABILITIES_ANSWER,
-  off_topic: OFF_TOPIC_ANSWER,
+/**
+ * Labels answered with one fixed text and no main LLM call (#21; greeting #44). off_topic picks its suggested
+ * question with the agent's rng (#44). in_scope goes to the LLM.
+ */
+const STATIC_ANSWERS: Readonly<Partial<Record<ClassificationLabel, (rng: Rng) => string>>> = {
+  greeting: () => GREETING_ANSWER,
+  capabilities: () => CAPABILITIES_ANSWER,
+  off_topic: (rng) => offTopicAnswer(rng),
 };
 
 const API_CODE: Record<LlmError["code"], ApiErrorCode> = {
@@ -23,18 +34,62 @@ const API_CODE: Record<LlmError["code"], ApiErrorCode> = {
   internal: "internal",
 };
 
+/** Optional agent dependencies, injectable for tests. */
+export interface AgentOptions {
+  /** The random source for the off_topic suggestion (#44). Default Math.random. */
+  readonly rng?: Rng;
+  /** score_airports (#42). Default: the real tool from the TOOLS registry (PR #38). Tests pass a fake. */
+  readonly scoreAirports?: ScoreAirportsTool;
+  /** The lookup tools that resolve the candidates (#42). Default: the registry's. */
+  readonly lookups?: LookupTools;
+}
+
 /**
- * Placeholder agent until the owner's agent replaces it: classifies the user's message (shown as a
- * classify_message tool_call/tool_result), then sends the conversation to the LlmClient for the
- * model's provider (every provider has one) and maps its stream to AgentEvents.
- * An LlmError before the first event becomes an HttpError (normal 4xx/5xx); after it, an `error` event.
+ * The agent: classifies the user's message (shown as a classify_message tool_call/tool_result), then:
+ * - `greeting` / `capabilities` / `off_topic`: one fixed answer, no main LLM call (#21, #44);
+ * - `in_scope`: the candidate step (fast model, strict JSON), the lookups that resolve it, score_airports on at
+ *   most 5 codes, each shown as a tool_call/tool_result pair; then the main model explains, with the results in
+ *   its system context (#42), plus the compare skill for 2–5 scored airports (#46);
+ * - `grading`: one main call with the grading skill in its system context, no tools (#43).
+ * The steps are held until the main LLM's first event, so an LlmError before it is still an HttpError (normal
+ * 4xx/5xx); after it, an `error` event.
  */
 export class LlmPassthroughAgent implements Agent {
+  private readonly rng: Rng;
+  private readonly scoreAirports: ScoreAirportsTool;
+  private readonly lookups: LookupTools;
+
   constructor(
     private readonly clients: Readonly<Record<ModelProvider, LlmClient>>,
     /** CLAUDE_MODEL: replaces the Claude main model only. */
     private readonly claudeMainModel?: string,
-  ) {}
+    options: AgentOptions = {},
+  ) {
+    this.rng = options.rng ?? Math.random;
+    this.scoreAirports = options.scoreAirports ?? defaultScoreAirportsTool();
+    this.lookups = options.lookups ?? registryLookupTools();
+  }
+
+  /**
+   * The in_scope tool steps (#42): pick candidates, resolve them, score at most 5. Returns the events to show
+   * and the answer's system context. An abort rethrows; a failed tool is a tool_result with ok: false.
+   */
+  private async scoreSteps(
+    client: LlmClient,
+    messages: AgentRunInput["request"]["messages"],
+    messageId: MessageId,
+    lastUserMessage: string,
+    signal: AbortSignal,
+  ): Promise<{ events: AgentEvent[]; system: string }> {
+    const picked = await pickCandidates(client, messages, signal);
+    const events: AgentEvent[] = [...candidateToolEvents(messageId, lastUserMessage, picked)];
+    const resolution = await resolveCandidates(picked.candidates, this.lookups, messageId, signal);
+    events.push(...resolution.steps.flatMap((step) => step.events));
+    if (resolution.codes.length === 0) return { events, system: answerSystemContext({ resolution }) };
+    const scored = await runToolStep(this.scoreAirports, { airport_codes: [...resolution.codes] }, messageId, signal);
+    events.push(...scored.events);
+    return { events, system: answerSystemContext({ resolution, score: scored.result }) };
+  }
 
   async *run(input: AgentRunInput): AsyncGenerator<AgentEvent> {
     const client = this.clients[input.model.provider];
@@ -43,8 +98,8 @@ export class LlmPassthroughAgent implements Agent {
     const { messages } = input.request;
     // First agent step (#13): classify the latest user message. A bad label falls back to in_scope (#19); a
     // failed call is retried, and after the last try it throws an LlmError (#22): nothing has streamed yet, so it
-    // becomes an HttpError and the main LLM is never called. `capabilities` and `off_topic` get a fixed answer
-    // (no main LLM call); the other labels continue to the LLM.
+    // becomes an HttpError and the main LLM is never called. `greeting`, `capabilities` and `off_topic` get a fixed
+    // answer (no main LLM call); the other labels continue to the LLM.
     let classification: Classification;
     try {
       classification = await classifyMessage(client, messages, input.signal);
@@ -54,14 +109,23 @@ export class LlmPassthroughAgent implements Agent {
     }
     const lastUserMessage = [...messages].reverse().find((m) => m.role === "user")?.content ?? "";
     const classified = classificationToolEvents(messageId, lastUserMessage, classification);
-    // #21: capabilities and off_topic (which covers prompt injection) get one fixed answer; the main LLM is not called.
+    // #21/#44: greeting, capabilities and off_topic (which covers prompt injection) get one fixed answer; the main LLM is not called.
     const staticAnswer = STATIC_ANSWERS[classification.label];
     if (staticAnswer !== undefined) {
       yield { type: "message_start", messageId, modelId: input.model.id };
       yield* classified;
-      yield { type: "text_delta", messageId, delta: staticAnswer };
+      yield { type: "text_delta", messageId, delta: staticAnswer(this.rng) };
       yield { type: "message_end", messageId, stopReason: "end_turn" };
       return;
+    }
+    // #42 / #43: the label decides the tool steps and the main call's system context.
+    let system: string | undefined;
+    const prelude: AgentEvent[] = [...classified];
+    if (classification.label === "grading") system = gradingSystemPrompt();
+    if (classification.label === "in_scope") {
+      const steps = await this.scoreSteps(client, messages, messageId, lastUserMessage, input.signal);
+      prelude.push(...steps.events);
+      system = steps.system;
     }
     let started = false;
     let thinkingSince: number | undefined;
@@ -73,11 +137,11 @@ export class LlmPassthroughAgent implements Agent {
     };
     try {
       const model = mainModel(client.provider, this.claudeMainModel);
-      for await (const event of client.stream({ messages, signal: input.signal, model })) {
-        // The classify step is held until the LLM's first event, so a failure to start is still an HttpError.
+      for await (const event of client.stream({ messages, signal: input.signal, model, ...(system !== undefined ? { system } : {}) })) {
+        // The steps are held until the LLM's first event, so a failure to start is still an HttpError.
         if (!started) {
           yield { type: "message_start", messageId, modelId: input.model.id };
-          yield* classified;
+          yield* prelude;
         }
         started = true;
         if (event.type === "thinking_delta") {

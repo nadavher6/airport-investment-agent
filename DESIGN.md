@@ -59,6 +59,19 @@ of both saturating at 100); a **single** airport is scored *absolute* vs. all US
 - Provider: Gemini (gemini-3.5-flash) or Claude headless, behind the LlmClient interface.
 - _TODO._
 
+### The in-scope flow: candidates -> lookup -> score -> explain
+
+1. **Classify** the message (greeting, capabilities, off_topic, grading, in_scope). Only `in_scope` continues below.
+2. **Candidates (AI, fast model):** one call returns strict JSON `{ codes, cities, region }` (zod-checked, one retry, then "no candidates"). The model only names places; it never scores.
+3. **Lookup (deterministic):** `get_airport_by_code`, `find_airports_by_city` and `find_airports_by_region` confirm and expand them. Unknown codes are dropped, and a failed lookup is reported as a failed lookup, not as a wrong code. Model-returned codes are never copied into the answer model's instructions.
+4. **Cap:** at most 5 airports are scored (`MAX_SCORED_AIRPORTS` in `agent/flow/resolve.ts`; the owner can change it). Airports named in the question are kept first; free slots go to the busiest (latest enplanements) airports of the named places. The answer says when the cap cut the list.
+5. **Score (deterministic):** the real `score_airports` tool. Every step is shown as a `tool_call` / `tool_result` pair.
+6. **Explain (AI, main model):** the results are in the system context; the model explains them and does not invent numbers.
+
+Two **skills** (Markdown in `agent/skills/`) are added to the system context when they apply:
+- **Grading** (`grading.md`, for the `grading` label, no tools): explains how airports are scored, in the owner's plain-language wording. Its How/Status lines are tested against `INVESTMENT_KPIS`.
+- **Compare** (`compare.md`, when 2-5 airports were scored): verdict first, why (largest contribution gaps), trade-offs, honesty about mode and coverage. It does not retype the score table, and its one `compare` fence example is checked against the web's compare parser.
+
 ## 4. Assumptions & limitations
 
 - **Scoring proxies & gaps:** *Congestion* uses **annual departures (operations)** as a traffic-volume proxy —
