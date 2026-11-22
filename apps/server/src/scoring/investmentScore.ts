@@ -19,6 +19,12 @@ export const INVESTMENT_KPIS: readonly KpiDef<AirportRecord>[] = [
     direction: "higher",
     note: "Pending BTS T-100 operations + ASV approximation (v1); not computed in v0.",
     extract: () => null,
+    evidence: () => ({
+      formula: "annual operations ÷ capacity (FAA Annual Service Volume); FAA thresholds 0.60 / 0.80 / 0.95",
+      inputs: {},
+      value: null,
+      explanation: "Not computed in v0 — needs flight-operations and runway-capacity data (BTS T-100 + FAA). Coming in v1.",
+    }),
   },
   {
     key: "unmet_demand",
@@ -27,6 +33,12 @@ export const INVESTMENT_KPIS: readonly KpiDef<AirportRecord>[] = [
     direction: "higher",
     note: "v0 proxies capacity pressure by latest-year enplanements; v1 uses load factor (BTS T-100).",
     extract: (a) => a.latest.enplanements,
+    evidence: (a) => ({
+      formula: "v0 proxy: latest-year enplanements (demand magnitude). v1: unconstrained demand ≈ load factor × growth (BTS T-100).",
+      inputs: { enplanements: a.latest.enplanements, year: a.latest.year },
+      value: a.latest.enplanements,
+      explanation: `${a.latest.enplanements.toLocaleString("en-US")} passengers boarded in ${a.latest.year}; used as a stand-in for demand pressure (the real version will use how full the planes are).`,
+    }),
   },
   {
     key: "long_haul",
@@ -35,6 +47,12 @@ export const INVESTMENT_KPIS: readonly KpiDef<AirportRecord>[] = [
     direction: "higher",
     note: "Pending BTS T-100 International share (v1); not computed in v0.",
     extract: () => null,
+    evidence: () => ({
+      formula: "international seats ÷ total seats (BTS T-100 International)",
+      inputs: {},
+      value: null,
+      explanation: "Not computed in v0 — needs international flight data (BTS T-100 International). Coming in v1.",
+    }),
   },
   {
     key: "growth",
@@ -43,6 +61,23 @@ export const INVESTMENT_KPIS: readonly KpiDef<AirportRecord>[] = [
     direction: "higher",
     note: "Enplanement 5-year CAGR (FY2019->FY2024); falls back to recovery-vs-2019 when CAGR is missing.",
     extract: (a) => a.trend.cagr5yr ?? (a.trend.recoveryVs2019 !== null ? (a.trend.recoveryVs2019 - 1) * 100 : null),
+    evidence: (a) => {
+      const cagr = a.trend.cagr5yr;
+      const rec = a.trend.recoveryVs2019;
+      const value = cagr ?? (rec !== null ? (rec - 1) * 100 : null);
+      const explanation =
+        cagr !== null
+          ? `Passengers grew ${cagr.toFixed(1)}% per year on average from 2019 to 2024.`
+          : rec !== null
+            ? `No 5-year CAGR; using recovery ratio ${rec.toFixed(2)} vs 2019 instead.`
+            : "No growth data available for this airport.";
+      return {
+        formula: "5-year enplanement CAGR, FY2019→FY2024 (fallback: recoveryVs2019 − 1)",
+        inputs: { cagr5yr: cagr, recoveryVs2019: rec, enplanements: a.latest.enplanements, year: a.latest.year },
+        value,
+        explanation,
+      };
+    },
   },
 ];
 

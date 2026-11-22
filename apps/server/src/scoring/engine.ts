@@ -7,6 +7,18 @@
 
 export type Direction = "higher" | "lower";
 
+/** The "show your work" record for one KPI: the formula, the raw inputs, and a plain sentence. */
+export interface KpiEvidence {
+  /** The formula in words, e.g. "international seats ÷ total seats". */
+  readonly formula: string;
+  /** The raw inputs that went into the value (named numbers). */
+  readonly inputs: Readonly<Record<string, number | string | null>>;
+  /** The computed raw KPI value, or null when it can't be computed. */
+  readonly value: number | null;
+  /** One plain-English sentence, with the actual numbers in it. */
+  readonly explanation: string;
+}
+
 /** One KPI: how to pull a raw value from an item, its target weight, and its direction. */
 export interface KpiDef<A> {
   readonly key: string;
@@ -19,6 +31,8 @@ export interface KpiDef<A> {
   readonly note?: string;
   /** Raw value for this item, or null when the KPI can't be computed for it. */
   extract(item: A): number | null;
+  /** The evidence (formula + inputs + sentence) behind this KPI for the item. */
+  evidence?(item: A): KpiEvidence;
 }
 
 export interface KpiBreakdown {
@@ -32,6 +46,8 @@ export interface KpiBreakdown {
   /** renormalized-weight × normalized; null when unavailable. */
   readonly contribution: number | null;
   readonly note?: string;
+  /** The formula + inputs + sentence behind this KPI. */
+  readonly evidence?: KpiEvidence;
 }
 
 export interface ScoredItem<A> {
@@ -104,15 +120,16 @@ export function buildScorer<A>(
     const breakdown: KpiBreakdown[] = kpis.map((k) => {
       const raw = k.extract(item);
       const noteField = k.note !== undefined ? { note: k.note } : {};
+      const evidenceField = k.evidence ? { evidence: k.evidence(item) } : {};
       if (raw === null || !Number.isFinite(raw)) {
         missing.push(k.key);
-        return { key: k.key, label: k.label, weight: k.weight, available: false, raw: null, normalized: null, contribution: null, ...noteField };
+        return { key: k.key, label: k.label, weight: k.weight, available: false, raw: null, normalized: null, contribution: null, ...noteField, ...evidenceField };
       }
       const normalized = normalize(raw, bounds.get(k.key) as Bounds, k.direction);
       const renormWeight = availableWeight > 0 ? k.weight / availableWeight : 0;
       const contribution = Math.round(renormWeight * normalized * 10) / 10;
       composite += renormWeight * normalized;
-      return { key: k.key, label: k.label, weight: k.weight, available: true, raw, normalized, contribution, ...noteField };
+      return { key: k.key, label: k.label, weight: k.weight, available: true, raw, normalized, contribution, ...noteField, ...evidenceField };
     });
 
     return {

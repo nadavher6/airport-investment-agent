@@ -30,10 +30,22 @@ export const scoreAirportsTool = defineTool<ScoreAirportsInput, unknown>({
     const ranking = rankAirports(found).map((s) => ({
       airportCode: s.item.airportCode,
       name: s.item.name,
-      score: s.score,
-      coverage: s.coverage,
-      missing: s.missing,
-      kpis: s.kpis,
+      score: s.score, // final 0-100
+      coverage: s.coverage, // share of the model actually computed (0.50 in v0)
+      missing: s.missing, // categories not yet computed
+      breakdown: Object.fromEntries(
+        s.kpis.map((k) => [
+          k.key,
+          {
+            label: k.label,
+            weight: k.weight, // target weight in the full model
+            available: k.available,
+            subScore: k.normalized, // 0-100 sub-score for this category
+            contribution: k.contribution, // points this sub-score added to the final score (subScore × renormalized weight)
+            evidence: k.evidence, // { formula, inputs, value, explanation }
+          },
+        ]),
+      ),
     }));
     return Promise.resolve(ok({ ranking, notFound }));
   },
