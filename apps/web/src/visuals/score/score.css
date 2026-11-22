@@ -1,0 +1,210 @@
+/*
+ * score_airports view (#41). App tokens only (tokens.css) and #33's first series colour for the
+ * bars, so light and dark themes follow. Bars are one hue on a fixed 0-100 track: a meter, not
+ * a chart, so there is no axis or legend; the number always sits next to the bar.
+ * Bar contrast (dataviz validator, vs the --surface-sunken track): dark #3987e5 on #0d1016 and
+ * light #2a78d6 on #ebe7dc both pass >= 3:1.
+ */
+.score-view {
+  display: grid;
+  gap: var(--space-3);
+  font-family: var(--font-ui);
+  color: var(--ink);
+}
+
+.score-view__mode,
+.score-view__more,
+.score-view__not-found {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+}
+
+.score-view .viz {
+  margin: 0;
+}
+
+.score-report {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.score-report__head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.score-report__code {
+  font-size: var(--text-lg);
+  font-weight: 600;
+}
+
+.score-report__name {
+  color: var(--ink-2);
+}
+
+.score-cats {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.score-cat {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.score-cat__label {
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.score-cat__bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.score-cat__value {
+  min-width: 3.5ch;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.score-bar {
+  position: relative;
+  flex: 1;
+  display: block;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 0 4px 4px 0;
+  background: var(--surface-sunken);
+}
+
+.score-bar--small {
+  width: 44px;
+  height: 4px;
+  flex: none;
+}
+
+.score-bar__fill {
+  display: block;
+  height: 100%;
+  border-radius: 0 4px 4px 0;
+}
+
+.score-cat__facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+}
+
+.score-cat__facts div {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.score-cat__facts dt {
+  color: var(--ink-3);
+}
+
+.score-cat__facts dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.score-cat__missing {
+  margin: 0;
+  font-size: var(--text-sm);
+  font-style: italic;
+  color: var(--ink-2);
+}
+
+.score-cat__evidence {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.score-cat__explanation {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+}
+
+.score-cat__formula {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--ink-3);
+  overflow-wrap: anywhere;
+}
+
+/* Table: #33's .viz-table, with a score bar under each number and an expandable evidence row. */
+.score-cell {
+  display: inline-grid;
+  justify-items: end;
+  gap: 3px;
+}
+
+.score-cell__value {
+  font-variant-numeric: tabular-nums;
+}
+
+.score-cell__missing {
+  color: var(--ink-3);
+}
+
+.score-table__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.score-table__chevron {
+  color: var(--ink-3);
+  transition: transform var(--dur) var(--ease-out);
+}
+
+.score-table__row.is-open .score-table__chevron {
+  transform: rotate(90deg);
+}
+
+.score-table__detail > td {
+  padding: var(--space-3) var(--space-3) var(--space-4);
+  background: var(--surface-raised);
+}
+
+.score-table__detail .score-cats {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+/* Tool card: the score view sits between the header and the raw data. */
+.tool-card__score {
+  padding: var(--space-3);
+  border-top: 1px solid var(--line);
+}
+
+.tool-card__show-data {
+  justify-self: start;
+  margin-top: var(--space-2);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink-2);
+  font: inherit;
+  font-size: var(--text-sm);
+  text-decoration: underline;
+  cursor: pointer;
+}
