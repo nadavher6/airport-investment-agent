@@ -114,3 +114,28 @@ latest year's. Don't read a CY2020 hub change as a structural change.
   `priorYear: null` and `yoyChangePct: null`.
 
 `meta.airportCount` counts unique codes across all ten years (575); CY2024 alone has 513.
+
+## Known `npm audit` finding: `xlsx@0.18.5`
+
+The build reads the FAA workbooks with SheetJS (`xlsx`, `apps/server/src/data/enplanements/workbook.ts`). `npm audit`
+reports one high-severity finding for it, with no fix available on the npm registry:
+
+| Advisory | Issue | Affected range (from `npm audit`) |
+|---|---|---|
+| GHSA-4r6h-8v6p-xvw6 (CVE-2023-30533) | Prototype pollution when reading a crafted file | `< 0.19.3` |
+| GHSA-5pgg-2g8v-p4x9 (CVE-2024-22363) | Regular expression denial of service (ReDoS) | `< 0.20.2` |
+
+**Why it is acceptable here**
+- `xlsx` is a `devDependency` of `apps/server`, pinned exactly to `0.18.5`. `npm audit --omit=dev` (the production
+  dependencies) reports `found 0 vulnerabilities`.
+- Only build code imports it: `workbook.ts`, which `build.ts` and the tests use. `dataset.ts`, the runtime entry point,
+  imports only the committed `data/enplanements.json`, so the running server never loads `xlsx`.
+- It only parses the 10 FAA files, and those are not arbitrary input: `npm run data:download` rejects any file whose
+  SHA-256 differs from the values in the table above, so a crafted workbook can't reach the parser through that script.
+  Both flaws need a malicious file.
+
+**Why the SheetJS CDN build was not used.** SheetJS publishes the fixed versions (0.19.3 and later, 0.20.x) only on
+its own CDN, not on npm; the latest `xlsx` on npm is 0.18.5. A tarball from the CDN would avoid the finding, but it
+takes the dependency off the npm registry, and the review asked for the version to be pinned there. The risk above is
+low, so the pinned registry version was kept. If a clean `npm audit` is wanted later, switch to the CDN tarball
+(0.20.x) or to another parser; the build only uses `XLSX.read` and `sheet_to_json`.
