@@ -41,26 +41,51 @@ describe("congestion = runway utilization (#54)", () => {
     expect(utilizationRatio(Number.NaN, 217_500)).toBeNull();
   });
 
-  it("operations = T-100 departures × 2, against the airport's Figure 2-1 ASV", () => {
-    const san = runwayUtilization("SAN")!;
-    expect(san.operations).toBe(getT100("SAN")!.departures * 2);
-    expect(san.asv).toBe(217_500);
-    expect(san.ratio).toBe(utilizationRatio(san.operations, 217_500));
-    expect(san.utilizationPct).toBe(ratioToPct(san.ratio));
-    // The raw value is in percent points (104.6), the unit the percent scale expects, not the ratio (1.046).
-    expect(congestion.extract(findAirport("SAN")!)).toBe(san.utilizationPct);
-    expect(congestion.evidence!(findAirport("SAN")!).value).toBe(san.utilizationPct);
+  it("operations = T-100 departures × 2, against the airport's Figure 2-1 ASV (not a Core 30 airport)", () => {
+    const sna = runwayUtilization("SNA")!;
+    expect(sna.operations).toBe(getT100("SNA")!.departures * 2);
+    expect(sna.asv).toBe(217_500);
+    expect(sna.ratio).toBe(utilizationRatio(sna.operations, 217_500));
+    expect(sna.utilizationPct).toBe(ratioToPct(sna.ratio));
+    // The raw value is in percent points (47.3), the unit the percent scale expects, not the ratio (0.473).
+    expect(congestion.extract(findAirport("SNA")!)).toBe(sna.utilizationPct);
+    expect(congestion.evidence!(findAirport("SNA")!).value).toBe(sna.utilizationPct);
+    expect(congestion.evidence!(findAirport("SNA")!).inputs).toMatchObject({ asv: 217_500, asvSource: "figure-2-1" });
   });
 
-  it("caps the sub-score at 100 and says so (SAN, LGA, ATL are above 100%)", () => {
-    for (const code of ["SAN", "LGA", "ATL"]) {
-      const k = sub(scoreAirport(findAirport(code)!), "congestion");
-      expect(k.raw!).toBeGreaterThan(100);
-      expect(k.normalized).toBe(100);
-      expect(k.evidence!.explanation).toContain("capped at 100");
-      expect(k.evidence!.explanation).toContain("80% trigger");
+  it("a Core 30 airport uses the FAA capacity profile, cited in the evidence", () => {
+    const san = runwayUtilization("SAN")!;
+    expect(san.asv).toBe(227_500); // (0.9 × 52.5 + 0.1 × 48) × 4,370, was Figure 2-1's 217,500
+    expect(san.utilizationPct).toBe(100);
+    const ev = congestion.evidence!(findAirport("SAN")!);
+    expect(ev.inputs).toMatchObject({ asv: 227_500, asvSource: "faa-capacity-profile" });
+    expect(ev.explanation).toContain("FAA Airport Capacity Profiles (May 2014)");
+    expect(ev.explanation).not.toContain("capped"); // exactly at 100%, not above
+  });
+
+  it("hubs that were capped by Figure 2-1 are now below 100 against their published capacity", () => {
+    // Before (Figure 2-1): DEN 205%, ORD 145.3%, ATL 127.9%, DFW 117%, LGA 145.6%, all capped at 100.
+    const after = Object.fromEntries(["DEN", "ORD", "ATL", "DFW", "LGA"].map((c) => [c, runwayUtilization(c)!.utilizationPct]));
+    expect(after).toEqual({ DEN: 57.1, ORD: 95.2, ATL: 82.8, DFW: 69.3, LGA: 94.3 });
+    for (const code of Object.keys(after)) {
+      expect(sub(scoreAirport(findAirport(code)!), "congestion").evidence!.explanation).not.toContain("capped");
     }
+  });
+
+  it("the cap at 100 still applies: JFK is above its published capacity (107.6%) and scores 100", () => {
+    const k = sub(scoreAirport(findAirport("JFK")!), "congestion");
+    expect(k.raw).toBe(107.6);
+    expect(k.normalized).toBe(100);
+    expect(k.evidence!.explanation).toContain("capped at 100");
+    expect(k.evidence!.explanation).toContain("80% trigger");
     expect(sub(scoreAirport(findAirport("SNA")!), "congestion").evidence!.explanation).not.toContain("capped");
+  });
+
+  it("only JFK still caps: 1 airport above 100% (was 15 with Figure 2-1 alone, #62)", () => {
+    const over = Object.keys(capacityDataset.airports)
+      .filter((code) => (runwayUtilization(code)?.utilizationPct ?? 0) > 100)
+      .sort();
+    expect(over).toEqual(["JFK"]);
   });
 
   it("the FAA 60% / 80% triggers in words", () => {
@@ -88,9 +113,17 @@ describe("congestion = runway utilization (#54)", () => {
     expect(congestion.extract({ airportCode: "ZZZ" } as AirportRecord)).toBeNull();
   });
 
-  it("flags a layout with more runways than its Figure 2-1 configuration (ASV understated)", () => {
-    expect(congestion.evidence!(findAirport("ATL")!).explanation).toContain("has 5 runways but the closest Figure 2-1 configuration has 4");
-    expect(congestion.evidence!(findAirport("SAN")!).explanation).not.toContain("understated");
+  it("flags a Figure 2-1 layout with more runways than its configuration (ASV may be understated)", () => {
+    expect(congestion.evidence!(findAirport("PDX")!).explanation).toContain("has 3 runways but the closest Figure 2-1 configuration has 2");
+    // ATL has 5 runways, but its ASV is the FAA's published capacity, so it is not flagged.
+    expect(congestion.evidence!(findAirport("ATL")!).explanation).not.toContain("understated");
+    expect(congestion.evidence!(findAirport("SNA")!).explanation).not.toContain("understated");
+  });
+
+  it("an extended layout cites the extension, not an FAA figure (CVG)", () => {
+    const ev = congestion.evidence!(findAirport("CVG")!);
+    expect(ev.inputs).toMatchObject({ asv: 550_000, asvSource: "figure-2-1-extended" });
+    expect(ev.explanation).toContain("not an FAA figure");
   });
 
   it("score_airports([LAX, SNA]) shows congestion as utilization %, not 0/100, in both modes", async () => {
@@ -162,11 +195,12 @@ describe("percent-scale goldens per KPI (#54 on #57's scale shape)", () => {
     expect(scorer.score({ pct: 205 }).kpis[0]!.normalized).toBe(100);
   });
 
-  it("real airports: LAX congestion 86.8% -> 86.8, SNA 47.3% -> 47.3, DEN 205% -> 100 (from the committed data)", () => {
+  it("real airports: LAX congestion 72.6% -> 72.6, SNA 47.3% -> 47.3, DEN 57.1% -> 57.1, JFK 107.6% -> 100 (committed data)", () => {
     const c = (code: string) => sub(scoreAirport(findAirport(code)!), "congestion");
-    expect([c("LAX").raw, c("LAX").normalized]).toEqual([86.8, 86.8]);
+    expect([c("LAX").raw, c("LAX").normalized]).toEqual([72.6, 72.6]);
     expect([c("SNA").raw, c("SNA").normalized]).toEqual([47.3, 47.3]);
-    expect([c("DEN").raw, c("DEN").normalized]).toEqual([205, 100]);
-    expect(c("LAX").evidence!.explanation).toContain("at 86.8% of its estimated capacity");
+    expect([c("DEN").raw, c("DEN").normalized]).toEqual([57.1, 57.1]); // was 205 -> 100 with Figure 2-1
+    expect([c("JFK").raw, c("JFK").normalized]).toEqual([107.6, 100]);
+    expect(c("LAX").evidence!.explanation).toContain("at 72.6% of its estimated capacity");
   });
 });

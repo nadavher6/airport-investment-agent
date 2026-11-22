@@ -23,9 +23,9 @@ export const scoreAirportsTool = defineTool<ScoreAirportsInput, unknown>({
   name: "score_airports",
   description:
     "Rank US airports by the deterministic Investment Attractiveness Score (0-100): a weighted blend of " +
-    "congestion (runway utilization = operations ÷ FAA runway capacity), unmet demand (load factor), long-haul share " +
+    "congestion (runway utilization = operations ÷ FAA runway capacity: the FAA's published capacity profile for the 30 Core airports, else the FAA AC 150/5060-5 estimate for the runway layout), unmet demand (load factor), long-haul share " +
     "(international seats) and growth (enplanement CAGR), from FAA + BTS T-100 data. With 2+ codes it ranks them RELATIVE to each other " +
-    "(for the min-max category, growth, 100 = best of the compared set; for the three percentage categories the score does not depend on the compared set: congestion is the runway utilization % itself (86.8% = 86.8) and unmet demand the load factor % itself, both capped at 100, and long-haul is the international seat share out of 50%, so 50% international = 100 and 40% = 80, capped at 100); with 1 code it scores ABSOLUTELY vs all US airports. Each " +
+    "(for the min-max category, growth, 100 = best of the compared set; for the three percentage categories the score does not depend on the compared set: congestion is the runway utilization % itself (72.6% = 72.6) and unmet demand the load factor % itself, both capped at 100, and long-haul is the international seat share out of 50%, so 50% international = 100 and 40% = 80, capped at 100); with 1 code it scores ABSOLUTELY vs all US airports. Each " +
     "result gives the final score, a per-category subScore + contribution, and evidence (formula, inputs, " +
     "explanation) so the ranking can be explained. `coverage`/`missing` flag any category without data; " +
     "unknown codes are returned in `notFound`. Codes are case-insensitive and deduplicated; at most " +

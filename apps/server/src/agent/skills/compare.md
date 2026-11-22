@@ -22,15 +22,15 @@ The UI renders the deterministic score view: side-by-side reports for 2 airports
 - Do not use `chart`, `table` or `kpi` fences for score data: the score view covers it.
 
 ## Example: 2 airports (LAX vs SNA, relative mode)
-**LAX leads SNA by 4.1 points (62.9 vs 58.8).**
+**SNA and LAX are effectively tied: SNA leads by 0.1 points (58.8 vs 58.7).**
 
 ### Why
-- **Congestion:** LAX runs at 86.8% of its estimated runway capacity, past the FAA's 80% trigger to build, against 47.3% at SNA (26 vs 14.2 points).
+- **Growth** decides it: SNA passengers grew 0.8% per year from CY2019 to CY2024, while LAX shrank by -2.5% per year (20 vs 0 points).
+- **Congestion** is LAX's: it runs at 72.6% of its FAA-published runway capacity, past the FAA's 60% planning trigger, against 47.3% at SNA (21.8 vs 14.2 points).
 - **Long-haul:** 30.8% of LAX seats are international against 2.1% at SNA, out of a 50% benchmark (12.3 vs 0.8 points).
-- **Unmet demand:** LAX planes ran 81.9% full against 79.3% at SNA, so more of its peak-day demand is turned away.
 
 ### Trade-offs
-- **Growth** is SNA's category and almost closes the gap: passengers grew 0.8% per year from CY2019 to CY2024, while LAX shrank by -2.5% per year (20 vs 0 points).
+- **Unmet demand** is close: LAX planes ran 81.9% full against 79.3% at SNA (24.6 vs 23.8 points).
 
 ### How to read this
 Scored relative to each other (for growth, the min-max category, 100 = best of these two, not of the US; congestion and unmet demand are the runway-utilization % and load factor % themselves, and long-haul is the international share out of 50%). Coverage is 1 for both: no category is missing.
@@ -46,15 +46,15 @@ Scored relative to each other (for growth, the min-max category, 100 = best of t
 }
 ```
 
-A return of LAX traffic to growth would widen the gap; more SNA international service would narrow it.
+A return of LAX traffic to growth would put it ahead; more SNA international service would widen SNA's lead.
 
 ## Example: 4 airports (ATL, ORD, DFW, DEN, relative mode)
-**DFW leads DEN by 3.4 points (80 vs 76.6).**
+**DFW leads DEN by 7.1 points (70.8 vs 63.7).**
 
-- **#1 DFW (80):** strong on growth (3.4% per year, CY2019→CY2024) and on unmet demand (81.7% full), with 15% international seats, and at 117% of its estimated runway capacity.
-- **#2 DEN (76.6):** the fastest growth (3.6% per year), but the lowest international share (5.8%). Its 205% runway utilization is overstated: it has 6 runways and the closest FAA configuration has 2.
-- **#3 ATL (63.4):** the fullest planes of the set (82.2%) and 127.9% of its estimated runway capacity, but growth is flat at -0.4% per year.
-- **#4 ORD (60.6):** the highest international share (16.6%) and 145.3% of its estimated runway capacity, held back by -1.1% per year growth and 79.8% load factor.
+- **#1 DFW (70.8):** strong on growth (3.4% per year, CY2019→CY2024) and on unmet demand (81.7% full), with 15% international seats, at 69.3% of its FAA-published runway capacity.
+- **#2 DEN (63.7):** the fastest growth (3.6% per year), but the lowest international share (5.8%) and the most runway headroom: 57.1% of capacity, below the FAA's 60% planning trigger.
+- **#3 ORD (59.1):** the most congested (95.2% of capacity, past the FAA's 80% trigger to build) and the highest international share (16.6%), held back by -1.1% per year growth.
+- **#4 ATL (58.2):** the fullest planes of the set (82.2%) and 82.8% of its runway capacity, but growth is flat at -0.4% per year.
 
 ### How to read this
-Scored relative to each other (for growth, the min-max category, 100 = best of these four, not of the US; congestion and unmet demand are percentages themselves, and long-haul is the international share out of 50%). All four are past 100% of their estimated runway capacity, so congestion is capped at 100 for each and does not separate them. Coverage is 1 for all four: no category is missing. Growth decides the order: DFW and DEN lead on it, while ATL and ORD are within 2.8 points of each other.
+Scored relative to each other (for growth, the min-max category, 100 = best of these four, not of the US; congestion and unmet demand are percentages themselves, and long-haul is the international share out of 50%). Runway capacity for all four is the FAA's published capacity profile, so congestion now separates them: ORD and ATL are past the 80% trigger, DFW and DEN are not. Coverage is 1 for all four: no category is missing. Growth puts DFW and DEN ahead, while ORD and ATL are within 0.9 points of each other.

@@ -3,88 +3,6 @@
     "mode": "relative",
     "ranking": [
       {
-        "airportCode": "LAX",
-        "name": "Los Angeles International",
-        "score": 62.9,
-        "coverage": 1,
-        "missing": [],
-        "breakdown": {
-          "congestion": {
-            "label": "Congestion: runway utilization",
-            "weight": 0.3,
-            "available": true,
-            "subScore": 86.8,
-            "contribution": 26,
-            "evidence": {
-              "formula": "runway utilization = annual operations ÷ ASV, in percent (100% = at capacity); operations = BTS T-100 (latest 12 months) departures × 2; ASV = FAA AC 150/5060-5 Figure 2-1 midpoint for the runway configuration. Sub-score = utilization as a percentage, capped at 100",
-              "inputs": {
-                "departures": 266820,
-                "operations": 533640,
-                "asv": 615000,
-                "utilization": 0.8677,
-                "utilizationPct": 86.8,
-                "runwayConfiguration": "Figure 2-1 no. 8: four parallel runways: two close pairs (700-2,499 ft) 4,300 ft or more apart",
-                "runways": "06L/24R, 06R/24L, 07L/25R, 07R/25L"
-              },
-              "value": 86.8,
-              "explanation": "533,640 operations a year (266,820 T-100 departures × 2) against an estimated 615,000 (FAA AC 150/5060-5 Figure 2-1 configuration 8, four parallel runways: two close pairs (700-2,499 ft) 4,300 ft or more apart): at 86.8% of its estimated capacity, past the FAA's 80% trigger to start building more capacity. Operations are a lower bound: T-100 has no general-aviation or military flights, so the real utilization is higher."
-            }
-          },
-          "unmet_demand": {
-            "label": "Unmet demand (load factor)",
-            "weight": 0.3,
-            "available": true,
-            "subScore": 81.9,
-            "contribution": 24.6,
-            "evidence": {
-              "formula": "load factor = passengers ÷ seats (BTS T-100 (latest 12 months)). Sub-score = load factor as a percentage, capped at 100",
-              "inputs": {
-                "passengers": 35936676,
-                "seats": 43852841,
-                "loadFactor": 81.9
-              },
-              "value": 81.9,
-              "explanation": "Planes averaged 81.9% full over the latest 12 months; the fuller they run, the more peak-day demand is spilled (turned away) — material above ~80-85%."
-            }
-          },
-          "long_haul": {
-            "label": "Long-haul share",
-            "weight": 0.2,
-            "available": true,
-            "subScore": 61.6,
-            "contribution": 12.3,
-            "evidence": {
-              "formula": "international seats ÷ total seats (BTS T-100 (latest 12 months)). Sub-score = share ÷ 50% × 100, capped at 100",
-              "inputs": {
-                "internationalSeats": 13518823,
-                "seats": 43852841,
-                "internationalShare": 30.8
-              },
-              "value": 30.8,
-              "explanation": "30.8% of seats were international over the latest 12 months; scored against a 50% benchmark (50% international = 100) → 61.6. High-margin traffic (weight-based fees, FIS/customs moat)."
-            }
-          },
-          "growth": {
-            "label": "Growth / durability",
-            "weight": 0.2,
-            "available": true,
-            "subScore": 0,
-            "contribution": 0,
-            "evidence": {
-              "formula": "5-year enplanement CAGR, CY2019→CY2024, % per year: ((CY2024 ÷ CY2019)^(1/5) − 1) × 100",
-              "inputs": {
-                "cagr5yr": -2.5375,
-                "unit": "% per year",
-                "enplanements": 37760834,
-                "year": 2024
-              },
-              "value": -2.5375,
-              "explanation": "Passengers grew -2.5% per year on average from CY2019 to CY2024."
-            }
-          }
-        }
-      },
-      {
         "airportCode": "SNA",
         "name": "John Wayne/Orange County",
         "score": 58.8,
@@ -98,18 +16,19 @@
             "subScore": 47.3,
             "contribution": 14.2,
             "evidence": {
-              "formula": "runway utilization = annual operations ÷ ASV, in percent (100% = at capacity); operations = BTS T-100 (latest 12 months) departures × 2; ASV = FAA AC 150/5060-5 Figure 2-1 midpoint for the runway configuration. Sub-score = utilization as a percentage, capped at 100",
+              "formula": "runway utilization = annual operations ÷ ASV, in percent (100% = at capacity); operations = BTS T-100 (latest 12 months) departures × 2; ASV = for the FAA's 30 Core airports, the FAA Airport Capacity Profiles 2014 hourly rates annualized by FAA AC 150/5060-5 (ASV = weighted hourly capacity × D × H); for other airports, the AC 150/5060-5 Figure 2-1 midpoint for the runway configuration (FAA NASR runways), extended by the figure's own increments for parallel layouts the figure does not draw. Sub-score = utilization as a percentage, capped at 100",
               "inputs": {
                 "departures": 51447,
                 "operations": 102894,
                 "asv": 217500,
+                "asvSource": "figure-2-1",
                 "utilization": 0.4731,
                 "utilizationPct": 47.3,
                 "runwayConfiguration": "Figure 2-1 no. 1: single runway",
                 "runways": "02L/20R, 02R/20L"
               },
               "value": 47.3,
-              "explanation": "102,894 operations a year (51,447 T-100 departures × 2) against an estimated 217,500 (FAA AC 150/5060-5 Figure 2-1 configuration 1, single runway): at 47.3% of its estimated capacity, below the FAA's 60% planning trigger. Operations are a lower bound: T-100 has no general-aviation or military flights, so the real utilization is higher."
+              "explanation": "102,894 operations a year (51,447 T-100 departures × 2) against an estimated annual capacity of 217,500 (AC 150/5060-5 Figure 2-1 configuration 1 (single runway), row midpoint): at 47.3% of its estimated capacity, below the FAA's 60% planning trigger. Operations are a lower bound: T-100 has no general-aviation or military flights, so the real utilization is higher."
             }
           },
           "unmet_demand": {
@@ -165,6 +84,89 @@
             }
           }
         }
+      },
+      {
+        "airportCode": "LAX",
+        "name": "Los Angeles International",
+        "score": 58.7,
+        "coverage": 1,
+        "missing": [],
+        "breakdown": {
+          "congestion": {
+            "label": "Congestion: runway utilization",
+            "weight": 0.3,
+            "available": true,
+            "subScore": 72.6,
+            "contribution": 21.8,
+            "evidence": {
+              "formula": "runway utilization = annual operations ÷ ASV, in percent (100% = at capacity); operations = BTS T-100 (latest 12 months) departures × 2; ASV = for the FAA's 30 Core airports, the FAA Airport Capacity Profiles 2014 hourly rates annualized by FAA AC 150/5060-5 (ASV = weighted hourly capacity × D × H); for other airports, the AC 150/5060-5 Figure 2-1 midpoint for the runway configuration (FAA NASR runways), extended by the figure's own increments for parallel layouts the figure does not draw. Sub-score = utilization as a percentage, capped at 100",
+              "inputs": {
+                "departures": 266820,
+                "operations": 533640,
+                "asv": 734800,
+                "asvSource": "faa-capacity-profile",
+                "utilization": 0.7262,
+                "utilizationPct": 72.6,
+                "runwayConfiguration": "Figure 2-1 no. 8: four parallel runways: two close pairs (700-2,499 ft) 4,300 ft or more apart",
+                "runways": "06L/24R, 06R/24L, 07L/25R, 07R/25L"
+              },
+              "value": 72.6,
+              "explanation": "533,640 operations a year (266,820 T-100 departures × 2) against an estimated annual capacity of 734,800 (FAA Airport Capacity Profiles (May 2014), Table 1 \"Capacity Rate Ranges for Current Operations at the Core Airports\", p. 9: 171.5 visual and 138 instrument operations an hour (range midpoints), weighted 90/10 = 168.2/h, × 4,370 (AC 150/5060-5 Table 2-1 D × H)): at 72.6% of its estimated capacity, past the FAA's 60% planning trigger. Operations are a lower bound: T-100 has no general-aviation or military flights, so the real utilization is higher."
+            }
+          },
+          "unmet_demand": {
+            "label": "Unmet demand (load factor)",
+            "weight": 0.3,
+            "available": true,
+            "subScore": 81.9,
+            "contribution": 24.6,
+            "evidence": {
+              "formula": "load factor = passengers ÷ seats (BTS T-100 (latest 12 months)). Sub-score = load factor as a percentage, capped at 100",
+              "inputs": {
+                "passengers": 35936676,
+                "seats": 43852841,
+                "loadFactor": 81.9
+              },
+              "value": 81.9,
+              "explanation": "Planes averaged 81.9% full over the latest 12 months; the fuller they run, the more peak-day demand is spilled (turned away) — material above ~80-85%."
+            }
+          },
+          "long_haul": {
+            "label": "Long-haul share",
+            "weight": 0.2,
+            "available": true,
+            "subScore": 61.6,
+            "contribution": 12.3,
+            "evidence": {
+              "formula": "international seats ÷ total seats (BTS T-100 (latest 12 months)). Sub-score = share ÷ 50% × 100, capped at 100",
+              "inputs": {
+                "internationalSeats": 13518823,
+                "seats": 43852841,
+                "internationalShare": 30.8
+              },
+              "value": 30.8,
+              "explanation": "30.8% of seats were international over the latest 12 months; scored against a 50% benchmark (50% international = 100) → 61.6. High-margin traffic (weight-based fees, FIS/customs moat)."
+            }
+          },
+          "growth": {
+            "label": "Growth / durability",
+            "weight": 0.2,
+            "available": true,
+            "subScore": 0,
+            "contribution": 0,
+            "evidence": {
+              "formula": "5-year enplanement CAGR, CY2019→CY2024, % per year: ((CY2024 ÷ CY2019)^(1/5) − 1) × 100",
+              "inputs": {
+                "cagr5yr": -2.5375,
+                "unit": "% per year",
+                "enplanements": 37760834,
+                "year": 2024
+              },
+              "value": -2.5375,
+              "explanation": "Passengers grew -2.5% per year on average from CY2019 to CY2024."
+            }
+          }
+        }
       }
     ],
     "notFound": []
@@ -175,7 +177,7 @@
       {
         "airportCode": "DFW",
         "name": "Dallas-Fort Worth International",
-        "score": 80,
+        "score": 70.8,
         "coverage": 1,
         "missing": [],
         "breakdown": {
@@ -183,21 +185,22 @@
             "label": "Congestion: runway utilization",
             "weight": 0.3,
             "available": true,
-            "subScore": 100,
-            "contribution": 30,
+            "subScore": 69.3,
+            "contribution": 20.8,
             "evidence": {
-              "formula": "runway utilization = annual operations ÷ ASV, in percent (100% = at capacity); operations = BTS T-100 (latest 12 months) departures × 2; ASV = FAA AC 150/5060-5 Figure 2-1 midpoint for the runway configuration. Sub-score = utilization as a percentage, capped at 100",
+              "formula": "runway utilization = annual operations ÷ ASV, in percent (100% = at capacity); operations = BTS T-100 (latest 12 months) departures × 2; ASV = for the FAA's 30 Core airports, the FAA Airport Capacity Profiles 2014 hourly rates annualized by FAA AC 150/5060-5 (ASV = weighted hourly capacity × D × H); for other airports, the AC 150/5060-5 Figure 2-1 midpoint for the runway configuration (FAA NASR runways), extended by the figure's own increments for parallel layouts the figure does not draw. Sub-score = utilization as a percentage, capped at 100",
               "inputs": {
                 "departures": 359632,
                 "operations": 719264,
-                "asv": 615000,
-                "utilization": 1.1695,
-                "utilizationPct": 117,
+                "asv": 1037900,
+                "asvSource": "faa-capacity-profile",
+                "utilization": 0.693,
+                "utilizationPct": 69.3,
                 "runwayConfiguration": "Figure 2-1 no. 8: four parallel runways: two close pairs (700-2,499 ft) 4,300 ft or more apart",
                 "runways": "13L/31R, 13R/31L, 17C/35C, 17L/35R, 17R/35L, 18L/36R, 18R/36L"
               },
-              "value": 117,
-              "explanation": "719,264 operations a year (359,632 T-100 departures × 2) against an estimated 615,000 (FAA AC 150/5060-5 Figure 2-1 configuration 8, four parallel runways: two close pairs (700-2,499 ft) 4,300 ft or more apart): at 117% of its estimated capacity, past the FAA's 80% trigger to start building more capacity. The sub-score is capped at 100. The airport has 7 runways but the closest Figure 2-1 configuration has 4, so the ASV is likely understated and the utilization overstated. Operations are a lower bound: T-100 has no general-aviation or military flights, so the real utilization is higher."
+              "value": 69.3,
+              "explanation": "719,264 operations a year (359,632 T-100 departures × 2) against an estimated annual capacity of 1,037,900 (FAA Airport Capacity Profiles (May 2014), Table 1 \"Capacity Rate Ranges for Current Operations at the Core Airports\", p. 9: 245 visual and 170 instrument operations an hour (range midpoints), weighted 90/10 = 237.5/h, × 4,370 (AC 150/5060-5 Table 2-1 D × H)): at 69.3% of its estimated capacity, past the FAA's 60% planning trigger. Operations are a lower bound: T-100 has no general-aviation or military flights, so the real utilization is higher."
             }
           },
           "unmet_demand": {
@@ -257,7 +260,7 @@
       {
         "airportCode": "DEN",
         "name": "Denver International",
-        "score": 76.6,
+        "score": 63.7,
         "coverage": 1,
         "missing": [],
         "breakdown": {
@@ -265,21 +268,22 @@
             "label": "Congestion: runway utilization",
             "weight": 0.3,
             "available": true,
-            "subScore": 100,
-            "contribution": 30,
+            "subScore": 57.1,
+            "contribution": 17.1,
             "evidence": {
-              "formula": "runway utilization = annual operations ÷ ASV, in percent (100% = at capacity); operations = BTS T-100 (latest 12 months) departures × 2; ASV = FAA AC 150/5060-5 Figure 2-1 midpoint for the runway configuration. Sub-score = utilization as a percentage, capped at 100",
+              "formula": "runway utilization = annual operations ÷ ASV, in percent (100% = at capacity); operations = BTS T-100 (latest 12 months) departures × 2; ASV = for the FAA's 30 Core airports, the FAA Airport Capacity Profiles 2014 hourly rates annualized by FAA AC 150/5060-5 (ASV = weighted hourly capacity × D × H); for other airports, the AC 150/5060-5 Figure 2-1 midpoint for the runway configuration (FAA NASR runways), extended by the figure's own increments for parallel layouts the figure does not draw. Sub-score = utilization as a percentage, capped at 100",
               "inputs": {
                 "departures": 345892,
                 "operations": 691784,
-                "asv": 337500,
-                "utilization": 2.0497,
-                "utilizationPct": 205,
+                "asv": 1211100,
+                "asvSource": "faa-capacity-profile",
+                "utilization": 0.5712,
+                "utilizationPct": 57.1,
                 "runwayConfiguration": "Figure 2-1 no. 4: two parallel runways 4,300 ft or more apart",
                 "runways": "07/25, 08/26, 16L/34R, 16R/34L, 17L/35R, 17R/35L"
               },
-              "value": 205,
-              "explanation": "691,784 operations a year (345,892 T-100 departures × 2) against an estimated 337,500 (FAA AC 150/5060-5 Figure 2-1 configuration 4, two parallel runways 4,300 ft or more apart): at 205% of its estimated capacity, past the FAA's 80% trigger to start building more capacity. The sub-score is capped at 100. The airport has 6 runways but the closest Figure 2-1 configuration has 2, so the ASV is likely understated and the utilization overstated. Operations are a lower bound: T-100 has no general-aviation or military flights, so the real utilization is higher."
+              "value": 57.1,
+              "explanation": "691,784 operations a year (345,892 T-100 departures × 2) against an estimated annual capacity of 1,211,100 (FAA Airport Capacity Profiles (May 2014), Table 1 \"Capacity Rate Ranges for Current Operations at the Core Airports\", p. 9: 282 visual and 233.5 instrument operations an hour (range midpoints), weighted 90/10 = 277.2/h, × 4,370 (AC 150/5060-5 Table 2-1 D × H)): at 57.1% of its estimated capacity, below the FAA's 60% planning trigger. Operations are a lower bound: T-100 has no general-aviation or military flights, so the real utilization is higher."
             }
           },
           "unmet_demand": {
@@ -337,91 +341,9 @@
         }
       },
       {
-        "airportCode": "ATL",
-        "name": "Hartsfield/Jackson Atlanta International",
-        "score": 63.4,
-        "coverage": 1,
-        "missing": [],
-        "breakdown": {
-          "congestion": {
-            "label": "Congestion: runway utilization",
-            "weight": 0.3,
-            "available": true,
-            "subScore": 100,
-            "contribution": 30,
-            "evidence": {
-              "formula": "runway utilization = annual operations ÷ ASV, in percent (100% = at capacity); operations = BTS T-100 (latest 12 months) departures × 2; ASV = FAA AC 150/5060-5 Figure 2-1 midpoint for the runway configuration. Sub-score = utilization as a percentage, capped at 100",
-              "inputs": {
-                "departures": 393351,
-                "operations": 786702,
-                "asv": 615000,
-                "utilization": 1.2792,
-                "utilizationPct": 127.9,
-                "runwayConfiguration": "Figure 2-1 no. 8: four parallel runways: two close pairs (700-2,499 ft) 4,300 ft or more apart",
-                "runways": "08L/26R, 08R/26L, 09L/27R, 09R/27L, 10/28"
-              },
-              "value": 127.9,
-              "explanation": "786,702 operations a year (393,351 T-100 departures × 2) against an estimated 615,000 (FAA AC 150/5060-5 Figure 2-1 configuration 8, four parallel runways: two close pairs (700-2,499 ft) 4,300 ft or more apart): at 127.9% of its estimated capacity, past the FAA's 80% trigger to start building more capacity. The sub-score is capped at 100. The airport has 5 runways but the closest Figure 2-1 configuration has 4, so the ASV is likely understated and the utilization overstated. Operations are a lower bound: T-100 has no general-aviation or military flights, so the real utilization is higher."
-            }
-          },
-          "unmet_demand": {
-            "label": "Unmet demand (load factor)",
-            "weight": 0.3,
-            "available": true,
-            "subScore": 82.2,
-            "contribution": 24.7,
-            "evidence": {
-              "formula": "load factor = passengers ÷ seats (BTS T-100 (latest 12 months)). Sub-score = load factor as a percentage, capped at 100",
-              "inputs": {
-                "passengers": 51040858,
-                "seats": 62105152,
-                "loadFactor": 82.2
-              },
-              "value": 82.2,
-              "explanation": "Planes averaged 82.2% full over the latest 12 months; the fuller they run, the more peak-day demand is spilled (turned away) — material above ~80-85%."
-            }
-          },
-          "long_haul": {
-            "label": "Long-haul share",
-            "weight": 0.2,
-            "available": true,
-            "subScore": 27.2,
-            "contribution": 5.4,
-            "evidence": {
-              "formula": "international seats ÷ total seats (BTS T-100 (latest 12 months)). Sub-score = share ÷ 50% × 100, capped at 100",
-              "inputs": {
-                "internationalSeats": 8424656,
-                "seats": 62105152,
-                "internationalShare": 13.6
-              },
-              "value": 13.6,
-              "explanation": "13.6% of seats were international over the latest 12 months; scored against a 50% benchmark (50% international = 100) → 27.2. High-margin traffic (weight-based fees, FIS/customs moat)."
-            }
-          },
-          "growth": {
-            "label": "Growth / durability",
-            "weight": 0.2,
-            "available": true,
-            "subScore": 16.5,
-            "contribution": 3.3,
-            "evidence": {
-              "formula": "5-year enplanement CAGR, CY2019→CY2024, % per year: ((CY2024 ÷ CY2019)^(1/5) − 1) × 100",
-              "inputs": {
-                "cagr5yr": -0.3745,
-                "unit": "% per year",
-                "enplanements": 52511402,
-                "year": 2024
-              },
-              "value": -0.3745,
-              "explanation": "Passengers grew -0.4% per year on average from CY2019 to CY2024."
-            }
-          }
-        }
-      },
-      {
         "airportCode": "ORD",
         "name": "Chicago O'Hare International",
-        "score": 60.6,
+        "score": 59.1,
         "coverage": 1,
         "missing": [],
         "breakdown": {
@@ -429,21 +351,22 @@
             "label": "Congestion: runway utilization",
             "weight": 0.3,
             "available": true,
-            "subScore": 100,
-            "contribution": 30,
+            "subScore": 95.2,
+            "contribution": 28.6,
             "evidence": {
-              "formula": "runway utilization = annual operations ÷ ASV, in percent (100% = at capacity); operations = BTS T-100 (latest 12 months) departures × 2; ASV = FAA AC 150/5060-5 Figure 2-1 midpoint for the runway configuration. Sub-score = utilization as a percentage, capped at 100",
+              "formula": "runway utilization = annual operations ÷ ASV, in percent (100% = at capacity); operations = BTS T-100 (latest 12 months) departures × 2; ASV = for the FAA's 30 Core airports, the FAA Airport Capacity Profiles 2014 hourly rates annualized by FAA AC 150/5060-5 (ASV = weighted hourly capacity × D × H); for other airports, the AC 150/5060-5 Figure 2-1 midpoint for the runway configuration (FAA NASR runways), extended by the figure's own increments for parallel layouts the figure does not draw. Sub-score = utilization as a percentage, capped at 100",
               "inputs": {
                 "departures": 446836,
                 "operations": 893672,
-                "asv": 615000,
-                "utilization": 1.4531,
-                "utilizationPct": 145.3,
+                "asv": 938900,
+                "asvSource": "faa-capacity-profile",
+                "utilization": 0.9518,
+                "utilizationPct": 95.2,
                 "runwayConfiguration": "Figure 2-1 no. 8: four parallel runways: two close pairs (700-2,499 ft) 4,300 ft or more apart",
                 "runways": "04L/22R, 04R/22L, 09C/27C, 09L/27R, 09R/27L, 10C/28C, 10L/28R, 10R/28L"
               },
-              "value": 145.3,
-              "explanation": "893,672 operations a year (446,836 T-100 departures × 2) against an estimated 615,000 (FAA AC 150/5060-5 Figure 2-1 configuration 8, four parallel runways: two close pairs (700-2,499 ft) 4,300 ft or more apart): at 145.3% of its estimated capacity, past the FAA's 80% trigger to start building more capacity. The sub-score is capped at 100. The airport has 8 runways but the closest Figure 2-1 configuration has 4, so the ASV is likely understated and the utilization overstated. Operations are a lower bound: T-100 has no general-aviation or military flights, so the real utilization is higher."
+              "value": 95.2,
+              "explanation": "893,672 operations a year (446,836 T-100 departures × 2) against an estimated annual capacity of 938,900 (FAA Airport Capacity Profiles (May 2014), Table 1 \"Capacity Rate Ranges for Current Operations at the Core Airports\", p. 9: 219.5 visual and 173 instrument operations an hour (range midpoints), weighted 90/10 = 214.9/h, × 4,370 (AC 150/5060-5 Table 2-1 D × H)): at 95.2% of its estimated capacity, past the FAA's 80% trigger to start building more capacity. Operations are a lower bound: T-100 has no general-aviation or military flights, so the real utilization is higher."
             }
           },
           "unmet_demand": {
@@ -496,6 +419,89 @@
               },
               "value": -1.1494,
               "explanation": "Passengers grew -1.1% per year on average from CY2019 to CY2024."
+            }
+          }
+        }
+      },
+      {
+        "airportCode": "ATL",
+        "name": "Hartsfield/Jackson Atlanta International",
+        "score": 58.2,
+        "coverage": 1,
+        "missing": [],
+        "breakdown": {
+          "congestion": {
+            "label": "Congestion: runway utilization",
+            "weight": 0.3,
+            "available": true,
+            "subScore": 82.8,
+            "contribution": 24.8,
+            "evidence": {
+              "formula": "runway utilization = annual operations ÷ ASV, in percent (100% = at capacity); operations = BTS T-100 (latest 12 months) departures × 2; ASV = for the FAA's 30 Core airports, the FAA Airport Capacity Profiles 2014 hourly rates annualized by FAA AC 150/5060-5 (ASV = weighted hourly capacity × D × H); for other airports, the AC 150/5060-5 Figure 2-1 midpoint for the runway configuration (FAA NASR runways), extended by the figure's own increments for parallel layouts the figure does not draw. Sub-score = utilization as a percentage, capped at 100",
+              "inputs": {
+                "departures": 393351,
+                "operations": 786702,
+                "asv": 949800,
+                "asvSource": "faa-capacity-profile",
+                "utilization": 0.8283,
+                "utilizationPct": 82.8,
+                "runwayConfiguration": "Figure 2-1 no. 8: four parallel runways: two close pairs (700-2,499 ft) 4,300 ft or more apart",
+                "runways": "08L/26R, 08R/26L, 09L/27R, 09R/27L, 10/28"
+              },
+              "value": 82.8,
+              "explanation": "786,702 operations a year (393,351 T-100 departures × 2) against an estimated annual capacity of 949,800 (FAA Airport Capacity Profiles (May 2014), Table 1 \"Capacity Rate Ranges for Current Operations at the Core Airports\", p. 9: 221 visual and 184.5 instrument operations an hour (range midpoints), weighted 90/10 = 217.4/h, × 4,370 (AC 150/5060-5 Table 2-1 D × H)): at 82.8% of its estimated capacity, past the FAA's 80% trigger to start building more capacity. Operations are a lower bound: T-100 has no general-aviation or military flights, so the real utilization is higher."
+            }
+          },
+          "unmet_demand": {
+            "label": "Unmet demand (load factor)",
+            "weight": 0.3,
+            "available": true,
+            "subScore": 82.2,
+            "contribution": 24.7,
+            "evidence": {
+              "formula": "load factor = passengers ÷ seats (BTS T-100 (latest 12 months)). Sub-score = load factor as a percentage, capped at 100",
+              "inputs": {
+                "passengers": 51040858,
+                "seats": 62105152,
+                "loadFactor": 82.2
+              },
+              "value": 82.2,
+              "explanation": "Planes averaged 82.2% full over the latest 12 months; the fuller they run, the more peak-day demand is spilled (turned away) — material above ~80-85%."
+            }
+          },
+          "long_haul": {
+            "label": "Long-haul share",
+            "weight": 0.2,
+            "available": true,
+            "subScore": 27.2,
+            "contribution": 5.4,
+            "evidence": {
+              "formula": "international seats ÷ total seats (BTS T-100 (latest 12 months)). Sub-score = share ÷ 50% × 100, capped at 100",
+              "inputs": {
+                "internationalSeats": 8424656,
+                "seats": 62105152,
+                "internationalShare": 13.6
+              },
+              "value": 13.6,
+              "explanation": "13.6% of seats were international over the latest 12 months; scored against a 50% benchmark (50% international = 100) → 27.2. High-margin traffic (weight-based fees, FIS/customs moat)."
+            }
+          },
+          "growth": {
+            "label": "Growth / durability",
+            "weight": 0.2,
+            "available": true,
+            "subScore": 16.5,
+            "contribution": 3.3,
+            "evidence": {
+              "formula": "5-year enplanement CAGR, CY2019→CY2024, % per year: ((CY2024 ÷ CY2019)^(1/5) − 1) × 100",
+              "inputs": {
+                "cagr5yr": -0.3745,
+                "unit": "% per year",
+                "enplanements": 52511402,
+                "year": 2024
+              },
+              "value": -0.3745,
+              "explanation": "Passengers grew -0.4% per year on average from CY2019 to CY2024."
             }
           }
         }
