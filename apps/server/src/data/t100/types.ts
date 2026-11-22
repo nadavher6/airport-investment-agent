@@ -17,7 +17,11 @@ export interface T100Airport {
 
 export interface T100Meta {
   readonly source: string;
-  readonly year: number;
+  /** Start of the trailing-12-month window, "YYYY-MM". */
+  readonly periodStart: string;
+  /** End (latest reported month) of the window, "YYYY-MM". */
+  readonly periodEnd: string;
+  readonly months: number;
   readonly builtAt: string;
   readonly airportCount: number;
 }

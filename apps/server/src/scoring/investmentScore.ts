@@ -2,9 +2,9 @@
  * Airport Investment Attractiveness Score (tasks/06-scoring-formula-research.md).
  *
  * Full model = Need 0.60 (congestion + unmet demand) / Quality 0.40 (long-haul + growth):
- * - congestion   — annual departures (BTS T-100 2024), a traffic-volume proxy for capacity pressure
- * - unmet_demand — load factor = passengers ÷ seats (BTS T-100 2024), proxy for spilled demand
- * - long_haul    — international seats ÷ total seats (BTS T-100 2024)
+ * - congestion   — annual departures (BTS T-100 (latest 12 months)), a traffic-volume proxy for capacity pressure
+ * - unmet_demand — load factor = passengers ÷ seats (BTS T-100 (latest 12 months)), proxy for spilled demand
+ * - long_haul    — international seats ÷ total seats (BTS T-100 (latest 12 months))
  * - growth       — enplanement 5-year CAGR (FAA data)
  *
  * All four are computed, so an airport present in both datasets reports coverage = 1.0.
@@ -22,16 +22,16 @@ export const INVESTMENT_KPIS: readonly KpiDef<AirportRecord>[] = [
     label: "Congestion / capacity pressure",
     weight: 0.3,
     direction: "higher",
-    note: "Annual departures (operations) from BTS T-100 2024 — a traffic-volume proxy; a true utilization ratio (operations ÷ FAA ASV) needs runway-capacity data not freely tabulated.",
+    note: "Annual departures (operations) from BTS T-100 (latest 12 months) — a traffic-volume proxy; a true utilization ratio (operations ÷ FAA ASV) needs runway-capacity data not freely tabulated.",
     extract: (a) => getT100(a.airportCode)?.departures ?? null,
     evidence: (a) => {
       const t = getT100(a.airportCode);
       return {
-        formula: "annual departures (operations), BTS T-100 2024 — proxy for capacity pressure (true form: operations ÷ ASV)",
+        formula: "annual departures (operations), BTS T-100 (latest 12 months) — proxy for capacity pressure (true form: operations ÷ ASV)",
         inputs: { departures: t?.departures ?? null },
         value: t?.departures ?? null,
         explanation: t
-          ? `${t.departures.toLocaleString("en-US")} departures in 2024 — a busy airfield is more congestion-prone (capacity denominator ASV is not freely published, so volume is used as the proxy).`
+          ? `${t.departures.toLocaleString("en-US")} departures over the latest 12 months — a busy airfield is more congestion-prone (capacity denominator ASV is not freely published, so volume is used as the proxy).`
           : "No BTS T-100 record for this airport.",
       };
     },
@@ -41,16 +41,16 @@ export const INVESTMENT_KPIS: readonly KpiDef<AirportRecord>[] = [
     label: "Unmet demand (load factor)",
     weight: 0.3,
     direction: "higher",
-    note: "Load factor = passengers ÷ seats (BTS T-100 2024). A capacity-pressure proxy for spill: turned-away demand becomes material above ~80-85% load factor; true spill needs booking data.",
+    note: "Load factor = passengers ÷ seats (BTS T-100 (latest 12 months)). A capacity-pressure proxy for spill: turned-away demand becomes material above ~80-85% load factor; true spill needs booking data.",
     extract: (a) => getT100(a.airportCode)?.loadFactor ?? null,
     evidence: (a) => {
       const t = getT100(a.airportCode);
       return {
-        formula: "load factor = passengers ÷ seats (BTS T-100 2024)",
+        formula: "load factor = passengers ÷ seats (BTS T-100 (latest 12 months))",
         inputs: { passengers: t?.passengers ?? null, seats: t?.seats ?? null, loadFactor: t?.loadFactor ?? null },
         value: t?.loadFactor ?? null,
         explanation: t
-          ? `Planes averaged ${t.loadFactor}% full in 2024; the fuller they run, the more peak-day demand is spilled (turned away) — material above ~80-85%.`
+          ? `Planes averaged ${t.loadFactor}% full over the latest 12 months; the fuller they run, the more peak-day demand is spilled (turned away) — material above ~80-85%.`
           : "No BTS T-100 record for this airport.",
       };
     },
@@ -60,16 +60,16 @@ export const INVESTMENT_KPIS: readonly KpiDef<AirportRecord>[] = [
     label: "Long-haul share",
     weight: 0.2,
     direction: "higher",
-    note: "International seats ÷ total seats (BTS T-100 2024). International/long-haul traffic earns higher weight-based fees and needs costly FIS facilities (a gateway moat).",
+    note: "International seats ÷ total seats (BTS T-100 (latest 12 months)). International/long-haul traffic earns higher weight-based fees and needs costly FIS facilities (a gateway moat).",
     extract: (a) => getT100(a.airportCode)?.internationalShare ?? null,
     evidence: (a) => {
       const t = getT100(a.airportCode);
       return {
-        formula: "international seats ÷ total seats (BTS T-100 2024)",
+        formula: "international seats ÷ total seats (BTS T-100 (latest 12 months))",
         inputs: { internationalSeats: t?.internationalSeats ?? null, seats: t?.seats ?? null, internationalShare: t?.internationalShare ?? null },
         value: t?.internationalShare ?? null,
         explanation: t
-          ? `${t.internationalShare}% of seats were international in 2024 — high-margin traffic (weight-based fees, FIS/customs moat).`
+          ? `${t.internationalShare}% of seats were international over the latest 12 months — high-margin traffic (weight-based fees, FIS/customs moat).`
           : "No BTS T-100 record for this airport.",
       };
     },

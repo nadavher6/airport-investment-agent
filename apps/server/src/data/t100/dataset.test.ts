@@ -2,8 +2,11 @@ import { describe, expect, it } from "vitest";
 import { getT100, t100Dataset } from "./dataset.ts";
 
 describe("t100 dataset", () => {
-  it("loads a plausible number of airports for the latest year", () => {
-    expect(t100Dataset.meta.year).toBe(2024);
+  it("loads a plausible number of airports for the latest 12-month window", () => {
+    expect(t100Dataset.meta.months).toBe(12);
+    expect(t100Dataset.meta.periodStart).toMatch(/^\d{4}-\d{2}$/);
+    expect(t100Dataset.meta.periodEnd).toMatch(/^\d{4}-\d{2}$/);
+    expect(t100Dataset.meta.periodEnd >= t100Dataset.meta.periodStart).toBe(true);
     expect(t100Dataset.meta.airportCount).toBeGreaterThan(500);
   });
 
