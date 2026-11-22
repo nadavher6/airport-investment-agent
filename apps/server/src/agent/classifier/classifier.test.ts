@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { LlmError, type LlmClient, type LlmMessage, type LlmRequest, type LlmStreamEvent } from "../../llm/llmClient.ts";
 import { classifyMessage, FALLBACK_CLASSIFICATION, parseClassification } from "./classifier.ts";
 import { CLASSIFIER_EXAMPLES } from "./examples.ts";
-import { CLASSIFIER_PROMPT, CLASSIFIER_RECENT_TURNS } from "./prompt.ts";
+import { CLASSIFIER_LAST_MESSAGE_CHARS, CLASSIFIER_PROMPT, CLASSIFIER_RECENT_TURNS, CLASSIFIER_TURN_CHARS } from "./prompt.ts";
 
 /** A fake LlmClient: no network. `reply` decides the streamed text from the request. */
 class FakeClient implements LlmClient {
@@ -104,6 +104,17 @@ describe("classifyMessage", () => {
     const client = replying('{"label":"greeting","reason":"x"}');
     await expect(classifyMessage(client, [user("hi")], controller.signal)).rejects.toBeDefined();
     expect(client.requests).toHaveLength(0);
+  });
+
+  it("caps the size of each turn, keeping the last message longer", async () => {
+    const client = new FakeClient(() => JSON.stringify({ label: "in_scope", reason: "Airport question." }));
+    const long = "x".repeat(5000);
+    await classifyMessage(client, [user("first"), { role: "assistant", content: long }, user(long)], signal());
+    const input = client.requests[0]?.messages[0]?.content ?? "";
+    expect(input.length).toBeLessThan(CLASSIFIER_TURN_CHARS + CLASSIFIER_LAST_MESSAGE_CHARS + 500);
+    expect(input).toContain(`[assistant]\n${"x".repeat(CLASSIFIER_TURN_CHARS)}...`);
+    expect(input).not.toContain("x".repeat(CLASSIFIER_LAST_MESSAGE_CHARS + 1));
+    expect(input).toContain(`${"x".repeat(CLASSIFIER_LAST_MESSAGE_CHARS)}...`);
   });
 
   it("sees the recent turns, so a follow-up is classified in context", async () => {

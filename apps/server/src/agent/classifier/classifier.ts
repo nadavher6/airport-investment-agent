@@ -1,5 +1,5 @@
 import { type LlmClient, type LlmMessage } from "../../llm/llmClient.ts";
-import { CLASSIFIER_PROMPT, CLASSIFIER_RECENT_TURNS } from "./prompt.ts";
+import { CLASSIFIER_LAST_MESSAGE_CHARS, CLASSIFIER_PROMPT, CLASSIFIER_RECENT_TURNS, CLASSIFIER_TURN_CHARS } from "./prompt.ts";
 
 export const CLASSIFICATION_LABELS = ["greeting", "capabilities", "off_topic", "in_scope"] as const;
 export type ClassificationLabel = (typeof CLASSIFICATION_LABELS)[number];
@@ -40,10 +40,14 @@ export function parseClassification(raw: string): Classification | undefined {
   return { label, reason: reason.trim().slice(0, MAX_REASON_LENGTH) };
 }
 
+const truncate = (text: string, max: number): string => (text.length > max ? `${text.slice(0, max)}...` : text);
+
 /** Renders the last few turns as one transcript, so the model labels rather than answers it. */
 export function buildClassifierInput(messages: readonly LlmMessage[]): string {
   const recent = messages.slice(-CLASSIFIER_RECENT_TURNS);
-  const transcript = recent.map((m) => `[${m.role}]\n${m.content}`).join("\n\n");
+  const transcript = recent
+    .map((m, i) => `[${m.role}]\n${truncate(m.content, i === recent.length - 1 ? CLASSIFIER_LAST_MESSAGE_CHARS : CLASSIFIER_TURN_CHARS)}`)
+    .join("\n\n");
   return `Transcript (oldest first):\n\n${transcript}\n\nClassify the last user message. Reply with JSON only.`;
 }
 

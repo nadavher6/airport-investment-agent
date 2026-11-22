@@ -53,8 +53,10 @@ Once streaming starts, failures arrive as an `error` event.
 Stream event order:
 
 ```
-message_start → (thinking_delta* → thinking_end)? → (tool_call → tool_result)* → text_delta* → message_end
+message_start → (tool_call(classify_message) → tool_result)? → (thinking_delta* → thinking_end)? → (tool_call → tool_result)* → text_delta* → message_end
 ```
+
+The optional first `classify_message` pair (LLM-backed models only) is the one pair allowed before thinking.
 
 For an LLM-backed model, the first step of every turn is a message classifier: it labels the latest user
 message `greeting`, `capabilities`, `off_topic` or `in_scope` (the fallback) and is shown as a

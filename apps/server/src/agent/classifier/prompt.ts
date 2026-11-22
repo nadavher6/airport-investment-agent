@@ -19,3 +19,9 @@ Reply with JSON only, no other text, exactly in this shape:
 
 /** How many of the most recent conversation turns the classifier sees. */
 export const CLASSIFIER_RECENT_TURNS = 6;
+
+/** Each earlier turn is cut to this many characters: the label needs context, not whole answers. */
+export const CLASSIFIER_TURN_CHARS = 800;
+
+/** The last message (the one being labelled) is cut to this many characters. */
+export const CLASSIFIER_LAST_MESSAGE_CHARS = 2000;
