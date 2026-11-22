@@ -2,6 +2,7 @@ import { useRef } from "react";
 import type { ModelId, ModelInfo } from "@airport/shared";
 import { Composer, type ComposerHandle } from "./components/Composer";
 import { EmptyState } from "./components/EmptyState";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import { MessageView, PendingDots } from "./components/MessageView";
 import { ModelPicker } from "./components/ModelPicker";
 import { TopBar } from "./components/TopBar";
@@ -35,7 +36,16 @@ export function App() {
     composerRef.current?.focus();
   };
 
-  const awaitingFirstEvent = chat.isStreaming && chat.messages.at(-1)?.role === "user";
+  const lastMessage = chat.messages.at(-1);
+  const awaitingFirstEvent = chat.isStreaming && lastMessage?.role === "user";
+  // The log itself is silent (it would read every token aloud); this line announces the outcome instead.
+  const announcement = chat.isStreaming
+    ? "Agent is responding"
+    : lastMessage?.role === "assistant" && lastMessage.status === "complete"
+      ? "Response complete"
+      : lastMessage?.status === "cancelled"
+        ? "Response stopped"
+        : "";
 
   return (
     <div className="app">
@@ -52,11 +62,24 @@ export function App() {
           {isEmpty ? (
             <EmptyState onPick={(prompt) => composerRef.current?.setDraft(prompt)} />
           ) : (
-            <div className="thread__messages" role="log" aria-label="Conversation">
-              {chat.messages.map((message) => (
-                <MessageView key={message.id} message={message} model={modelById(message.modelId)} />
-              ))}
-              {awaitingFirstEvent && <PendingDots label="Contacting agent" />}
+            <ErrorBoundary onReset={reset}>
+              <div className="thread__messages" role="log" aria-label="Conversation" aria-live="off">
+                {chat.messages.map((message) => (
+                  <MessageView key={message.id} message={message} model={modelById(message.modelId)} />
+                ))}
+                {awaitingFirstEvent && <PendingDots label="Contacting agent" />}
+              </div>
+            </ErrorBoundary>
+          )}
+          <p className="visually-hidden" role="status">
+            {announcement}
+          </p>
+
+          {models.noneAvailable && (
+            <div className="notice notice--info" role="status">
+              <span className="notice__code">setup</span>
+              No model is available. Set GEMINI_API_KEY, GROQ_API_KEY or OPENROUTER_API_KEY in .env and restart the
+              server.
             </div>
           )}
 

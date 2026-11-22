@@ -1,4 +1,6 @@
+import { memo } from "react";
 import type { ChatMessage, ModelInfo } from "@airport/shared";
+import { isUnsent } from "../lib/messages";
 import { ContentBlockView } from "./blocks/ContentBlockView";
 import { LogoMark } from "./icons";
 import "./MessageView.css";
@@ -10,13 +12,20 @@ interface MessageViewProps {
   model: ModelInfo | undefined;
 }
 
-export function MessageView({ message, model }: MessageViewProps) {
+// Memoized: the reducer keeps unchanged messages referentially stable, so per-token work touches only the live one.
+export const MessageView = memo(function MessageView({ message, model }: MessageViewProps) {
   const time = timeFormat.format(new Date(message.createdAt));
 
   if (message.role === "user") {
     const text = message.blocks.map((b) => (b.type === "text" ? b.text : "")).join("");
+    const unsent = isUnsent(message);
     return (
-      <article className="message message--user" aria-label={`You, ${time}`}>
+      <article className="message message--user" aria-label={unsent ? `You, ${time}, not sent` : `You, ${time}`}>
+        {unsent && (
+          <span className="message__tag message__tag--error" title="This message failed and isn't sent with later ones">
+            Not sent
+          </span>
+        )}
         <div className="message__bubble">{text}</div>
       </article>
     );
@@ -49,7 +58,7 @@ export function MessageView({ message, model }: MessageViewProps) {
       </div>
     </article>
   );
-}
+});
 
 /** Shown between Send and the first streamed event. */
 export function PendingDots({ label }: { label: string }) {

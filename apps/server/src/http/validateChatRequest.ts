@@ -1,9 +1,7 @@
-import { asModelId, type ChatRequest, type ChatTurn, type Role } from "@airport/shared";
+import { asModelId, MAX_CONTENT_LENGTH, MAX_TURNS, type ChatRequest, type ChatTurn, type Role } from "@airport/shared";
 import { HttpError } from "./errors.ts";
 
 const ROLES: readonly Role[] = ["user", "assistant"];
-const MAX_TURNS = 100;
-const MAX_CONTENT_LENGTH = 20_000;
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);

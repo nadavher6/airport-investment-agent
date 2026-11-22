@@ -45,3 +45,17 @@
   text-transform: uppercase;
   opacity: 0.8;
 }
+
+.notice--info {
+  border: 1px solid var(--line);
+  background: var(--surface-sunken);
+  color: var(--ink-2);
+}
+
+.notice__action {
+  margin-left: auto;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  white-space: nowrap;
+}
