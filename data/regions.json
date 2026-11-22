@@ -1,0 +1,155 @@
+{
+  "regions": {
+    "West Coast": {
+      "aliases": [
+        "Pacific Coast"
+      ],
+      "cities": [
+        "Seattle",
+        "Portland",
+        "San Francisco Bay Area",
+        "Los Angeles",
+        "San Diego"
+      ]
+    },
+    "East Coast": {
+      "aliases": [
+        "Eastern Seaboard",
+        "Atlantic Coast"
+      ],
+      "cities": [
+        "Boston",
+        "Providence",
+        "New York",
+        "Philadelphia",
+        "Baltimore",
+        "Washington DC",
+        "Norfolk",
+        "Charleston",
+        "Savannah",
+        "Jacksonville",
+        "Orlando",
+        "Miami",
+        "West Palm Beach"
+      ]
+    },
+    "New England": {
+      "aliases": [],
+      "cities": [
+        "Boston",
+        "Providence",
+        "Hartford",
+        "Manchester",
+        "Portland, ME",
+        "Burlington"
+      ]
+    },
+    "Midwest": {
+      "aliases": [
+        "Midwestern",
+        "Upper Midwest",
+        "Great Lakes"
+      ],
+      "cities": [
+        "Chicago",
+        "Detroit",
+        "Minneapolis",
+        "St. Louis",
+        "Kansas City",
+        "Indianapolis",
+        "Cleveland",
+        "Cincinnati",
+        "Columbus",
+        "Milwaukee",
+        "Omaha",
+        "Des Moines",
+        "Madison",
+        "Grand Rapids"
+      ]
+    },
+    "Pacific Northwest": {
+      "aliases": [
+        "PNW"
+      ],
+      "cities": [
+        "Seattle",
+        "Portland",
+        "Spokane",
+        "Eugene"
+      ]
+    },
+    "Southwest": {
+      "aliases": [
+        "Desert Southwest",
+        "US Southwest"
+      ],
+      "cities": [
+        "Phoenix",
+        "Tucson",
+        "Albuquerque",
+        "Las Vegas",
+        "El Paso"
+      ]
+    },
+    "Southeast": {
+      "aliases": [
+        "South East",
+        "Southeastern",
+        "Deep South"
+      ],
+      "cities": [
+        "Atlanta",
+        "Charlotte",
+        "Raleigh-Durham",
+        "Nashville",
+        "Orlando",
+        "Tampa",
+        "Miami",
+        "Jacksonville",
+        "Charleston",
+        "Savannah",
+        "Birmingham",
+        "Memphis",
+        "Louisville",
+        "New Orleans",
+        "Fort Myers",
+        "West Palm Beach"
+      ]
+    },
+    "Mountain West": {
+      "aliases": [
+        "Rocky Mountains",
+        "Rockies",
+        "Mountain States"
+      ],
+      "cities": [
+        "Denver",
+        "Salt Lake City",
+        "Boise",
+        "Las Vegas",
+        "Phoenix",
+        "Albuquerque",
+        "Billings",
+        "Bozeman",
+        "Colorado Springs"
+      ]
+    },
+    "Gulf Coast": {
+      "aliases": [
+        "Gulf of Mexico",
+        "Gulf States"
+      ],
+      "cities": [
+        "Houston",
+        "New Orleans",
+        "Tampa",
+        "Fort Myers",
+        "Sarasota",
+        "Mobile",
+        "Pensacola",
+        "Corpus Christi",
+        "Gulfport-Biloxi"
+      ]
+    }
+  }
+}
