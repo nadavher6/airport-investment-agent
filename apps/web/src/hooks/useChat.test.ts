@@ -27,7 +27,7 @@ describe("useChat", () => {
     await act(() => result.current.send("  How busy is SFO?  "));
 
     expect(stream).toHaveBeenCalledWith(
-      { modelId: MODEL_ID, conversationId: expect.any(String), messages: [{ role: "user", content: "How busy is SFO?" }] },
+      { modelId: MODEL_ID, messages: [{ role: "user", content: "How busy is SFO?" }] },
       expect.any(AbortSignal),
     );
     expect(result.current.isStreaming).toBe(false);
@@ -167,32 +167,5 @@ describe("useChat", () => {
     await act(() => result.current.send("Hi"));
 
     expect(result.current.lastError?.message).toBe("Couldn't reach the agent. Is the server running?");
-  });
-
-  it("sends the same conversationId on every turn of a chat and a new one after reset (#48)", async () => {
-    const stream = vi.spyOn(api, "streamChat").mockImplementation(() => replay(fullRun));
-    const { result } = renderHook(() => useChat(MODEL_ID));
-
-    await act(() => result.current.send("First"));
-    await act(() => result.current.send("Second"));
-    act(() => result.current.reset());
-    await act(() => result.current.send("New chat"));
-
-    const ids = stream.mock.calls.map((call) => call[0].conversationId);
-    expect(ids[0]).toMatch(/^[A-Za-z0-9_-]{1,64}$/);
-    expect(ids[1]).toBe(ids[0]);
-    expect(ids[2]).toMatch(/^[A-Za-z0-9_-]{1,64}$/);
-    expect(ids[2]).not.toBe(ids[0]);
-  });
-
-  it("gives two separate chats (two hook instances) different conversationIds (#48)", async () => {
-    const stream = vi.spyOn(api, "streamChat").mockImplementation(() => replay(fullRun));
-    const a = renderHook(() => useChat(MODEL_ID));
-    const b = renderHook(() => useChat(MODEL_ID));
-
-    await act(() => a.result.current.send("Hi"));
-    await act(() => b.result.current.send("Hi"));
-
-    expect(stream.mock.calls[0]![0].conversationId).not.toBe(stream.mock.calls[1]![0].conversationId);
   });
 });
