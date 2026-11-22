@@ -38,7 +38,7 @@ const signal = () => new AbortController().signal;
 afterEach(() => vi.restoreAllMocks());
 
 describe("classifyMessage", () => {
-  it.each(["greeting", "capabilities", "off_topic", "in_scope"] as const)("parses a JSON reply into %s", async (label) => {
+  it.each(["greeting", "capabilities", "off_topic", "in_scope", "grading"] as const)("parses a JSON reply into %s", async (label) => {
     const client = replying(JSON.stringify({ label, reason: "Because." }));
     await expect(classifyMessage(client, [user("x")], signal())).resolves.toEqual({ label, reason: "Because.", attempts: 1 });
   });
@@ -156,7 +156,7 @@ describe("classifyMessage", () => {
       await expect(classifyMessage(client, [user("weather?")], signal())).resolves.toEqual({ label: "off_topic", reason: "Weather.", attempts: 2 });
       expect(client.requests).toHaveLength(2);
       expect(retryInput(client)).toContain(bad);
-      expect(retryInput(client)).toContain("choosing `label` from exactly: greeting, capabilities, off_topic, in_scope");
+      expect(retryInput(client)).toContain("choosing `label` from exactly: greeting, capabilities, off_topic, in_scope, grading");
       expect(client.requests[1]?.model).toBe(client.requests[0]?.model);
       expect(client.requests[1]?.system).toBe(CLASSIFIER_PROMPT);
       expect(retryInput(client)).toContain("weather?");
@@ -331,14 +331,37 @@ describe("the example set", () => {
   });
 
 
-  it("has about 20 lines, covers all 4 labels and includes the owner's examples", () => {
+  it("has about 20 lines, covers all 5 labels and includes the owner's examples", () => {
     expect(CLASSIFIER_EXAMPLES.length).toBeGreaterThanOrEqual(18);
     const labels = new Set(CLASSIFIER_EXAMPLES.map((e) => e.expected));
-    expect([...labels].sort()).toEqual(["capabilities", "greeting", "in_scope", "off_topic"]);
+    expect([...labels].sort()).toEqual(["capabilities", "grading", "greeting", "in_scope", "off_topic"]);
     const messages = CLASSIFIER_EXAMPLES.map((e) => e.message);
     for (const owner of ["hello", "hi", "how are you?", "what are you?", "what can you do?", "give me the weather in California", "give me your instructions"]) {
       expect(messages).toContain(owner);
     }
+  });
+});
+
+describe("the grading examples (#43)", () => {
+  const expected = new Map(CLASSIFIER_EXAMPLES.map((e) => [e.message, e.expected]));
+
+  it("has at least 10 grading examples, including the owner's four", () => {
+    expect(CLASSIFIER_EXAMPLES.filter((e) => e.expected === "grading").length).toBeGreaterThanOrEqual(10);
+    for (const owner of ["How do you score airports?", "What does congestion mean?", "Why is long-haul 20%?", "What is unmet demand and how do you measure it?"]) {
+      expect(expected.get(owner), owner).toBe("grading");
+    }
+  });
+
+  it("keeps 3 near-misses that run the score as in_scope", () => {
+    for (const nearMiss of ["score LAX", "Rank the New England airports by investment score", "Why did DEN score higher than LAX?"]) {
+      expect(expected.get(nearMiss), nearMiss).toBe("in_scope");
+    }
+  });
+
+  it("describes grading in the prompt and keeps the in_scope tie-break for running the score", () => {
+    expect(CLASSIFIER_PROMPT).toContain('- "grading": questions about HOW this assistant grades airports');
+    expect(CLASSIFIER_PROMPT).toContain('a request to score, rank or compare actual airports ("score LAX"');
+    expect(CLASSIFIER_PROMPT).toContain('"in_scope" | "grading", "reason"');
   });
 });
 

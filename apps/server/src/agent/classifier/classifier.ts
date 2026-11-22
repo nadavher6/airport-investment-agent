@@ -8,7 +8,7 @@ import {
   CLASSIFIER_TURN_CHARS,
 } from "./prompt.ts";
 
-export const CLASSIFICATION_LABELS = ["greeting", "capabilities", "off_topic", "in_scope"] as const;
+export const CLASSIFICATION_LABELS = ["greeting", "capabilities", "off_topic", "in_scope", "grading"] as const;
 export type ClassificationLabel = (typeof CLASSIFICATION_LABELS)[number];
 
 export interface ParsedClassification {
