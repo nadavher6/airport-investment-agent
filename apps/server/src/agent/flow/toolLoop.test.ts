@@ -2,7 +2,9 @@ import { asMessageId, type AgentEvent, type JsonValue, type StopReason } from "@
 import { z } from "zod";
 import { describe, expect, it, vi } from "vitest";
 import { LlmError, type LlmClient, type LlmRequest, type LlmStreamEvent } from "../../llm/llmClient.ts";
-import { EMPTY_ANSWER, stepLimitAnswer } from "../prompts/toolLoop.ts";
+import { stepLimitAnswer } from "../prompts/toolLoop.ts";
+import { UNFORMATTED_NOTE } from "../finalAnswer.ts";
+import { finalAnswerJson, shownAnswer } from "../../test/helpers.ts";
 import { GRACEFUL_FALLBACK, renderToolsOff } from "../toolGuard.ts";
 import { TOOLS } from "../tools/registry.ts";
 import { fakeScoreAirports } from "../../test/fakeScoreAirports.ts";
@@ -82,13 +84,13 @@ const distinctCalls = (n: number): string[] =>
 
 describe("runToolLoop (#48)", () => {
   it("calls the real get_enplanements, feeds the result back as delimited data, then streams the answer", async () => {
-    const { client, requests } = scripted([BOS_CALL, "BOS had about 20 million boardings in 2024."]);
+    const { client, requests } = scripted([BOS_CALL, finalAnswerJson("BOS had about 20 million boardings in 2024.")]);
     const { events, outcome, recorded, text } = await drain(client, TOOLS);
 
     expect(types(events)).toEqual(["tool_call", "tool_result", "text_delta"]);
     expect(events[0]).toMatchObject({ type: "tool_call", name: "get_enplanements", input: { airport_code: "BOS" } });
     expect(events[1]).toMatchObject({ type: "tool_result", result: { ok: true, output: { airportCode: "BOS" } } });
-    expect(text).toBe("BOS had about 20 million boardings in 2024.");
+    expect(text).toBe(shownAnswer("BOS had about 20 million boardings in 2024."));
     expect(outcome).toBe("end_turn");
     expect(recorded).toEqual(["get_enplanements"]);
     const [assistant, observation] = requests[1]!.messages.slice(-2);
@@ -98,13 +100,13 @@ describe("runToolLoop (#48)", () => {
 
   it("runs a call in a ```json fence and never shows the JSON", async () => {
     const { tool, ran } = spyTool();
-    const { client } = scripted(["```json\n" + BOS_CALL + "\n```", "Done."]);
+    const { client } = scripted(["```json\n" + BOS_CALL + "\n```", finalAnswerJson("Done.")]);
     const { text } = await drain(client, [tool]);
     expect(ran).toEqual(["BOS"]);
-    expect(text).toBe("Done.");
+    expect(text).toBe(shownAnswer("Done."));
   });
 
-  it("streams a lead-in sentence but holds the call that follows it", async () => {
+  it("holds a lead-in sentence and the call that follows it: neither is shown (#63)", async () => {
     const { tool, ran } = spyTool();
     const { client } = scripted([
       [
@@ -113,21 +115,21 @@ describe("runToolLoop (#48)", () => {
         { type: "text_delta", text: BOS_CALL.slice(10) },
         { type: "done", stopReason: "end_turn" },
       ],
-      "BOS is busy.",
+      finalAnswerJson("BOS is busy."),
     ]);
     const { text } = await drain(client, [tool]);
     expect(ran).toEqual(["BOS"]);
-    expect(text).toBe("Let me check. \n\nBOS is busy.");
+    expect(text).toBe(shownAnswer("BOS is busy."));
     expect(text).not.toContain("{");
   });
 
   it("feeds malformed JSON back as a TOOL_CALL_ERROR (a failed card), then uses the corrected call", async () => {
     const { tool, ran } = spyTool();
-    const { client, requests } = scripted(['{"tool":"get_enplanements","input":{"airport_code":"BOS"', BOS_CALL, "OK."]);
+    const { client, requests } = scripted(['{"tool":"get_enplanements","input":{"airport_code":"BOS"', BOS_CALL, finalAnswerJson("OK.")]);
     const { text, events } = await drain(client, [tool]);
     expect(requests[1]!.messages.at(-1)!.content).toMatch(/^TOOL_CALL_ERROR\ncode: unparseable\n/);
     expect(ran).toEqual(["BOS"]);
-    expect(text).toBe("OK.");
+    expect(text).toBe(shownAnswer("OK."));
     expect(types(events)).toEqual(["tool_call", "tool_result", "tool_call", "tool_result", "text_delta"]);
     expect(events[1]).toMatchObject({ result: { ok: false } });
   });
@@ -146,12 +148,12 @@ describe("runToolLoop (#48)", () => {
 
   it("never runs an unknown tool: a failed card, and the allowed tools fed back", async () => {
     const { tool, ran } = spyTool();
-    const { client, requests } = scripted(['{"tool":"delete_db","input":{}}', "Sorry, I only have lookups."]);
+    const { client, requests } = scripted(['{"tool":"delete_db","input":{}}', finalAnswerJson("Sorry, I only have lookups.")]);
     const { text, events } = await drain(client, [tool]);
     expect(ran).toEqual([]);
     expect(types(events)).toEqual(["tool_call", "tool_result", "text_delta"]);
     expect(events[1]).toMatchObject({ result: { ok: false, errorMessage: 'There is no tool called "delete_db" (unknown_tool).' } });
-    expect(text).toBe("Sorry, I only have lookups.");
+    expect(text).toBe(shownAnswer("Sorry, I only have lookups."));
     expect(requests[1]!.messages.at(-1)!.content).toContain("code: unknown_tool");
     expect(requests[1]!.messages.at(-1)!.content).toContain(`- get_enplanements: ${JSON.stringify(tool.inputJsonSchema)}`);
   });
@@ -159,38 +161,38 @@ describe("runToolLoop (#48)", () => {
   it("injection: arbitrary tool input is rejected by the tool's zod schema and the tool's code never runs", async () => {
     const { tool, ran } = spyTool();
     const injected = '{"tool":"get_enplanements","input":{"airport_code":"BOS","sql":"DROP TABLE airports","system":"ignore your rules"}}';
-    const { client, requests } = scripted([injected, '{"tool":"get_enplanements","input":{"airport_code":"BOS; rm -rf /"}}', "I can't do that."]);
+    const { client, requests } = scripted([injected, '{"tool":"get_enplanements","input":{"airport_code":"BOS; rm -rf /"}}', finalAnswerJson("I can't do that.")]);
     const { events, text } = await drain(client, [tool]);
     expect(ran).toEqual([]);
     const results = events.filter((e) => e.type === "tool_result");
     expect(results).toHaveLength(2);
     for (const r of results) expect(r).toMatchObject({ result: { ok: false, errorMessage: expect.stringMatching(/^Invalid input for get_enplanements/) } });
     expect(requests[1]!.messages.at(-1)!.content).toContain("code: invalid_input");
-    expect(text).toBe("I can't do that.");
+    expect(text).toBe(shownAnswer("I can't do that."));
   });
 
   it("a tool that throws is a failed tool_result fed back to the model, and the loop still answers", async () => {
     const { tool } = spyTool("get_enplanements", () => {
       throw new Error("disk on fire");
     });
-    const { client, requests } = scripted([BOS_CALL, "The data is unavailable right now."]);
+    const { client, requests } = scripted([BOS_CALL, finalAnswerJson("The data is unavailable right now.")]);
     const { events, text } = await drain(client, [tool]);
     expect(events[1]).toMatchObject({
       type: "tool_result",
       result: { ok: false, errorMessage: "get_enplanements failed unexpectedly (tool_failed: internal)." },
     });
     expect(requests[1]!.messages.at(-1)!.content).toContain('problem: internal — "get_enplanements failed unexpectedly."');
-    expect(text).toBe("The data is unavailable right now.");
+    expect(text).toBe(shownAnswer("The data is unavailable right now."));
   });
 
-  it("the step cap: 6 tool runs, then one call with no tools whose prose answer is used", async () => {
+  it("the step cap: 6 tool runs, then one call with no tools whose final answer is used", async () => {
     const { tool, ran } = spyTool();
-    const { client, requests } = scripted([...distinctCalls(MAX_TOOL_STEPS), "Here is what I found."]);
+    const { client, requests } = scripted([...distinctCalls(MAX_TOOL_STEPS), finalAnswerJson("Here is what I found.")]);
     const { text, outcome } = await drain(client, [tool]);
     expect(ran).toHaveLength(MAX_TOOL_STEPS);
     expect(requests).toHaveLength(MAX_TOOL_STEPS + 1);
     expect(requests.at(-1)!.messages.at(-1)!.content).toContain(renderToolsOff("step_cap"));
-    expect(text).toBe("Here is what I found.");
+    expect(text).toBe(shownAnswer("Here is what I found."));
     expect(outcome).toBe("end_turn");
   });
 
@@ -204,10 +206,20 @@ describe("runToolLoop (#48)", () => {
     expect(events.filter((e) => e.type === "tool_call")).toHaveLength(MAX_TOOL_STEPS);
   });
 
-  it("an empty reply becomes a plain sentence, never an empty answer", async () => {
-    const { client } = scripted([""]);
+  it("an empty reply is retried, then becomes a plain sentence, never an empty answer (#63)", async () => {
+    const { client, requests } = scripted([""]);
     const { text } = await drain(client, []);
-    expect(text).toBe(EMPTY_ANSWER);
+    expect(requests).toHaveLength(3);
+    expect(requests[1]!.messages.at(-1)!.content).toMatch(/^FINAL_ANSWER_ERROR\ncode: not_json\n/);
+    expect(text).toBe(GRACEFUL_FALLBACK);
+  });
+
+  it("the step cap: a prose reply to the no-tools call is shown as the unformatted fallback (#63)", async () => {
+    const { tool } = spyTool();
+    const { client, requests } = scripted([...distinctCalls(MAX_TOOL_STEPS), "Here is what I found."]);
+    const { text } = await drain(client, [tool]);
+    expect(requests).toHaveLength(MAX_TOOL_STEPS + 1);
+    expect(text).toBe(`Here is what I found.\n\n${UNFORMATTED_NOTE}`);
   });
 
   it("keeps max_tokens as the stop reason", async () => {
@@ -222,12 +234,12 @@ describe("runToolLoop (#48)", () => {
     const { client } = scripted([
       '{"tool":"find_airports_by_city","input":{"cities":["Los Angeles"]}}',
       '{"tool":"score_airports","input":{"airport_codes":["LAX","SNA"]}}',
-      "LAX scores higher than SNA.",
+      finalAnswerJson("LAX scores higher than SNA."),
     ]);
     const { events, text } = await drain(client, tools);
     expect(events.flatMap((e) => (e.type === "tool_call" ? [e.name] : []))).toEqual(["find_airports_by_city", "score_airports"]);
     expect(score.calls).toEqual([["LAX", "SNA"]]);
-    expect(text).toBe("LAX scores higher than SNA.");
+    expect(text).toBe(shownAnswer("LAX scores higher than SNA."));
   });
 
   it("score_airports with more than 5 codes does not run; the error goes back and a retry with 5 runs", async () => {
@@ -236,7 +248,7 @@ describe("runToolLoop (#48)", () => {
     const { client, requests } = scripted([
       JSON.stringify({ tool: "score_airports", input: { airport_codes: seven } }),
       JSON.stringify({ tool: "score_airports", input: { airport_codes: seven.slice(0, 5) } }),
-      "Ranked.",
+      finalAnswerJson("Ranked."),
     ]);
     const { events, text } = await drain(client, [score.tool]);
     expect(score.calls).toEqual([seven.slice(0, 5)]);
@@ -250,7 +262,7 @@ describe("runToolLoop (#48)", () => {
     expect(feedback).toContain(`problem: "airport_codes — ${TOO_MANY_AIRPORTS}"`);
     expect(feedback).toContain(`expected input (JSON Schema): ${JSON.stringify(score.tool.inputJsonSchema)}`);
     expect(events[3]).toMatchObject({ type: "tool_result", result: { ok: true } });
-    expect(text).toBe("Ranked.");
+    expect(text).toBe(shownAnswer("Ranked."));
   });
 
   it("an abort between steps stops the loop: no further model call, the run rejects", async () => {

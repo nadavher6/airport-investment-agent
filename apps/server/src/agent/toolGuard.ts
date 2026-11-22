@@ -266,8 +266,8 @@ export function renderToolsOff(reason: ToolsOffReason): string {
   return [
     "TOOLS_DISABLED",
     `reason: ${why}`,
-    "Tools are switched off for the rest of this turn. Do not write JSON or a tool call.",
-    "Answer the user now in plain English, using only the tool results above. Say plainly what you could not look up, and never invent numbers.",
+    "Tools are switched off for the rest of this turn. Do not write a tool call.",
+    "Give your final answer now (the final_answer JSON object), using only the tool results above. Say plainly what you could not look up, and never invent numbers.",
     "END_TOOLS_DISABLED",
   ].join("\n");
 }

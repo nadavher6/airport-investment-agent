@@ -117,8 +117,28 @@ of both saturating at 100); a **single** airport is scored *absolute* vs. all US
      `unavailable` or `internal` may be retried (it still counts toward the retry and step caps).
      The model may retry at most `MAX_INVALID_RETRIES = 2` times in a row; at the 3rd invalid attempt in a row tools
      are switched off (`TOOLS_DISABLED`) and the model answers in prose, or a plain sentence is shown.
-   - **Step cap:** at most 6 tool attempts (invalid ones and retries count), then one call that must answer in prose;
-     if it still does not, a plain "limit reached" sentence. The answer is never empty. An abort stops at once.
+   - **Step cap:** at most 6 tool attempts (invalid ones and retries count), then one call that must give the final
+     answer; if it still does not, a plain "limit reached" sentence. The answer is never empty. An abort stops at once.
+   - **Final-answer guardrail (#63, `agent/finalAnswer.ts`, `agent/finalAnswerStream.ts`, `agent/flow/finalAnswerStep.ts`):**
+     the final reply is validated like a tool call: exactly one JSON object
+     `{"kind": "final_answer", "answer": {summary, markdown, airports?, caveats?}}` (zod `.strict()`; a ``` fence
+     around it and raw line breaks inside strings are tolerated). Invalid replies are typed: `not_json` (prose),
+     `extra_text`, `invalid_json`, `bad_shape` (missing/extra key, wrong type, empty field), `wrong_kind`,
+     `over_limit`, `unknown_airport` (checked against the airport data, the `get_airport_by_code` lookup). Each one
+     gets a `FINAL_ANSWER_ERROR ... END_FINAL_ANSWER_ERROR` block (code, problem, the JSON Schema from
+     `z.toJSONSchema`, the previous reply capped with #49's `echo`) and a retry, at most 2 per turn, each counting
+     toward the step cap. Then the fallback: the reply as Markdown with an "Unformatted answer" note, never raw JSON
+     (prose as is; for JSON, only the summary/markdown text it holds; else a plain sentence). Only the problem code
+     and sizes are logged, never user or model text.
+     *Streaming trade-off:* the summary and markdown stream incrementally (a small string-aware scanner,
+     `agent/finalAnswerScan.ts`), but only while the prefix read so far is valid: the reply starts with the object,
+     `kind` comes first, the `answer` keys so far are allowed, and `airports`/`caveats` (which the prompt asks for
+     before the summary) passed their checks. The bold summary is released once its string closed and the markdown
+     began; the markdown then streams per character; the caveats come at the end. The streamed text is always a
+     prefix of the final rendered text, so streamed and buffered answers are identical. The cost: a problem found
+     only after text was shown (a cut-off reply, a key after the markdown) cannot be retried without showing the
+     answer twice, so the shown text is kept with the note. Since prose is no longer an answer, no prose is
+     streamed live, so a lead-in before a tool call is not shown.
    - **Memory (#50)** is keyed ONLY by the optional `conversationId` in `ChatRequest` (the web app mints one per
      chat with `crypto.randomUUID()`, or a UUID v4 from `crypto.getRandomValues` over plain http; the server requires 16-64 characters of `[A-Za-z0-9_-]`, so the id is an unguessable bearer secret); never by message content, so two chats that start with the same text never
      share data. With no id there is no memory at all (no reads, no writes). Per chat it keeps the tool results by

@@ -2,7 +2,7 @@ import { asModelId, type AgentEvent, type ModelInfo } from "@airport/shared";
 import { describe, expect, it } from "vitest";
 import type { LlmClient, LlmRequest } from "../llm/llmClient.ts";
 import { fakeScoreAirports } from "../test/fakeScoreAirports.ts";
-import { collect } from "../test/helpers.ts";
+import { collect, finalAnswerJson, shownAnswer } from "../test/helpers.ts";
 import { CLASSIFIER_PROMPT } from "./classifier/prompt.ts";
 import { MAX_TOOL_STEPS } from "./flow/toolLoop.ts";
 import { LlmPassthroughAgent } from "./llmPassthroughAgent.ts";
@@ -26,7 +26,7 @@ const model: ModelInfo = {
 type MainModel = (request: LlmRequest, call: number) => string;
 
 /** A fake client: the classifier says `label`; main (tool loop) calls are answered by `main`. */
-function routeClient(label: string, main: MainModel = () => "Answer.") {
+function routeClient(label: string, main: MainModel = () => finalAnswerJson("Answer.")) {
   const seen: LlmRequest[] = [];
   const client: LlmClient = {
     provider: "claude-headless",
@@ -52,12 +52,12 @@ const replies = (...texts: string[]): MainModel => (_request, call) => texts[Mat
  */
 const followsScoringRule: MainModel = (request) => {
   const last = request.messages.at(-1)!.content;
-  if (last.startsWith("<tool_result")) return "Explained with the compare skill.";
+  if (last.startsWith("<tool_result")) return finalAnswerJson("Explained with the compare skill.");
   const question = request.messages.filter((m) => m.role === "user").at(-1)!.content;
   if (request.system?.includes(SCORING_RULE) && /better|investment/i.test(question)) {
     return JSON.stringify({ tool: "score_airports", input: { airport_codes: question.match(/\b[A-Z]{3}\b/g) ?? [] } });
   }
-  return "I would guess.";
+  return finalAnswerJson("I would guess.");
 };
 
 async function run(client: LlmClient, message: string) {
@@ -95,7 +95,7 @@ describe("agent routing (#48): classifier first, fixed answers, everything else 
     expect(seen).toHaveLength(1);
     expect(seen[0]!.system).toContain("## How to use tools");
     expect(seen[0]!.system).toContain(GRADING_ANSWER_PROMPT);
-    expect(text(events)).toBe("Answer.");
+    expect(text(events)).toBe(shownAnswer("Answer."));
   });
 
   it("in_scope: the loop's prompt has all registry tools, the owner's scoring rule verbatim and the compare skill; no grading skill", async () => {
@@ -118,7 +118,7 @@ describe("agent routing (#48): classifier first, fixed answers, everything else 
     const { events, score } = await run(client, "which is better, LAX or SNA?");
     expect(score.calls).toEqual([["LAX", "SNA"]]);
     expect(toolCalls(events)).toEqual(["classify_message", "score_airports"]);
-    expect(text(events)).toBe("Explained with the compare skill.");
+    expect(text(events)).toBe(shownAnswer("Explained with the compare skill."));
   });
 
   it('"is DEN a good investment?": the loop calls score_airports with [DEN]', async () => {
@@ -128,12 +128,12 @@ describe("agent routing (#48): classifier first, fixed answers, everything else 
   });
 
   it("get_enplanements -> answer, in README order", async () => {
-    const { client } = routeClient("in_scope", replies('{"tool":"get_enplanements","input":{"airport_code":"ATL"}}', "ATL had the most boardings in 2024."));
+    const { client } = routeClient("in_scope", replies('{"tool":"get_enplanements","input":{"airport_code":"ATL"}}', finalAnswerJson("ATL had the most boardings in 2024.")));
     const { events, score } = await run(client, "How many passengers did ATL have in 2024?");
     expect(score.calls).toEqual([]);
     expect(events.map((e) => e.type)).toEqual(["message_start", "tool_call", "tool_result", "tool_call", "tool_result", "text_delta", "message_end"]);
     expect(events[4]).toMatchObject({ result: { ok: true, output: { airportCode: "ATL" } } });
-    expect(text(events)).toBe("ATL had the most boardings in 2024.");
+    expect(text(events)).toBe(shownAnswer("ATL had the most boardings in 2024."));
   });
 
   it("the step cap ends with a non-empty answer", async () => {

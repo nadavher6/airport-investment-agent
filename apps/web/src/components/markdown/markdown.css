@@ -68,3 +68,12 @@
   font-size: var(--text-sm);
 }
 .md-fence-note { margin-top: calc(-1 * var(--space-2)); border-color: var(--err); color: var(--err); background: var(--err-soft); }
+
+/* A final answer's caveats (#63): a small muted list under the answer. */
+.md-caveats {
+  margin: 0.4em 0 0.8em;
+  padding-left: 1.2em;
+  color: var(--ink-3);
+  font-size: var(--text-sm);
+}
+.md-caveats li { margin: 0.15em 0; }
