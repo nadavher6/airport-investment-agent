@@ -18,6 +18,23 @@ const finite = z.number({ error: "must be a finite number" });
 const score100 = finite.check(z.gte(0), z.lte(100));
 const nullable = <T extends z.core.SomeType>(t: T) => z.union([t, z.null()]);
 
+/** get_growth's per-airport extras (#67): the yearly series (null = no FAA figure that year) and trend facts. */
+const growthFacts = z.object({
+  series: z
+    .array(z.object({ year: z.int(), enplanements: nullable(finite.check(z.gte(0))) }))
+    .check(
+      z.minLength(1),
+      z.refine((pts) => new Set(pts.map((p) => p.year)).size === pts.length, { error: "has duplicate years" }),
+    ),
+  cagr5yr: nullable(finite),
+  cagr10yr: nullable(finite),
+  cagr10yrPeriods: z.optional(finite),
+  recoveryVs2019: nullable(finite),
+  latest: z.object({ year: z.int(), enplanements: finite, yoyChangePct: nullable(finite) }),
+  covid2020: z.object({ enplanements: nullable(finite), pctVs2019: nullable(finite) }),
+  peak: nullable(z.object({ year: z.int(), enplanements: finite })),
+});
+
 const airport = z.object({
   airportCode: z.string().check(z.minLength(1)),
   name: z.string(),
@@ -25,6 +42,8 @@ const airport = z.object({
   raw: nullable(finite),
   subScore: nullable(score100),
   evidence: nullable(evidence),
+  // Only get_growth sends it (#67); a malformed one fails the whole check, so the generic card shows the JSON.
+  growth: z.optional(growthFacts),
 });
 
 export const categoryResult = z.object({
@@ -43,6 +62,14 @@ export const categoryResult = z.object({
 
 export type CategoryResult = z.infer<typeof categoryResult>;
 export type CategoryAirport = z.infer<typeof airport>;
+export type GrowthFacts = z.infer<typeof growthFacts>;
+export type GrowthAirport = CategoryAirport & { growth: GrowthFacts };
+
+/** The growth view needs every airport's series; an older get_growth output without it keeps the plain category view. */
+export const growthAirports = (result: CategoryResult): GrowthAirport[] | null =>
+  result.category === "growth" && result.airports.every((a): a is GrowthAirport => a.growth !== undefined)
+    ? (result.airports as GrowthAirport[])
+    : null;
 
 export type CategoryParseResult = { ok: true; result: CategoryResult } | { ok: false; reason: string };
 

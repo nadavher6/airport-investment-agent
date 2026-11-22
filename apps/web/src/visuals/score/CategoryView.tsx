@@ -5,8 +5,10 @@ import { CompareGrid, type GridRow } from "../compare/Compare";
 import { KpiTiles } from "../KpiTiles";
 import { ScoreBar } from "./parts";
 import { MAX_SHOWN, MODE_TEXT, formatScore, formatShare, missingText } from "./spec";
+import { GrowthView } from "./GrowthView";
 import {
   asCategory,
+  growthAirports,
   formatRaw,
   isScored,
   sortBySubScore,
@@ -173,12 +175,14 @@ function Body({ result }: { result: CategoryResult }) {
 
 /** A checked per-category tool result (#61): only that one category, drawn from the data. */
 export function CategoryView({ result }: { result: CategoryResult }) {
+  // get_growth with its yearly series (#67) draws the time chart and KPI rows instead of the card / table.
+  const growth = growthAirports(result);
   return (
     <div className="score-view" data-testid="category-view">
       <p className="score-view__mode">
         {result.label} · {formatShare(result.weight)} of the final score · {MODE_TEXT[result.mode]}
       </p>
-      <Body result={result} />
+      {growth ? <GrowthView result={result} airports={growth} /> : <Body result={result} />}
       {result.note ? <p className="score-view__not-found">Caveat: {result.note}</p> : null}
       {result.notFound.length > 0 ? <p className="score-view__not-found">Not found: {result.notFound.join(", ")}</p> : null}
     </div>

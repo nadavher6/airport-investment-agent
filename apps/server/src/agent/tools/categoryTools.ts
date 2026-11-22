@@ -2,10 +2,11 @@
 // Each one is ONE category of score_airports, on the shared Tool contract. The numbers come from the same
 // scorer and the same INVESTMENT_KPIS definitions as the full score: nothing is recomputed here.
 import { z } from "zod";
-import { findAirport } from "../../data/enplanements/dataset.ts";
+import { enplanementsDataset, findAirport } from "../../data/enplanements/dataset.ts";
 import type { AirportRecord } from "../../data/enplanements/types.ts";
 import type { KpiEvidence } from "../../scoring/engine.ts";
 import { INVESTMENT_KPIS, scoreAirport } from "../../scoring/investmentScore.ts";
+import { growthFacts, type GrowthFacts } from "./growth.ts";
 import { defineTool, fail, ok, type RegisteredTool } from "./tool.ts";
 
 /** Most distinct codes one category call may take: the same 5 as score_airports in the loop (MAX_SCORED_AIRPORTS). */
@@ -112,6 +113,31 @@ export function categoryOutput(key: CategoryKey, found: readonly AirportRecord[]
   };
 }
 
+/** get_growth's airport: the category fields plus the yearly series and trend facts (#67). */
+export interface GrowthAirport extends CategoryAirport {
+  readonly growth: GrowthFacts;
+}
+
+/** get_growth's output: the growth category plus, per airport, the CY2015-CY2024 series and trend facts (#67). */
+export interface GrowthOutput extends CategoryOutput {
+  readonly category: "growth";
+  /** The dataset's years (meta.years), the x axis of every airport's series. */
+  readonly years: readonly number[];
+  readonly airports: readonly GrowthAirport[];
+}
+
+/** The growth category output with each airport's series and trend facts added (same order as `found`). */
+export function growthOutput(found: readonly AirportRecord[], notFound: readonly string[]): GrowthOutput {
+  const base = categoryOutput("growth", found, notFound);
+  const years = [...enplanementsDataset.meta.years].sort((a, b) => a - b);
+  return {
+    ...base,
+    category: "growth",
+    years,
+    airports: base.airports.map((a, i): GrowthAirport => ({ ...a, growth: growthFacts(found[i]!, years) })),
+  };
+}
+
 const SHARED_DESCRIPTION =
   "Returns ONLY this category for 1-5 airports: per airport the raw value (in `unit`), the 0-100 sub-score, and the " +
   "evidence (formula, inputs, explanation), plus the category's weight in the full score and its caveat (`note`). " +
@@ -123,7 +149,13 @@ const SHARED_DESCRIPTION =
   `(those need score_airports). Codes are case-insensitive and deduplicated; at most ${MAX_CATEGORY_CODES}. Unknown ` +
   "codes are returned in `notFound`; `available: false` means the category has no data for that airport.";
 
-function categoryTool(name: string, key: CategoryKey, what: string): RegisteredTool {
+function categoryTool(
+  name: string,
+  key: CategoryKey,
+  what: string,
+  build: (found: readonly AirportRecord[], notFound: readonly string[]) => CategoryOutput = (found, notFound) =>
+    categoryOutput(key, found, notFound),
+): RegisteredTool {
   return defineTool<CategoryInput, CategoryOutput>({
     name,
     description: `${what} ${SHARED_DESCRIPTION}`,
@@ -141,7 +173,7 @@ function categoryTool(name: string, key: CategoryKey, what: string): RegisteredT
       if (found.length === 0) {
         return Promise.resolve(fail("not_found", `None of the airport codes were found: ${codes.join(", ")}.`));
       }
-      return Promise.resolve(ok(categoryOutput(key, found, notFound)));
+      return Promise.resolve(ok(build(found, notFound)));
     },
   });
 }
@@ -167,7 +199,13 @@ export const getLongHaulShareTool = categoryTool(
 export const getGrowthTool = categoryTool(
   "get_growth",
   "growth",
-  "The growth / durability category (5-year enplanement CAGR, % per year; is traffic growing).",
+  "The growth / durability category (5-year enplanement CAGR, % per year; is traffic growing). Use it for growth / " +
+    "trend / traffic-over-time questions. Per airport it ALSO returns `growth`: the CY2015-CY2024 enplanement " +
+    "`series` (one entry per year; null = no FAA figure that year, never filled in), cagr5yr (2019->2024), cagr10yr " +
+    "(2015->2024, 9 periods, not 10), recoveryVs2019 (latest ÷ 2019, 1 = fully recovered), the latest year with its " +
+    "YoY %, the 2020 COVID low (value and % vs 2019) and the peak year. The UI draws the series as a line chart, so " +
+    "explain the trend in words; do not retype the yearly numbers.",
+  growthOutput,
 );
 
 /** The four category tools, in the scoring order. */

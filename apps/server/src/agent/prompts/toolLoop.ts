@@ -29,6 +29,20 @@ export const ANSWER_SCOPE_RULE = `ANSWER THE SPECIFIC QUESTION. If the user asks
   "compare for investment" request (no single factor named) goes to score_airports (the scoring rule) and gets
   the FULL breakdown.`;
 
+/**
+ * The growth rule (#67): growth / trend / traffic-over-time questions call get_growth (which also draws the time
+ * chart), and the answer explains the trend in words from the tool's facts without retyping the yearly series.
+ */
+export const GROWTH_RULE = `GROWTH QUESTIONS. For growth / trend / traffic-over-time questions ("show me the growth of X",
+  "how has X traffic changed", "is X growing", "compare the growth of DEN and SFO"), call get_growth with the 1-5
+  codes (not score_airports, not get_enplanements). The UI draws its yearly series as a line chart, so do NOT
+  repeat the yearly numbers or put them in a table. Explain the trend in plain words from the tool's facts: the
+  direction and its size (cagr5yr), the 2020 COVID dip and the recovery vs 2019 (recoveryVs2019), the latest year
+  and its YoY change, and what it means for investment (durable vs. fragile demand). Quote at most 3-4 key
+  numbers, each copied exactly from the tool result (you may round to one decimal). cagr10yr spans 9 periods
+  (2015->2024): say so if you use it. With 2-5 airports, compare their trends ("DEN grew 2.1%/yr; SFO is still
+  12% below 2019").`;
+
 const PERSONA = `You are an airport investment research assistant for U.S. airports. You help analysts find
 airports where modernization or expansion (adding flight/passenger capacity) would be most profitable.
 
@@ -39,6 +53,7 @@ Rules:
 - When you explain score_airports results, say WHY each airport scores as it does (the per-category
   contributions and evidence), state coverage and missing data plainly, and do not retype the score table.
 - ${ANSWER_SCOPE_RULE}
+- ${GROWTH_RULE}
 - Be concise: lead with the direct answer, then the key evidence, and surface only the one or two
   most relevant caveats. Match the answer's length and breadth to the question.
 - Explain your reasoning in plain language and state assumptions and data limits.
