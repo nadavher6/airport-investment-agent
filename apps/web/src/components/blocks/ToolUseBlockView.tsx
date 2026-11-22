@@ -1,6 +1,9 @@
-import { useId, useState } from "react";
+import { useId, useMemo, useState, type ReactNode } from "react";
 import type { JsonValue, ToolCallStatus, ToolUseBlock } from "@airport/shared";
 import { CheckIcon, ChevronIcon, CrossIcon, ToolIcon } from "../icons";
+import { FenceBoundary } from "../markdown/FenceBoundary";
+import { ScoreView } from "../../visuals/score/ScoreView";
+import { SCORE_TOOL, parseScoreResult, type ScoreResult } from "../../visuals/score/spec";
 
 const STATUS_LABEL: Record<ToolCallStatus, string> = {
   running: "Running",
@@ -17,10 +20,27 @@ function summarize(input: ToolUseBlock["input"]): string | null {
 
 const pretty = (value: JsonValue) => JSON.stringify(value, null, 2);
 
+/**
+ * A tool call card. A succeeded `score_airports` call whose output passes the score check is
+ * drawn from the data by ScoreView (#41), with the raw JSON behind "Show data"; anything else,
+ * or a score view that throws, is the generic card with the JSON.
+ */
 export function ToolUseBlockView({ block }: { block: ToolUseBlock }) {
+  const output = block.status === "succeeded" ? block.output : undefined;
+  const isScore = block.name === SCORE_TOOL && output !== undefined;
+  const score = useMemo(() => (isScore ? parseScoreResult(output) : null), [isScore, output]);
+  if (!score?.ok) return <ToolCard block={block} />;
+  return (
+    <FenceBoundary key={JSON.stringify(output)} fallback={<ToolCard block={block} />}>
+      <ToolCard block={block} score={score.result} />
+    </FenceBoundary>
+  );
+}
+
+function ToolCard({ block, score }: { block: ToolUseBlock; score?: ScoreResult }) {
   const [open, setOpen] = useState(false);
   const bodyId = useId();
-  const summary = summarize(block.input);
+  const summary: ReactNode = score ? (open ? "Hide data" : "Show data") : summarize(block.input);
 
   return (
     <section className="tool-card" data-status={block.status} data-open={open}>
@@ -44,6 +64,12 @@ export function ToolUseBlockView({ block }: { block: ToolUseBlock }) {
         </span>
         <ChevronIcon size={14} className="tool-card__chevron" />
       </button>
+
+      {score && (
+        <div className="tool-card__score">
+          <ScoreView result={score} />
+        </div>
+      )}
 
       <div id={bodyId} className="tool-card__body" hidden={!open}>
         <div className="tool-card__section">
