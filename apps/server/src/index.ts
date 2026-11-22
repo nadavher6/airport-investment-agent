@@ -1,3 +1,4 @@
+import { homedir } from "node:os";
 import { LlmPassthroughAgent } from "./agent/llmPassthroughAgent.ts";
 import { ClaudeHeadlessClient } from "./llm/claude/claudeHeadlessClient.ts";
 import { GeminiClient } from "./llm/geminiClient.ts";
@@ -13,7 +14,7 @@ try {
 
 const config = loadConfig();
 // The selected model's provider gets every LLM call: a `claude -p` child (claude-headless) or the Gemini API.
-const claude = new ClaudeHeadlessClient({ config: config.claude });
+const claude = new ClaudeHeadlessClient({ config: config.claude, home: homedir() });
 const llmClients = { "claude-headless": claude, gemini: new GeminiClient({ apiKey: config.gemini.apiKey }) };
 const agent = new LlmPassthroughAgent(llmClients);
 const app = createApp({ config, agent, llmClients });

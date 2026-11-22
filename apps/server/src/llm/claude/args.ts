@@ -1,5 +1,8 @@
 import type { LlmMessage } from "../llmClient.ts";
 
+/** Used when the request has no `system`: neutral, with no airport or agent content. */
+export const DEFAULT_SYSTEM_PROMPT = "You are a helpful assistant.";
+
 /**
  * Arguments for one streamed call. The prompt itself goes to stdin (see formatPrompt).
  * It must behave like an API-key endpoint: prompt in, streamed text and thinking out.
@@ -8,7 +11,9 @@ import type { LlmMessage } from "../llmClient.ts";
  *   no session persistence .... --no-session-persistence
  *   empty temp working dir .... not a flag: the caller spawns the child with cwd = a fresh mkdtemp dir
  * `--setting-sources ""` keeps user/project settings (hooks, permissions) out, as the issue lists.
- * `system` is passed through only when given; nothing in this repo sets it yet.
+ * `--system-prompt` is ALWAYS passed, so Claude Code's own coding-agent prompt is replaced, never kept or
+ * appended to (it describes tools, and with tools off the model then writes tool calls as text):
+ * `system` when given, otherwise the neutral DEFAULT_SYSTEM_PROMPT. Nothing in this repo sets `system`.
  */
 export function chatClaudeArgs(model: string | undefined, system?: string): string[] {
   return [
@@ -24,7 +29,8 @@ export function chatClaudeArgs(model: string | undefined, system?: string): stri
     "--verbose",
     "--include-partial-messages",
     ...(model ? ["--model", model] : []),
-    ...(system !== undefined ? ["--system-prompt", system] : []),
+    "--system-prompt",
+    system ?? DEFAULT_SYSTEM_PROMPT,
   ];
 }
 
@@ -43,8 +49,23 @@ export function formatPrompt(messages: readonly LlmMessage[]): string {
   );
 }
 
-/** Env for the child: our own env minus the markers that make `claude` think it is nested in another session. */
+/** Exact variable names the child may inherit. */
+const ENV_ALLOW = new Set([
+  "PATH", "HOME", "USER", "LOGNAME", "SHELL", "LANG", "TERM", "TMPDIR", "TMP", "TEMP",
+  "HTTP_PROXY", "HTTPS_PROXY", "NO_PROXY", "http_proxy", "https_proxy", "no_proxy",
+  "NODE_EXTRA_CA_CERTS", "SSL_CERT_FILE",
+]);
+/** Markers that make `claude` think it is nested in another Claude Code session. */
+const ENV_DROP = new Set(["CLAUDECODE", "CLAUDE_CODE_ENTRYPOINT"]);
+const allowed = (name: string): boolean =>
+  !ENV_DROP.has(name) && (ENV_ALLOW.has(name) || name.startsWith("LC_") || name.startsWith("CLAUDE_"));
+
+/**
+ * Env for the child: an allowlist of our env (system basics, locale, proxies, CLAUDE_*), so provider keys
+ * loaded from .env never reach it. In particular an ANTHROPIC_API_KEY would make `claude -p` bill that
+ * key instead of the owner's login. CLAUDE_CODE_DISABLE_AUTO_MEMORY=1 stops the per-cwd memory folder.
+ */
 export function childEnv(env: NodeJS.ProcessEnv = process.env): NodeJS.ProcessEnv {
-  const { CLAUDECODE: _nested, CLAUDE_CODE_ENTRYPOINT: _entry, ...rest } = env;
-  return rest;
+  const kept = Object.entries(env).filter(([name, value]) => value !== undefined && allowed(name));
+  return { ...Object.fromEntries(kept), CLAUDE_CODE_DISABLE_AUTO_MEMORY: "1" };
 }
