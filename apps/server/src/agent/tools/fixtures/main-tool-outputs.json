@@ -1,0 +1,914 @@
+{
+  "get_enplanements": {
+    "LAX": {
+      "airportCode": "LAX",
+      "name": "Los Angeles International",
+      "city": "Los Angeles",
+      "state": "CA",
+      "hubType": "L",
+      "series": [
+        {
+          "year": 2015,
+          "enplanements": 36351272,
+          "rank": 2,
+          "hubType": "L"
+        },
+        {
+          "year": 2016,
+          "enplanements": 39636042,
+          "rank": 2,
+          "hubType": "L"
+        },
+        {
+          "year": 2017,
+          "enplanements": 41232432,
+          "rank": 2,
+          "hubType": "L"
+        },
+        {
+          "year": 2018,
+          "enplanements": 42624050,
+          "rank": 2,
+          "hubType": "L"
+        },
+        {
+          "year": 2019,
+          "enplanements": 42939104,
+          "rank": 2,
+          "hubType": "L"
+        },
+        {
+          "year": 2020,
+          "enplanements": 14055777,
+          "rank": 5,
+          "hubType": "L"
+        },
+        {
+          "year": 2021,
+          "enplanements": 23663410,
+          "rank": 5,
+          "hubType": "L"
+        },
+        {
+          "year": 2022,
+          "enplanements": 32326616,
+          "rank": 5,
+          "hubType": "L"
+        },
+        {
+          "year": 2023,
+          "enplanements": 40956673,
+          "rank": 2,
+          "hubType": "L"
+        },
+        {
+          "year": 2024,
+          "enplanements": 37760834,
+          "rank": 5,
+          "hubType": "L"
+        }
+      ],
+      "latest": {
+        "year": 2024,
+        "enplanements": 37760834,
+        "priorYear": 40956673,
+        "yoyChangePct": -7.803,
+        "rank": 5
+      },
+      "trend": {
+        "cagr5yr": -2.5375,
+        "cagr10yr": 0.4236,
+        "recoveryVs2019": 0.8794
+      },
+      "source": "FAA Passenger Boarding (Enplanement) Data"
+    },
+    " lax ": {
+      "airportCode": "LAX",
+      "name": "Los Angeles International",
+      "city": "Los Angeles",
+      "state": "CA",
+      "hubType": "L",
+      "series": [
+        {
+          "year": 2015,
+          "enplanements": 36351272,
+          "rank": 2,
+          "hubType": "L"
+        },
+        {
+          "year": 2016,
+          "enplanements": 39636042,
+          "rank": 2,
+          "hubType": "L"
+        },
+        {
+          "year": 2017,
+          "enplanements": 41232432,
+          "rank": 2,
+          "hubType": "L"
+        },
+        {
+          "year": 2018,
+          "enplanements": 42624050,
+          "rank": 2,
+          "hubType": "L"
+        },
+        {
+          "year": 2019,
+          "enplanements": 42939104,
+          "rank": 2,
+          "hubType": "L"
+        },
+        {
+          "year": 2020,
+          "enplanements": 14055777,
+          "rank": 5,
+          "hubType": "L"
+        },
+        {
+          "year": 2021,
+          "enplanements": 23663410,
+          "rank": 5,
+          "hubType": "L"
+        },
+        {
+          "year": 2022,
+          "enplanements": 32326616,
+          "rank": 5,
+          "hubType": "L"
+        },
+        {
+          "year": 2023,
+          "enplanements": 40956673,
+          "rank": 2,
+          "hubType": "L"
+        },
+        {
+          "year": 2024,
+          "enplanements": 37760834,
+          "rank": 5,
+          "hubType": "L"
+        }
+      ],
+      "latest": {
+        "year": 2024,
+        "enplanements": 37760834,
+        "priorYear": 40956673,
+        "yoyChangePct": -7.803,
+        "rank": 5
+      },
+      "trend": {
+        "cagr5yr": -2.5375,
+        "cagr10yr": 0.4236,
+        "recoveryVs2019": 0.8794
+      },
+      "source": "FAA Passenger Boarding (Enplanement) Data"
+    },
+    "ZZZ": {
+      "airport_code": "ZZZ",
+      "error": "no_enplanement_data"
+    },
+    "KLAX": {
+      "airport_code": "KLAX",
+      "error": "no_enplanement_data"
+    }
+  },
+  "get_airport_by_code": {
+    "LAX": {
+      "code": "LAX",
+      "name": "Los Angeles International",
+      "city": "Los Angeles",
+      "state": "CA",
+      "hubType": "L",
+      "latestEnplanements": 37760834
+    },
+    "jfk": {
+      "code": "JFK",
+      "name": "John F Kennedy International",
+      "city": "New York",
+      "state": "NY",
+      "hubType": "L",
+      "latestEnplanements": 31466102
+    },
+    "ZZZ": {
+      "error": "not_found"
+    }
+  },
+  "find_airports_by_city": [
+    {
+      "cities": [
+        "New York",
+        "Bay Area"
+      ],
+      "output": {
+        "results": {
+          "New York": {
+            "matchedAs": "metro",
+            "airports": [
+              {
+                "code": "JFK",
+                "name": "John F Kennedy International",
+                "city": "New York",
+                "state": "NY",
+                "hubType": "L",
+                "latestEnplanements": 31466102,
+                "secondary": false
+              },
+              {
+                "code": "EWR",
+                "name": "Newark Liberty International",
+                "city": "Newark",
+                "state": "NJ",
+                "hubType": "L",
+                "latestEnplanements": 24544320,
+                "secondary": false
+              },
+              {
+                "code": "LGA",
+                "name": "Laguardia",
+                "city": "New York",
+                "state": "NY",
+                "hubType": "L",
+                "latestEnplanements": 16715567,
+                "secondary": false
+              },
+              {
+                "code": "HPN",
+                "name": "Westchester County",
+                "city": "White Plains",
+                "state": "NY",
+                "hubType": "S",
+                "latestEnplanements": 1182384,
+                "secondary": true
+              },
+              {
+                "code": "ISP",
+                "name": "Long Island MacArthur",
+                "city": "Islip",
+                "state": "NY",
+                "hubType": "S",
+                "latestEnplanements": 682804,
+                "secondary": true
+              }
+            ]
+          },
+          "Bay Area": {
+            "matchedAs": "metro",
+            "airports": [
+              {
+                "code": "SFO",
+                "name": "San Francisco International",
+                "city": "San Francisco International Airport",
+                "state": "CA",
+                "hubType": "L",
+                "latestEnplanements": 25078968,
+                "secondary": false
+              },
+              {
+                "code": "SJC",
+                "name": "Norman Y Mineta San Jose International",
+                "city": "San Jose",
+                "state": "CA",
+                "hubType": "M",
+                "latestEnplanements": 5822019,
+                "secondary": false
+              },
+              {
+                "code": "OAK",
+                "name": "Oakland San Francisco Bay",
+                "city": "Oakland",
+                "state": "CA",
+                "hubType": "M",
+                "latestEnplanements": 5292736,
+                "secondary": false
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "cities": [
+        "Boston",
+        "NYC"
+      ],
+      "output": {
+        "results": {
+          "Boston": {
+            "matchedAs": "metro",
+            "airports": [
+              {
+                "code": "BOS",
+                "name": "General Edward Lawrence Logan International",
+                "city": "Boston",
+                "state": "MA",
+                "hubType": "L",
+                "latestEnplanements": 21090721,
+                "secondary": false
+              },
+              {
+                "code": "PVD",
+                "name": "Rhode Island Tf Green International",
+                "city": "Warwick",
+                "state": "RI",
+                "hubType": "S",
+                "latestEnplanements": 1984916,
+                "secondary": true
+              },
+              {
+                "code": "MHT",
+                "name": "Manchester Boston Regional",
+                "city": "Manchester",
+                "state": "NH",
+                "hubType": "S",
+                "latestEnplanements": 633257,
+                "secondary": true
+              }
+            ]
+          },
+          "NYC": {
+            "matchedAs": "metro",
+            "airports": [
+              {
+                "code": "JFK",
+                "name": "John F Kennedy International",
+                "city": "New York",
+                "state": "NY",
+                "hubType": "L",
+                "latestEnplanements": 31466102,
+                "secondary": false
+              },
+              {
+                "code": "EWR",
+                "name": "Newark Liberty International",
+                "city": "Newark",
+                "state": "NJ",
+                "hubType": "L",
+                "latestEnplanements": 24544320,
+                "secondary": false
+              },
+              {
+                "code": "LGA",
+                "name": "Laguardia",
+                "city": "New York",
+                "state": "NY",
+                "hubType": "L",
+                "latestEnplanements": 16715567,
+                "secondary": false
+              },
+              {
+                "code": "HPN",
+                "name": "Westchester County",
+                "city": "White Plains",
+                "state": "NY",
+                "hubType": "S",
+                "latestEnplanements": 1182384,
+                "secondary": true
+              },
+              {
+                "code": "ISP",
+                "name": "Long Island MacArthur",
+                "city": "Islip",
+                "state": "NY",
+                "hubType": "S",
+                "latestEnplanements": 682804,
+                "secondary": true
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "cities": [
+        "Bostn"
+      ],
+      "output": {
+        "results": {
+          "Bostn": {
+            "airports": [],
+            "reason": "no_match",
+            "suggestions": [
+              "Boston"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "cities": [
+        "Boston",
+        "Nowhere 0",
+        "Nowhere 1",
+        "Nowhere 2",
+        "Nowhere 3",
+        "Nowhere 4",
+        "Nowhere 5",
+        "Nowhere 6",
+        "Nowhere 7",
+        "Nowhere 8",
+        "Nowhere 9",
+        "Nowhere 10",
+        "Nowhere 11",
+        "Nowhere 12",
+        "Nowhere 13",
+        "Nowhere 14",
+        "Nowhere 15",
+        "Nowhere 16",
+        "Nowhere 17",
+        "Nowhere 18",
+        "Nowhere 19",
+        "Nowhere 20",
+        "Nowhere 21",
+        "Nowhere 22",
+        "Nowhere 23",
+        "Nowhere 24",
+        "Nowhere 25",
+        "Nowhere 26",
+        "Nowhere 27",
+        "Nowhere 28",
+        "Nowhere 29",
+        "Nowhere 30",
+        "Nowhere 31",
+        "Nowhere 32",
+        "Nowhere 33",
+        "Nowhere 34",
+        "Nowhere 35",
+        "Nowhere 36",
+        "Nowhere 37",
+        "Nowhere 38",
+        "Nowhere 39",
+        "Nowhere 40",
+        "Nowhere 41",
+        "Nowhere 42",
+        "Nowhere 43",
+        "Nowhere 44",
+        "Nowhere 45",
+        "Nowhere 46",
+        "Nowhere 47",
+        "Nowhere 48",
+        "Nowhere 49",
+        "Nowhere 50"
+      ],
+      "output": {
+        "results": {
+          "Boston": {
+            "matchedAs": "metro",
+            "airports": [
+              {
+                "code": "BOS",
+                "name": "General Edward Lawrence Logan International",
+                "city": "Boston",
+                "state": "MA",
+                "hubType": "L",
+                "latestEnplanements": 21090721,
+                "secondary": false
+              },
+              {
+                "code": "PVD",
+                "name": "Rhode Island Tf Green International",
+                "city": "Warwick",
+                "state": "RI",
+                "hubType": "S",
+                "latestEnplanements": 1984916,
+                "secondary": true
+              },
+              {
+                "code": "MHT",
+                "name": "Manchester Boston Regional",
+                "city": "Manchester",
+                "state": "NH",
+                "hubType": "S",
+                "latestEnplanements": 633257,
+                "secondary": true
+              }
+            ]
+          },
+          "Nowhere 0": {
+            "airports": [],
+            "reason": "no_match"
+          },
+          "Nowhere 1": {
+            "airports": [],
+            "reason": "no_match"
+          },
+          "Nowhere 2": {
+            "airports": [],
+            "reason": "no_match"
+          },
+          "Nowhere 3": {
+            "airports": [],
+            "reason": "no_match"
+          },
+          "Nowhere 4": {
+            "airports": [],
+            "reason": "no_match"
+          },
+          "Nowhere 5": {
+            "airports": [],
+            "reason": "no_match"
+          },
+          "Nowhere 6": {
+            "airports": [],
+            "reason": "no_match"
+          },
+          "Nowhere 7": {
+            "airports": [],
+            "reason": "no_match"
+          },
+          "Nowhere 8": {
+            "airports": [],
+            "reason": "no_match"
+          },
+          "Nowhere 9": {
+            "airports": [],
+            "reason": "no_match"
+          },
+          "Nowhere 10": {
+            "airports": [],
+            "reason": "no_match"
+          },
+          "Nowhere 11": {
+            "airports": [],
+            "reason": "no_match"
+          },
+          "Nowhere 12": {
+            "airports": [],
+            "reason": "no_match"
+          },
+          "Nowhere 13": {
+            "airports": [],
+            "reason": "no_match"
+          },
+          "Nowhere 14": {
+            "airports": [],
+            "reason": "no_match"
+          },
+          "Nowhere 15": {
+            "airports": [],
+            "reason": "no_match"
+          },
+          "Nowhere 16": {
+            "airports": [],
+            "reason": "no_match"
+          },
+          "Nowhere 17": {
+            "airports": [],
+            "reason": "no_match"
+          },
+          "Nowhere 18": {
+            "airports": [],
+            "reason": "no_match"
+          },
+          "Nowhere 19": {
+            "airports": [],
+            "reason": "no_match"
+          },
+          "Nowhere 20": {
+            "airports": [],
+            "reason": "no_match"
+          },
+          "Nowhere 21": {
+            "airports": [],
+            "reason": "no_match"
+          },
+          "Nowhere 22": {
+            "airports": [],
+            "reason": "no_match"
+          },
+          "Nowhere 23": {
+            "airports": [],
+            "reason": "no_match"
+          },
+          "Nowhere 24": {
+            "airports": [],
+            "reason": "no_match"
+          },
+          "Nowhere 25": {
+            "airports": [],
+            "reason": "no_match"
+          },
+          "Nowhere 26": {
+            "airports": [],
+            "reason": "no_match"
+          },
+          "Nowhere 27": {
+            "airports": [],
+            "reason": "no_match"
+          },
+          "Nowhere 28": {
+            "airports": [],
+            "reason": "no_match"
+          },
+          "Nowhere 29": {
+            "airports": [],
+            "reason": "no_match"
+          },
+          "Nowhere 30": {
+            "airports": [],
+            "reason": "no_match"
+          },
+          "Nowhere 31": {
+            "airports": [],
+            "reason": "no_match"
+          },
+          "Nowhere 32": {
+            "airports": [],
+            "reason": "no_match"
+          },
+          "Nowhere 33": {
+            "airports": [],
+            "reason": "no_match"
+          },
+          "Nowhere 34": {
+            "airports": [],
+            "reason": "no_match"
+          },
+          "Nowhere 35": {
+            "airports": [],
+            "reason": "no_match"
+          },
+          "Nowhere 36": {
+            "airports": [],
+            "reason": "no_match"
+          },
+          "Nowhere 37": {
+            "airports": [],
+            "reason": "no_match"
+          },
+          "Nowhere 38": {
+            "airports": [],
+            "reason": "no_match"
+          },
+          "Nowhere 39": {
+            "airports": [],
+            "reason": "no_match"
+          },
+          "Nowhere 40": {
+            "airports": [],
+            "reason": "no_match"
+          },
+          "Nowhere 41": {
+            "airports": [],
+            "reason": "no_match"
+          },
+          "Nowhere 42": {
+            "airports": [],
+            "reason": "no_match"
+          },
+          "Nowhere 43": {
+            "airports": [],
+            "reason": "no_match"
+          },
+          "Nowhere 44": {
+            "airports": [],
+            "reason": "no_match"
+          },
+          "Nowhere 45": {
+            "airports": [],
+            "reason": "no_match"
+          },
+          "Nowhere 46": {
+            "airports": [],
+            "reason": "no_match"
+          },
+          "Nowhere 47": {
+            "airports": [],
+            "reason": "no_match"
+          },
+          "Nowhere 48": {
+            "airports": [],
+            "reason": "no_match"
+          }
+        },
+        "truncated": {
+          "limit": 50,
+          "omitted": 2
+        }
+      }
+    }
+  ],
+  "find_airports_by_region": {
+    "West Coast": {
+      "region": "West Coast",
+      "matchedAs": "region",
+      "cities": [
+        "Seattle",
+        "Portland",
+        "San Francisco Bay Area",
+        "Los Angeles",
+        "San Diego"
+      ],
+      "results": {
+        "Seattle": {
+          "matchedAs": "metro",
+          "airports": [
+            {
+              "code": "SEA",
+              "name": "Seattle-Tacoma International",
+              "city": "Seattle",
+              "state": "WA",
+              "hubType": "L",
+              "latestEnplanements": 25414592,
+              "secondary": false
+            }
+          ]
+        },
+        "Portland": {
+          "matchedAs": "metro",
+          "airports": [
+            {
+              "code": "PDX",
+              "name": "Portland International",
+              "city": "Portland",
+              "state": "OR",
+              "hubType": "M",
+              "latestEnplanements": 8639088,
+              "secondary": false
+            }
+          ]
+        },
+        "San Francisco Bay Area": {
+          "matchedAs": "metro",
+          "airports": [
+            {
+              "code": "SFO",
+              "name": "San Francisco International",
+              "city": "San Francisco International Airport",
+              "state": "CA",
+              "hubType": "L",
+              "latestEnplanements": 25078968,
+              "secondary": false
+            },
+            {
+              "code": "SJC",
+              "name": "Norman Y Mineta San Jose International",
+              "city": "San Jose",
+              "state": "CA",
+              "hubType": "M",
+              "latestEnplanements": 5822019,
+              "secondary": false
+            },
+            {
+              "code": "OAK",
+              "name": "Oakland San Francisco Bay",
+              "city": "Oakland",
+              "state": "CA",
+              "hubType": "M",
+              "latestEnplanements": 5292736,
+              "secondary": false
+            }
+          ]
+        },
+        "Los Angeles": {
+          "matchedAs": "metro",
+          "airports": [
+            {
+              "code": "LAX",
+              "name": "Los Angeles International",
+              "city": "Los Angeles",
+              "state": "CA",
+              "hubType": "L",
+              "latestEnplanements": 37760834,
+              "secondary": false
+            },
+            {
+              "code": "SNA",
+              "name": "John Wayne/Orange County",
+              "city": "Santa Ana",
+              "state": "CA",
+              "hubType": "M",
+              "latestEnplanements": 5370273,
+              "secondary": true
+            },
+            {
+              "code": "ONT",
+              "name": "Ontario International",
+              "city": "Ontario",
+              "state": "CA",
+              "hubType": "M",
+              "latestEnplanements": 3494554,
+              "secondary": true
+            },
+            {
+              "code": "BUR",
+              "name": "Bob Hope",
+              "city": "Burbank",
+              "state": "CA",
+              "hubType": "M",
+              "latestEnplanements": 3383237,
+              "secondary": true
+            },
+            {
+              "code": "LGB",
+              "name": "Long Beach (Daugherty Field)",
+              "city": "Long Beach",
+              "state": "CA",
+              "hubType": "S",
+              "latestEnplanements": 2031810,
+              "secondary": true
+            }
+          ]
+        },
+        "San Diego": {
+          "matchedAs": "metro",
+          "airports": [
+            {
+              "code": "SAN",
+              "name": "San Diego International",
+              "city": "San Diego",
+              "state": "CA",
+              "hubType": "L",
+              "latestEnplanements": 12780013,
+              "secondary": false
+            }
+          ]
+        }
+      }
+    },
+    "Pacific Northwest": {
+      "region": "Pacific Northwest",
+      "matchedAs": "region",
+      "cities": [
+        "Seattle",
+        "Portland",
+        "Spokane",
+        "Eugene"
+      ],
+      "results": {
+        "Seattle": {
+          "matchedAs": "metro",
+          "airports": [
+            {
+              "code": "SEA",
+              "name": "Seattle-Tacoma International",
+              "city": "Seattle",
+              "state": "WA",
+              "hubType": "L",
+              "latestEnplanements": 25414592,
+              "secondary": false
+            }
+          ]
+        },
+        "Portland": {
+          "matchedAs": "metro",
+          "airports": [
+            {
+              "code": "PDX",
+              "name": "Portland International",
+              "city": "Portland",
+              "state": "OR",
+              "hubType": "M",
+              "latestEnplanements": 8639088,
+              "secondary": false
+            }
+          ]
+        },
+        "Spokane": {
+          "matchedAs": "metro",
+          "airports": [
+            {
+              "code": "GEG",
+              "name": "Spokane International",
+              "city": "Spokane",
+              "state": "WA",
+              "hubType": "S",
+              "latestEnplanements": 2064142,
+              "secondary": false
+            }
+          ]
+        },
+        "Eugene": {
+          "matchedAs": "metro",
+          "airports": [
+            {
+              "code": "EUG",
+              "name": "Mahlon Sweet Field",
+              "city": "Eugene",
+              "state": "OR",
+              "hubType": "S",
+              "latestEnplanements": 824952,
+              "secondary": false
+            }
+          ]
+        }
+      }
+    },
+    "Wst Coast": {
+      "region": "Wst Coast",
+      "cities": [],
+      "results": {},
+      "reason": "no_match",
+      "suggestions": [
+        "East Coast",
+        "West Coast"
+      ]
+    },
+    "Texas": {
+      "region": "Texas",
+      "cities": [],
+      "results": {},
+      "reason": "no_match"
+    }
+  }
+}

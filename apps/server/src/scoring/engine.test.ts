@@ -67,3 +67,26 @@ describe("buildScorer", () => {
     expect(Math.round(sum * 10) / 10).toBe(scored.score);
   });
 });
+
+describe("rank tie-break", () => {
+  interface Tied {
+    readonly code: string;
+    readonly v: number;
+  }
+  const kpi: KpiDef<Tied> = { key: "v", label: "v", weight: 1, direction: "higher", extract: (r) => r.v };
+  // C and A tie at the top, D and B tie at the bottom.
+  const items: Tied[] = [
+    { code: "C", v: 10 },
+    { code: "D", v: 0 },
+    { code: "A", v: 10 },
+    { code: "B", v: 0 },
+  ];
+
+  it("orders by score descending, then the tie-break key ascending, for forward and reversed input", () => {
+    const scorer = buildScorer(items, [kpi], { tieBreak: (r) => r.code });
+    const forward = scorer.rank(items).map((s) => s.item.code);
+    const reversed = scorer.rank([...items].reverse()).map((s) => s.item.code);
+    expect(forward).toEqual(["A", "C", "B", "D"]);
+    expect(reversed).toEqual(forward);
+  });
+});

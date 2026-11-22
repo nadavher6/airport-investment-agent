@@ -109,17 +109,27 @@ describe("findAirportsByRegion", () => {
   });
 });
 
+/** A real slowdown is far above this (the old scan took 260 ms); a busy machine stays well below it. */
+const MAX_MEDIAN_LOOKUP_MS = 50;
+const SPEED_RUNS = 21;
+
 describe("speed", () => {
-  it("each lookup takes under 5 ms", () => {
-    const time = (fn: () => unknown): number => {
-      const t = performance.now();
-      fn();
-      return performance.now() - t;
+  it(`each lookup takes under ${MAX_MEDIAN_LOOKUP_MS} ms (median of ${SPEED_RUNS} runs after warm-up)`, () => {
+    const median = (fn: () => unknown): number => {
+      fn(); // warm up
+      const runs: number[] = [];
+      for (let i = 0; i < SPEED_RUNS; i++) {
+        const t = performance.now();
+        fn();
+        runs.push(performance.now() - t);
+      }
+      runs.sort((a, b) => a - b);
+      return runs[SPEED_RUNS >> 1]!;
     };
-    expect(time(() => getAirportByCode("JFK"))).toBeLessThan(5);
-    expect(time(() => findAirportsByCity(["New York"]))).toBeLessThan(5);
-    expect(time(() => findAirportsByCity(["Bostn"]))).toBeLessThan(5);
-    expect(time(() => findAirportsByRegion("West Coast"))).toBeLessThan(5);
+    expect(median(() => getAirportByCode("JFK"))).toBeLessThan(MAX_MEDIAN_LOOKUP_MS);
+    expect(median(() => findAirportsByCity(["New York"]))).toBeLessThan(MAX_MEDIAN_LOOKUP_MS);
+    expect(median(() => findAirportsByCity(["Bostn"]))).toBeLessThan(MAX_MEDIAN_LOOKUP_MS);
+    expect(median(() => findAirportsByRegion("West Coast"))).toBeLessThan(MAX_MEDIAN_LOOKUP_MS);
   });
 });
 

@@ -13,7 +13,7 @@ import { resolveFocus } from "./memory/focus.ts";
 import { buildSystemPrompt } from "./prompt.ts";
 import { CAPABILITIES_ANSWER } from "./responses/capabilities.ts";
 import { OFF_TOPIC_ANSWER } from "./responses/offTopic.ts";
-import { ALL_TOOLS, toolsByName } from "./tools/registry.ts";
+import { TOOLS, getTool } from "./tools/registry.ts";
 import { toWireResult } from "./tools/tool.ts";
 import { parseToolCall } from "./toolCall.ts";
 
@@ -78,7 +78,7 @@ export class ToolAgent implements Agent {
     const convId = conversationId(messages);
     const focus = resolveFocus(lastUser, this.memory.state(convId));
     const focusedRecords = selectFocusedRecords(this.memory.state(convId).workingSet, focus.codes);
-    const assembled = assembleRequest({ systemPrompt: buildSystemPrompt(ALL_TOOLS), history: messages, focusedRecords });
+    const assembled = assembleRequest({ systemPrompt: buildSystemPrompt(TOOLS), history: messages, focusedRecords });
     const convo: LlmMessage[] = [...assembled.messages];
     const model = mainModel(client.provider, this.claudeMainModel);
 
@@ -128,7 +128,7 @@ export class ToolAgent implements Agent {
           return;
         }
 
-        const call = parseToolCall(buffer, (n) => toolsByName.has(n));
+        const call = parseToolCall(buffer, (n) => getTool(n) !== undefined);
         if (call === null) {
           // Looked like JSON but wasn't a valid tool call: show it as the answer.
           yield* endThinking();
@@ -140,7 +140,9 @@ export class ToolAgent implements Agent {
         yield* endThinking();
         const toolCallId = asToolCallId(randomUUID());
         yield { type: "tool_call", messageId, toolCallId, name: call.name, input: call.input };
-        const result = await toolsByName.get(call.name)!.run(call.input, { signal: input.signal });
+        const tool = getTool(call.name);
+        if (tool === undefined) throw new Error(`unknown tool ${call.name}`);
+        const result = await tool.run(call.input, { signal: input.signal });
         const wire = toWireResult(result);
         yield { type: "tool_result", messageId, toolCallId, result: wire };
         if (wire.ok) this.memory.record(convId, call.name, wire.output);

@@ -1,5 +1,5 @@
-import { findAirportsByCity, findAirportsByRegion, getAirportByCode } from "../../data/places/airports.ts";
 import { enplanementsDataset } from "../../data/enplanements/dataset.ts";
+import { findAirportsByCity, findAirportsByRegion, getAirportByCode } from "../../data/places/airports.ts";
 import type { CityResult } from "../../data/places/airports.ts";
 import { metrosFile, regionsFile } from "../../data/places/files.ts";
 import { normalizePlace } from "../../data/places/text.ts";
@@ -91,7 +91,7 @@ const CUE_BEFORE: readonly (readonly string[])[] = [
 /** Words right after a lowercase token that mark it as an airport ("den airport", "lax vs"). */
 const CUE_AFTER: ReadonlySet<string> = new Set(["airport", "airports", "vs", "versus"]);
 
-/** The canonical code when get_airport_by_code (#23) confirms the token; else undefined. */
+/** The canonical code when get_airport_by_code's lookup (#23) confirms the token; else undefined. */
 function confirmCode(token: string): string | undefined {
   const found = getAirportByCode(token);
   return "error" in found ? undefined : found.code;
@@ -99,7 +99,7 @@ function confirmCode(token: string): string | undefined {
 
 const cityCodes = (result: CityResult | undefined): string[] => (result ? result.airports.map((a) => a.code) : []);
 
-/** Airports for a place key the index matched; the #23 tools return them (a match never hits the fuzzy path). */
+/** Airports for a place key the index matched; the #23 tool lookups return them (a match never hits the fuzzy path). */
 function placeCodes(key: string, kind: "region" | "city"): string[] {
   if (kind === "region") {
     const region = findAirportsByRegion(key);
