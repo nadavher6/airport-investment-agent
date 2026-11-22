@@ -3,7 +3,8 @@
  * using server-side aggregation so the download is tiny. Per airport, over the latest
  * TRAILING 12 MONTHS available (not a fixed calendar year, so it stays as fresh as BTS
  * publishes — currently ~3 months behind): departures (operations), passengers, seats,
- * domestic seats -> load factor + international share.
+ * domestic seats -> load factor + international share; domestic departures / passengers ->
+ * international departures / passengers (total − domestic; null if unknown or negative).
  *
  * Run: npx tsx src/data/t100/build.ts   (writes ../../../../../data/t100.json)
  */
@@ -34,7 +35,8 @@ async function main(): Promise<void> {
   const params = new URLSearchParams({
     $select:
       "origin_airport_code, sum(total_departures) as departures, sum(total_passengers) as passengers, " +
-      "sum(total_seats) as seats, sum(domestic_seats) as domestic_seats",
+      "sum(total_seats) as seats, sum(domestic_seats) as domestic_seats, " +
+      "sum(domestic_departures) as domestic_departures, sum(domestic_passengers) as domestic_passengers",
     $where: `reporting_month >= '${monthKey(start)}T00:00:00' AND reporting_month <= '${monthKey(end)}T00:00:00'`,
     $group: "origin_airport_code",
     $limit: "50000",

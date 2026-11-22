@@ -1,6 +1,34 @@
 import { KpiTiles } from "../KpiTiles";
 import { seriesColor } from "../parts";
-import { CATEGORIES, formatScore, formatShare, missingText, type Category, type CategoryKey, type RankedAirport } from "./spec";
+import {
+  CATEGORIES,
+  formatIntlFlights,
+  formatIntlPassengers,
+  formatScore,
+  formatShare,
+  internationalFlights,
+  missingText,
+  type Category,
+  type CategoryKey,
+  type Evidence,
+  type RankedAirport,
+} from "./spec";
+
+/**
+ * The long-haul KPI's international flights and passengers (#74), shown next to its evidence and not scored.
+ * Draws nothing for any other category; "—" when the count is missing.
+ */
+export function InternationalFlightsLine({ evidence }: { evidence: Evidence | null | undefined }) {
+  const f = internationalFlights(evidence);
+  if (f === null) return null;
+  return (
+    <p className="score-cat__intl" data-testid="intl-flights">
+      <span className="score-cat__intl-label">International flights:</span> <span data-testid="intl-flights-value">{formatIntlFlights(f)}</span>
+      {" · "}
+      <span className="score-cat__intl-label">International passengers:</span> <span data-testid="intl-passengers-value">{formatIntlPassengers(f)}</span>
+    </p>
+  );
+}
 
 /** A category is shown as computed only when the tool says so and a sub-score is there. */
 export const isComputed = (cat: Category): cat is Category & { subScore: number } =>
@@ -73,6 +101,7 @@ export function CategoryDetail({ cat, showLabel = true }: { cat: Category; showL
       {cat.evidence ? (
         <div className="score-cat__evidence">
           {cat.evidence.explanation ? <p className="score-cat__explanation">{cat.evidence.explanation}</p> : null}
+          <InternationalFlightsLine evidence={cat.evidence} />
           {computed && cat.evidence.formula ? <code className="score-cat__formula">{cat.evidence.formula}</code> : null}
         </div>
       ) : null}

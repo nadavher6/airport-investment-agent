@@ -200,6 +200,16 @@ the FAA files above.
   `total_passengers`, `total_seats` and `domestic_seats` over the window. Per airport: `loadFactor` =
   passengers ÷ seats and `internationalShare` = (seats − domestic seats) ÷ seats, both in percent with 1 decimal;
   airports with no seats are dropped.
+- **International flights and passengers (#74):** the same request also sums `domestic_departures` and
+  `domestic_passengers`. Per airport: `domesticDepartures`, `internationalDepartures` = `departures` − `domesticDepartures`,
+  `domesticPassengers` and `internationalPassengers` = `passengers` − `domesticPassengers` (LAX: 266,820 − 205,105 =
+  61,715 flights; 35,936,676 − 24,629,430 = 11,307,246 passengers). They are **shown, not scored**: the long-haul
+  sub-score stays on the seat share. **Missing is `null`, never 0:** BTS omits a sum when every month is empty
+  (8 of 1,312 airports: 7FL, AXV, CKV, MWL, NIP, PGL, UNU, WSG, all with 0 domestic seats and 1-3 departures), and a
+  domestic figure larger than the total would be a data error and also gives `null` (none in the committed file). T-100
+  "international" means the segment goes to a foreign airport, so it does not separate long-haul from short-haul
+  international (Toronto vs. Tokyo). Rebuilding over the same window changed no existing field (checked: 0 differences
+  in the 1,312 airports' existing fields and in `meta` apart from `builtAt`).
 - **Window: the trailing 12 months** ending at the newest `reporting_month` BTS has when the build runs (not a
   calendar year). The committed file covers **2025-09 to 2026-08** (`meta.periodStart`/`meta.periodEnd`), built
   2026-11-22, **1,312 airports**. A rebuild later moves the window and changes the scores.

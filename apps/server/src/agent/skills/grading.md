@@ -21,6 +21,7 @@ what the scoring code computes today (they follow `INVESTMENT_KPIS` in `apps/ser
      - international passengers spend more;
      - customs facilities are expensive and hard to copy, so this traffic is sticky and high-margin.
    - **Status:** computed (BTS T-100, latest 12 months): international seats ÷ total seats; sub-score = that share ÷ 50% × 100, capped at 100.
+   - **Also shown, not scored:** the number of international flights (T-100 departures − domestic departures, out of all departures) and the number of international passengers (total − domestic), e.g. LAX: 61,715 of 266,820 departures. "International" here means the segment goes to a foreign airport, so it does not separate long-haul from short-haul international (Toronto vs. Tokyo). Missing when the T-100 data has no domestic figure for the airport.
 4. **Growth: "Is demand real and lasting?"**
    - **Meaning:** is traffic truly rising over the years, or was a busy year a fluke?
    - **How:** the 5-year passenger (enplanement) growth rate, CY2019→CY2024, in percent per year. Rising means durable demand; falling means risky.
