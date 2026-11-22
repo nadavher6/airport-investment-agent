@@ -1,6 +1,7 @@
 export type ApiErrorCode =
   | "bad_request"
   | "not_found"
+  | "payload_too_large"
   | "model_unavailable"
   | "internal";
 

@@ -1,4 +1,5 @@
 import type { ModelProvider } from "@airport/shared";
+import packageJson from "../package.json" with { type: "json" };
 
 export interface ServerConfig {
   readonly port: number;
@@ -25,9 +26,10 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ServerConfig {
   const providers = Object.entries(PROVIDER_KEY_ENV) as [ModelProvider, string][];
   return {
     port: parsePort(env.PORT, 8787),
-    version: env.npm_package_version ?? "0.0.0",
+    // From package.json, not npm_package_version, which is unset when started without npm.
+    version: packageJson.version,
     configuredProviders: new Set(
-      providers.filter(([, envVar]) => Boolean(env[envVar])).map(([provider]) => provider),
+      providers.filter(([, envVar]) => Boolean(env[envVar]?.trim())).map(([provider]) => provider),
     ),
   };
 }
