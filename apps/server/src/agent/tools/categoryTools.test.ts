@@ -149,6 +149,19 @@ describe("golden: each category tool equals score_airports' breakdown (#61)", ()
     expect(out.mode).toBe("absolute");
   });
 
+  it("pins long-haul (#57: share out of 50%) to score_airports in both modes: LAX 30.8% -> 61.6", async () => {
+    const out = await call(getLongHaulShareTool, ["LAX", "SNA", "ATL"]);
+    expect(out.scale).toBe("percent");
+    const lax = out.airports.find((a) => a.airportCode === "LAX")!;
+    expect(lax.raw).toBe(30.8);
+    expect(lax.subScore).toBe(61.6);
+    const relative = await score(["LAX", "SNA", "ATL"]);
+    for (const a of out.airports) {
+      expect(a.subScore).toBe(entry(relative, a.airportCode, "long_haul").subScore);
+      expect(a.subScore).toBe(entry(await score([a.airportCode]), a.airportCode, "long_haul").subScore);
+    }
+  });
+
   it("pins LAX / SNA / ATL unmet demand (percent scale) to the same numbers in both modes", async () => {
     const out = await call(getUnmetDemandTool, ["LAX", "SNA", "ATL"]);
     const relative = await score(["LAX", "SNA", "ATL"]);
