@@ -166,6 +166,47 @@ describe("tool loop guardrails (#49)", () => {
     expect(textOf(events)).toMatch(/^Let me check\.\n+BOS is busy\.$/);
   });
 
+  // Review M1: the call is found in any key order, after a lead-in, in a fence; unquoted keys are fed back.
+  it.each([
+    ["the keys in {input, tool} order after a lead-in", 'Let me check. {"input":{"code":"BOS"},"tool":"lookup"}', true],
+    ["a ```json fence after a lead-in", 'Checking:\n```json\n{"input": {"code": "BOS"}, "tool": "lookup"}\n```', true],
+    ["unquoted keys after a lead-in", 'Let me check. {tool: "lookup", input: {code: "BOS"}}', false],
+    ["unquoted keys and values in a fence", "Checking:\n```json\n{tool: lookup, input: {code: BOS}}\n```", false],
+  ])("%s: no raw tool JSON reaches the text", async (_label, reply, runs) => {
+    const { client, requests } = fakeClient([reply, GOOD, "BOS is busy."]);
+    const events = await runLoop(client);
+    const text = textOf(events);
+    expect(text).not.toMatch(/tool|input|\{/);
+    expect(text.endsWith("BOS is busy.")).toBe(true);
+    if (runs) {
+      // A well-formed call runs at once; the identical GOOD retry is then a repeat_call.
+      expect(loopResults(events)[0]).toEqual({ ok: true, output: { code: "BOS", passengers: 1000 } });
+    } else {
+      expect(loopResults(events).map((r) => r.ok)).toEqual([false, true]);
+      expect(feedbackBefore(requests, 1)).toContain("code: unparseable");
+    }
+  });
+
+  it("prose that only mentions {\"tool\": ...} is the answer, shown whole, with no tool card (review m3)", async () => {
+    const prose = 'You could call {"tool": get_enplanements} yourself, or ask me.';
+    const { client, requests } = fakeClient([prose]);
+    const events = await runLoop(client);
+    expect(loopCalls(events)).toHaveLength(0);
+    expect(requests).toHaveLength(1);
+    expect(textOf(events)).toBe(prose);
+  });
+
+  it("a retry after tool_failed unavailable runs again; it is not a repeat_call (review m2)", async () => {
+    const err = '{"tool":"lookup","input":{"code":"ERR"}}';
+    const { client, requests } = fakeClient([err, err, "The data source is down."]);
+    const events = await runLoop(client);
+    expect(loopResults(events)).toEqual([
+      { ok: false, errorMessage: "The data source is unavailable (tool_failed: unavailable)." },
+      { ok: false, errorMessage: "The data source is unavailable (tool_failed: unavailable)." },
+    ]);
+    expect(feedbackBefore(requests, 2)).not.toContain("repeat_call");
+  });
+
   it("invalid attempts count toward the step cap", async () => {
     const valid = (i: number) => `{"tool":"list_cities","input":{"cities":["c${i}"]}}`;
     const bad = '{"tool":"delete_db","input":{}}';
@@ -259,8 +300,8 @@ describe("guardrails in the real agent with the registry tools (#49)", () => {
     const events = await runAgent(client);
     const feedback = feedbackBefore(requests, 1);
     expect(feedback).toContain("code: invalid_input");
-    expect(feedback).toContain("tool: score_airports");
-    expect(feedback).toContain(`problem: airport_codes — ${TOO_MANY_AIRPORTS}`);
+    expect(feedback).toContain('tool: "score_airports"');
+    expect(feedback).toContain(`problem: "airport_codes — ${TOO_MANY_AIRPORTS}"`);
     expect(feedback).toContain(`expected input (JSON Schema): ${scoreSchema}`);
     expect(loopResults(events).map((r) => r.ok)).toEqual([false, true]);
     expect(textOf(events)).toBe("LAX scores higher than BOS.");

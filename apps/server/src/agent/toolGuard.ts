@@ -20,6 +20,11 @@ export const MAX_TOOL_STEPS = 6;
  */
 export const MAX_INVALID_RETRIES = 2;
 
+/** The longest model-controlled value (tool name, raw text, problem, error message) echoed anywhere. */
+export const MAX_ECHO_CHARS = 200;
+/** Marks a value cut at MAX_ECHO_CHARS. */
+export const ECHO_ELLIPSIS = "…[truncated]";
+
 // ---------------------------------------------------------------------------
 // Validation + run.
 // ---------------------------------------------------------------------------
@@ -62,7 +67,8 @@ export type LoopRule = (call: ParsedToolCall) => string | null;
 
 /**
  * Check a parsed call against the allowed tools and this turn's earlier calls, then run it.
- * `seen` holds the keys of calls already run this turn; a call that runs is added to it.
+ * `seen` holds the keys of calls with a final result this turn: a success or a `not_found`. A call that
+ * failed for a passing reason (`unavailable`, `internal`) is not added, so the model may retry it.
  * Order: unknown_tool, repeat_call, invalid_input (the tool's schema, then `rule`), then the run.
  */
 export async function runGuarded(
@@ -78,8 +84,8 @@ export async function runGuarded(
   if (seen.has(key)) return { ok: false, error: { code: "repeat_call", call } };
   const problem = firstSchemaProblem(tool, call.input) ?? rule(call);
   if (problem !== null) return { ok: false, error: { code: "invalid_input", call, problem } };
-  seen.add(key);
   const result = await tool.run(call.input, ctx);
+  if (result.ok || result.error.code === "not_found") seen.add(key);
   if (result.ok) return { ok: true, tool, output: result.output };
   if (result.error.code === "invalid_input") {
     const problem = result.error.message.replace(/^Invalid input for [^:]+: /, "");
@@ -108,36 +114,52 @@ export const retriesExhausted = (streak: number): boolean => streak > MAX_INVALI
 // Messages.
 // ---------------------------------------------------------------------------
 
-/** The name a failed attempt shows on its tool card. */
+/** A model-controlled value cut to MAX_ECHO_CHARS (plus ECHO_ELLIPSIS), for the cards and UI messages. */
+export function capEcho(value: string): string {
+  return value.length > MAX_ECHO_CHARS ? `${value.slice(0, MAX_ECHO_CHARS)}${ECHO_ELLIPSIS}` : value;
+}
+
+/** U+2028 and U+2029: JSON.stringify leaves them raw, but they can read as line breaks. */
+const LINE_SEPARATORS = new RegExp(`[${String.fromCharCode(0x2028, 0x2029)}]`, "g");
+
+/**
+ * A model-controlled value for the feedback block: capped, then one JSON string literal. It holds no
+ * line break (U+2028/U+2029 escaped too), so it can never start a line such as a forged END_TOOL_CALL_ERROR.
+ */
+export function echo(value: string): string {
+  return JSON.stringify(capEcho(value)).replace(LINE_SEPARATORS, (ch) => `\\u${ch.charCodeAt(0).toString(16)}`);
+}
+
+/** The name a failed attempt shows on its tool card (capped). */
 export function errorToolName(error: ToolCallError): string {
   switch (error.code) {
     case "unparseable":
       return "unreadable_tool_call";
     case "bad_shape":
-      return error.tool ?? "unreadable_tool_call";
+      return error.tool !== undefined ? capEcho(error.tool) : "unreadable_tool_call";
     case "unknown_tool":
     case "invalid_input":
     case "tool_failed":
     case "repeat_call":
-      return error.call.name;
+      return capEcho(error.call.name);
   }
 }
 
-/** One short plain sentence for the failed tool card, ending with the error code. */
+/** One short plain sentence for the failed tool card, ending with the error code (echoed values capped). */
 export function errorUiMessage(error: ToolCallError): string {
   switch (error.code) {
     case "unparseable":
       return `The tool call could not be read: ${error.problem} (unparseable).`;
     case "bad_shape":
-      return `The tool call had the wrong shape: ${error.problem} (bad_shape).`;
+      return `The tool call had the wrong shape: ${capEcho(error.problem)} (bad_shape).`;
     case "unknown_tool":
-      return `There is no tool called "${error.call.name}" (unknown_tool).`;
+      return `There is no tool called "${capEcho(error.call.name)}" (unknown_tool).`;
     case "invalid_input":
-      return `Invalid input for ${error.call.name}: ${error.problem.replace(/\.$/, "")} (invalid_input).`;
+      return `Invalid input for ${capEcho(error.call.name)}: ${capEcho(error.problem).replace(/\.$/, "")} (invalid_input).`;
     case "tool_failed":
-      return `${error.error.message.replace(/\.$/, "")} (tool_failed: ${error.error.code}).`;
+      return `${capEcho(error.error.message).replace(/\.$/, "")} (tool_failed: ${error.error.code}).`;
     case "repeat_call":
-      return `${error.call.name} was already called with this exact input, so it was not run again (repeat_call).`;
+      return `${capEcho(error.call.name)} was already called with this exact input, so it was not run again (repeat_call).`;
   }
 }
 
@@ -156,10 +178,16 @@ function allowedToolsLines(tools: readonly RegisteredTool[]): string {
 }
 
 const RETRY_LINE = "Reply with ONE corrected tool call as JSON only, or answer the user without this tool.";
+const NO_DATA_LINE =
+  "The call was valid, but this data does not exist. Do not retry it. Tell the user plainly that there is no data for it, and never invent it.";
+const REPEAT_LINE = "Do not repeat it. Use the earlier result, call a different tool or input as JSON only, or answer the user.";
 
 /**
  * The feedback block the model gets after a failed attempt. It is data from the runtime, not
  * instructions from the user: delimited, and it only quotes the model's own previous call.
+ * Every model-controlled value (tool name, raw text, problem, error message, the previous call) goes
+ * through `echo`: one capped JSON string on its line, so the block is bounded and only the real
+ * END_TOOL_CALL_ERROR line can close it.
  */
 export function renderFeedback(error: ToolCallError, tools: readonly RegisteredTool[]): string {
   const lines: string[] = ["TOOL_CALL_ERROR", `code: ${error.code}`];
@@ -167,56 +195,60 @@ export function renderFeedback(error: ToolCallError, tools: readonly RegisteredT
     const tool = tools.find((t) => t.name === name);
     return tool ? JSON.stringify(tool.inputJsonSchema) : "{}";
   };
+  const previousCall = (call: ParsedToolCall): string =>
+    `your previous call: ${echo(JSON.stringify({ tool: call.name, input: call.input }))}`;
   switch (error.code) {
     case "unparseable":
     case "bad_shape":
       lines.push(
-        `tool: ${error.code === "bad_shape" && error.tool !== undefined ? error.tool : "(unknown)"}`,
-        `problem: ${error.problem}`,
+        `tool: ${error.code === "bad_shape" && error.tool !== undefined ? echo(error.tool) : "(unknown)"}`,
+        `problem: ${echo(error.problem)}`,
         `expected call (JSON Schema): ${callEnvelopeSchema(tools)}`,
         `allowed tools (input JSON Schema each):\n${allowedToolsLines(tools)}`,
-        `your previous call: ${error.raw}`,
+        `your previous call: ${echo(error.raw)}`,
         RETRY_LINE,
       );
       break;
     case "unknown_tool":
       lines.push(
-        `tool: ${error.call.name}`,
-        `problem: there is no tool called "${error.call.name}"`,
+        `tool: ${echo(error.call.name)}`,
+        `problem: there is no tool called ${echo(error.call.name)}`,
         `allowed tools (input JSON Schema each):\n${allowedToolsLines(tools)}`,
-        `your previous call: ${JSON.stringify({ tool: error.call.name, input: error.call.input })}`,
+        previousCall(error.call),
         RETRY_LINE,
       );
       break;
     case "invalid_input":
       lines.push(
-        `tool: ${error.call.name}`,
-        `problem: ${error.problem}`,
+        `tool: ${echo(error.call.name)}`,
+        `problem: ${echo(error.problem)}`,
         `expected input (JSON Schema): ${schemaOf(error.call.name)}`,
-        `your previous call: ${JSON.stringify({ tool: error.call.name, input: error.call.input })}`,
+        previousCall(error.call),
         RETRY_LINE,
       );
       break;
     case "tool_failed":
       lines.push(
-        `tool: ${error.call.name}`,
-        `problem: ${error.error.code} — ${error.error.message}`,
+        `tool: ${echo(error.call.name)}`,
+        `problem: ${error.error.code} — ${echo(error.error.message)}`,
         `expected input (JSON Schema): ${schemaOf(error.call.name)}`,
-        `your previous call: ${JSON.stringify({ tool: error.call.name, input: error.call.input })}`,
-        error.error.code === "not_found"
-          ? "The call was valid, but this data does not exist. Do not retry it. Tell the user plainly that there is no data for it, and never invent it."
-          : RETRY_LINE,
+        previousCall(error.call),
+        error.error.code === "not_found" ? NO_DATA_LINE : RETRY_LINE,
       );
       break;
     case "repeat_call":
       lines.push(
-        `tool: ${error.call.name}`,
+        `tool: ${echo(error.call.name)}`,
         "problem: this exact call was already made in this turn; its result is above",
         `expected input (JSON Schema): ${schemaOf(error.call.name)}`,
-        `your previous call: ${JSON.stringify({ tool: error.call.name, input: error.call.input })}`,
-        "Do not repeat it. Use the earlier result, call a different tool or input as JSON only, or answer the user.",
+        previousCall(error.call),
+        REPEAT_LINE,
       );
       break;
+    default: {
+      const unhandled: never = error;
+      return unhandled;
+    }
   }
   lines.push("END_TOOL_CALL_ERROR");
   return lines.join("\n");

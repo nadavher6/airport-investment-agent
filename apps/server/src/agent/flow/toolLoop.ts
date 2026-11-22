@@ -7,6 +7,7 @@ import { parseModelStep, type ParsedToolCall } from "../toolCall.ts";
 import {
   GRACEFUL_FALLBACK,
   MAX_TOOL_STEPS,
+  capEcho,
   errorToolName,
   errorUiMessage,
   nextInvalidStreak,
@@ -147,7 +148,7 @@ export async function* runToolLoop(input: ToolLoopInput): AsyncGenerator<AgentEv
     yield* endThinking();
     separate = true;
     const toolCallId = asToolCallId(randomUUID());
-    const name = parsed.kind === "call" ? parsed.call.name : errorToolName(parsed.error);
+    const name = parsed.kind === "call" ? capEcho(parsed.call.name) : errorToolName(parsed.error);
     yield { type: "tool_call", messageId, toolCallId, name, input: parsed.kind === "call" ? parsed.call.input : {} };
     const outcome: GuardedResult =
       parsed.kind === "call"

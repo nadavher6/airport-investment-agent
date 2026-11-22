@@ -179,7 +179,7 @@ describe("runToolLoop (#48)", () => {
       type: "tool_result",
       result: { ok: false, errorMessage: "get_enplanements failed unexpectedly (tool_failed: internal)." },
     });
-    expect(requests[1]!.messages.at(-1)!.content).toContain("problem: internal — get_enplanements failed unexpectedly.");
+    expect(requests[1]!.messages.at(-1)!.content).toContain('problem: internal — "get_enplanements failed unexpectedly."');
     expect(text).toBe("The data is unavailable right now.");
   });
 
@@ -247,7 +247,7 @@ describe("runToolLoop (#48)", () => {
     expect(TOO_MANY_AIRPORTS).toBe("max 5 airports; pick the 5 most relevant");
     const feedback = requests[1]!.messages.at(-1)!.content;
     expect(feedback).toContain("code: invalid_input");
-    expect(feedback).toContain(`problem: airport_codes — ${TOO_MANY_AIRPORTS}`);
+    expect(feedback).toContain(`problem: "airport_codes — ${TOO_MANY_AIRPORTS}"`);
     expect(feedback).toContain(`expected input (JSON Schema): ${JSON.stringify(score.tool.inputJsonSchema)}`);
     expect(events[3]).toMatchObject({ type: "tool_result", result: { ok: true } });
     expect(text).toBe("Ranked.");
