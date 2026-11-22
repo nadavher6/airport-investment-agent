@@ -137,6 +137,16 @@
   color: var(--ink-2);
 }
 
+.score-cat__intl {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+}
+
+.score-cat__intl-label {
+  font-weight: 600;
+}
+
 .score-cat__formula {
   font-family: var(--font-mono);
   font-size: var(--text-xs);
