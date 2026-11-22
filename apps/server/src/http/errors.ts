@@ -6,6 +6,7 @@ const STATUS_BY_CODE: Record<ApiErrorCode, number> = {
   not_found: 404,
   payload_too_large: 413,
   model_unavailable: 503,
+  too_many_requests: 429,
   internal: 500,
 };
 

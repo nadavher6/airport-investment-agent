@@ -3,10 +3,16 @@ import type { AddressInfo } from "node:net";
 import type { AgentEvent, ModelProvider } from "@airport/shared";
 import type { Express } from "express";
 import type { Agent } from "../agent/agent.ts";
-import type { ServerConfig } from "../config.ts";
+import type { ClaudeConfig, ServerConfig } from "../config.ts";
 
-export function testConfig(providers: ModelProvider[] = []): ServerConfig {
-  return { port: 0, version: "test", configuredProviders: new Set(providers) };
+/** By default no `claude` is found (empty PATH, no CLAUDE_BIN), so tests can never reach the real one. */
+export function testConfig(providers: ModelProvider[] = [], claude: Partial<ClaudeConfig> = {}): ServerConfig {
+  return {
+    port: 0,
+    version: "test",
+    configuredProviders: new Set(providers),
+    claude: { bin: undefined, searchPath: "", model: undefined, maxConcurrent: 2, ...claude },
+  };
 }
 
 /** An agent that replays a fixed script of events (optionally failing afterwards). */

@@ -1,6 +1,6 @@
 import { once } from "node:events";
 import { Router } from "express";
-import { API_ROUTES } from "@airport/shared";
+import { API_ROUTES, type AgentEvent } from "@airport/shared";
 import type { Agent } from "../agent/agent.ts";
 import type { ServerConfig } from "../config.ts";
 import { findModel } from "../catalog/models.ts";
@@ -16,7 +16,10 @@ export function chatRouter(config: ServerConfig, agent: Agent): Router {
     const request = validateChatRequest(req.body);
     const model = findModel(config, request.modelId);
     if (!model) throw new HttpError("not_found", `Unknown model "${request.modelId}"`);
-    if (!model.available) throw new HttpError("model_unavailable", `${model.label} has no API key configured`);
+    if (!model.available) {
+      const why = model.provider === "claude-headless" ? "is unavailable: the claude binary was not found" : "has no API key configured";
+      throw new HttpError("model_unavailable", `${model.label} ${why}`);
+    }
 
     // Stop the agent when the client goes away (tab closed, Stop pressed).
     const controller = new AbortController();
@@ -24,14 +27,30 @@ export function chatRouter(config: ServerConfig, agent: Agent): Router {
       if (!res.writableEnded) controller.abort();
     });
 
+    const { signal } = controller;
+    const events = agent.run({ request, model, signal })[Symbol.asyncIterator]();
+    // Pull the first event before opening the stream, so an agent that fails to start (binary missing,
+    // not logged in, too busy) throws an HttpError that becomes a normal 4xx/5xx response.
+    let first: IteratorResult<AgentEvent>;
+    try {
+      first = await events.next();
+    } catch (err) {
+      if (!signal.aborted) throw err;
+      first = { done: true, value: undefined };
+    }
+    if (signal.aborted) {
+      await events.return?.();
+      res.end();
+      return;
+    }
+
     openEventStream(res);
     try {
-      const { signal } = controller;
-      for await (const event of agent.run({ request, model, signal })) {
-        // Don't rely on the agent honouring the signal. Breaking also calls return() on the generator.
+      for (let step = first; !step.done; step = await events.next()) {
+        // Don't rely on the agent honouring the signal. return() stops the generator (and its child process).
         if (signal.aborted) break;
         // Backpressure. Passing the signal makes the wait reject (AbortError) if the client leaves.
-        if (!writeEvent(res, event)) await once(res, "drain", { signal });
+        if (!writeEvent(res, step.value)) await once(res, "drain", { signal });
       }
     } catch (err) {
       if (!controller.signal.aborted) {
@@ -39,6 +58,7 @@ export function chatRouter(config: ServerConfig, agent: Agent): Router {
         writeEvent(res, { type: "error", error: { code: "internal", message: "The agent failed mid-response" } });
       }
     } finally {
+      await events.return?.();
       res.end();
     }
   });

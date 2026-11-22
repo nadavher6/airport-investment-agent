@@ -1,3 +1,5 @@
+import { AgentRouter } from "./agent/agentRouter.ts";
+import { ClaudeHeadlessAgent } from "./agent/claude/claudeHeadlessAgent.ts";
 import { MockAgent } from "./agent/mockAgent.ts";
 import { createApp } from "./app.ts";
 import { loadConfig } from "./config.ts";
@@ -10,7 +12,10 @@ try {
 }
 
 const config = loadConfig();
-const app = createApp({ config, agent: new MockAgent() });
+// Selecting the claude-headless model sends every LLM call to a `claude -p` child; the rest use the mock.
+const claude = new ClaudeHeadlessAgent({ config: config.claude });
+const agent = new AgentRouter({ "claude-headless": claude }, new MockAgent());
+const app = createApp({ config, agent });
 
 // Express 5 also calls this callback on the server's "error" event (e.g. EADDRINUSE).
 const server = app.listen(config.port, (err?: Error) => {
@@ -23,9 +28,13 @@ const server = app.listen(config.port, (err?: Error) => {
 
 function shutdown(signal: NodeJS.Signals): void {
   console.log(`\n${signal} received, closing server…`);
-  server.close(() => process.exit(0));
+  // Stop any running `claude` children first (SIGTERM, then SIGKILL), so none outlive the server.
+  void claude.shutdown().finally(() => server.close(() => process.exit(0)));
   server.closeAllConnections();
 }
+
+// Last resort (e.g. an uncaught exception): exit handlers must be synchronous, so SIGKILL.
+process.on("exit", () => claude.killAllNow());
 
 process.on("SIGINT", shutdown);
 process.on("SIGTERM", shutdown);
