@@ -12,8 +12,8 @@ what the scoring code computes today (they follow `INVESTMENT_KPIS` in `apps/ser
 2. **Unmet demand: "Are people being turned away?"**
    - **Meaning:** travelers who want to fly but can't because the seats are full. That's money new capacity would capture.
    - **What it checks:** whether the airport is "full and still growing".
-   - **How:** load factor = passengers ÷ seats. At an ~80–85% average, peak flights sell out and passengers spill to other airports or don't fly. True spill needs booking data, so load factor is the proxy.
-   - **Status:** computed (BTS T-100, latest 12 months): load factor = passengers ÷ seats.
+   - **How:** load factor = passengers ÷ seats. At an ~80–85% average, peak flights sell out and passengers spill to other airports or don't fly. True spill needs booking data, so load factor is the proxy. The score is the load factor itself: 81.7% full scores 81.7 (capped at 100, since a few airports report above 100%), the same whichever airports are compared.
+   - **Status:** computed (BTS T-100, latest 12 months): load factor = passengers ÷ seats; sub-score = the load factor as a percentage, capped at 100.
 3. **Long-haul share: "Does it fly the valuable routes?"**
    - **Meaning:** the share of long international trips (widebodies to Europe or Asia).
    - **How:** international seats ÷ total seats. These flights are worth more:
@@ -29,6 +29,6 @@ what the scoring code computes today (they follow `INVESTMENT_KPIS` in `apps/ser
 ## The formula
 - **Score = 0.30·Congestion + 0.30·Unmet demand + 0.20·Long-haul + 0.20·Growth**, each category scored 0–100, so the final score is 0–100.
 - **Need 0.60** (Congestion + Unmet demand) / **Quality 0.40** (Long-haul + Growth).
-- **Method:** each raw KPI is winsorized at the 5th and 95th percentile (so one extreme airport does not squash the rest), then min-max scaled to 0–100, then the weighted sum above is taken.
+- **Method:** each raw KPI is winsorized at the 5th and 95th percentile (so one extreme airport does not squash the rest), then min-max scaled to 0–100 (except unmet demand, which is the load factor percentage itself, capped at 100), then the weighted sum above is taken.
 - **Coverage renormalization:** if a category has no data for an airport, it is left out and the remaining weights are scaled up to sum to 1. `coverage` is the share of the full model that had data (1.0 = all four categories); `missing` lists the categories left out.
 - **Relative mode vs. absolute mode:** with 2 or more airports, they are scaled against each other (100 = the best of the compared set). With 1 airport, it is scaled against all US airports (absolute mode).
