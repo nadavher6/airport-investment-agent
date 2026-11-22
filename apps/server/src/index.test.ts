@@ -25,8 +25,8 @@ async function runEntryPoint(env: NodeJS.ProcessEnv): Promise<{ code: number | n
 }
 
 describe("server entry point", () => {
-  // PR #1 bug (c), fixed in 5e2687b, which this branch doesn't have yet. Flip to `it` once merged in.
-  it.fails("exits with code 1 and says why when the port is already in use", { timeout: 10_000 }, async () => {
+  // Regression (PR #1 bug c): Express 5 calls the listen callback with the error, which used to log "listening".
+  it("exits with code 1 and says why when the port is already in use", { timeout: 10_000 }, async () => {
     const blocker = createServer().listen(0); // same (all-interfaces) binding as app.listen(port)
     await once(blocker, "listening");
     try {

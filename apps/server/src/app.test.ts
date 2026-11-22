@@ -54,6 +54,39 @@ describe("POST /api/chat", () => {
     expect(res.body.error).toEqual({ code: "bad_request", message: "Request body is not valid JSON" });
   });
 
+  // Regression (PR #1 bug b): body-parser errors other than bad JSON used to become a logged 500.
+  it("returns 413 payload_too_large for a body over the limit, without logging", async () => {
+    const log = vi.spyOn(console, "error").mockImplementation(() => {});
+    const res = await request(appWith())
+      .post(API_ROUTES.chat)
+      .send({ ...chatBody, padding: "x".repeat(1_200_000) })
+      .expect(413);
+    expect(res.body.error).toEqual({ code: "payload_too_large", message: "Request body is too large" });
+    expect(log).not.toHaveBeenCalled();
+  });
+
+  it("returns 415 for an unsupported charset, without logging", async () => {
+    const log = vi.spyOn(console, "error").mockImplementation(() => {});
+    const res = await request(appWith())
+      .post(API_ROUTES.chat)
+      .set("Content-Type", "application/json; charset=latin9")
+      .send(JSON.stringify(chatBody))
+      .expect(415);
+    expect(res.body.error.code).toBe("bad_request");
+    expect(log).not.toHaveBeenCalled();
+  });
+
+  // Regression (PR #1 bug a): a reply stopped before any text flattens to "".
+  it("streams when the history contains an empty assistant turn", async () => {
+    const messages = [
+      { role: "user", content: "rank airports" },
+      { role: "assistant", content: "" },
+      { role: "user", content: "continue" },
+    ];
+    const res = await request(appWith()).post(API_ROUTES.chat).send({ ...chatBody, messages }).expect(200);
+    expect(parseSse(res.text)).toEqual(script);
+  });
+
   it("returns 404 for an unknown model", async () => {
     const res = await request(appWith())
       .post(API_ROUTES.chat)
@@ -112,47 +145,9 @@ describe("POST /api/chat", () => {
       await server.close();
     }
   });
-});
 
-/**
- * Regression tests for the bugs reported on PR #1. The fixes (5e2687b) are on main and
- * feat/frontend but not on this branch yet, so these are `it.fails` for now. Once this
- * branch picks up 5e2687b they start failing: flip each `it.fails` to `it`.
- */
-describe("PR #1 regressions (flip it.fails to it once 5e2687b is merged in)", () => {
-  it.fails("(a) accepts an assistant turn with empty content, e.g. a reply stopped before any text", async () => {
-    const body = {
-      ...chatBody,
-      messages: [
-        { role: "user", content: "Rank airports" },
-        { role: "assistant", content: "" },
-        { role: "user", content: "Continue" },
-      ],
-    };
-    await request(appWith()).post(API_ROUTES.chat).send(body).expect(200);
-  });
-
-  it.fails("(b) returns 413 for a body over the 1 MB limit, without logging", async () => {
-    const log = vi.spyOn(console, "error").mockImplementation(() => {});
-    const big = { ...chatBody, messages: [{ role: "user", content: "x".repeat(2_000_000) }] };
-    const res = await request(appWith()).post(API_ROUTES.chat).send(big);
-    expect(res.status).toBe(413);
-    expect(res.body.error.code).toBe("payload_too_large");
-    expect(log).not.toHaveBeenCalled();
-  });
-
-  it.fails("(b) returns 415 for an unsupported charset, without logging", async () => {
-    const log = vi.spyOn(console, "error").mockImplementation(() => {});
-    const res = await request(appWith())
-      .post(API_ROUTES.chat)
-      .set("Content-Type", "application/json; charset=latin-9")
-      .send(JSON.stringify(chatBody));
-    expect(res.status).toBe(415);
-    expect(res.body.error.code).toBe("bad_request");
-    expect(log).not.toHaveBeenCalled();
-  });
-
-  it.fails("(d) stops pulling events after the client leaves, even if the agent ignores the signal", async () => {
+  // Regression (PR #1 bug d): don't rely on the agent honouring the signal.
+  it("stops pulling events after the client leaves, even if the agent ignores the signal", { timeout: 2000 }, async () => {
     let yielded = 0;
     let yieldedAtAbort = -1;
     let resolveFinished!: () => void;

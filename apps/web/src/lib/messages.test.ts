@@ -16,7 +16,7 @@ describe("messageText", () => {
     const message = assistant([
       { type: "thinking", text: "hmm", durationMs: 1 },
       { type: "text", text: "Hello " },
-      { type: "tool_use", toolCallId: TOOL, name: "t", input: {}, status: "succeeded" },
+      { type: "tool_use", toolCallId: TOOL, name: "t", input: {}, status: "succeeded", output: null },
       { type: "text", text: "world " },
     ]);
     expect(messageText(message)).toBe("Hello world");

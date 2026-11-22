@@ -22,15 +22,17 @@ export interface ThinkingBlock {
 
 export type ToolCallStatus = "running" | "succeeded" | "failed";
 
-export interface ToolUseBlock {
+/** Each status carries only its own data, so "running" can never have an output or error. */
+export type ToolUseBlock = {
   readonly type: "tool_use";
   readonly toolCallId: ToolCallId;
   readonly name: string;
   readonly input: JsonObject;
-  readonly status: ToolCallStatus;
-  readonly output?: JsonValue;
-  readonly errorMessage?: string;
-}
+} & (
+  | { readonly status: "running" }
+  | { readonly status: "succeeded"; readonly output: JsonValue }
+  | { readonly status: "failed"; readonly errorMessage: string }
+);
 
 export type ContentBlock = TextBlock | ThinkingBlock | ToolUseBlock;
 export type ContentBlockType = ContentBlock["type"];
@@ -50,6 +52,10 @@ export interface ChatMessage {
 /**
  * The flattened form of a past message sent back to the server as history.
  * Only the text matters for context, so we don't send thinking or tool blocks.
+ *
+ * An assistant reply that was cancelled or failed before producing text has
+ * `content: ""`. The client drops such turns; the server still accepts them
+ * (only user turns must be non-empty) so a stale history can't wedge a chat.
  */
 export interface ChatTurn {
   readonly role: Role;
