@@ -1,0 +1,25 @@
+{
+  "name": "airport-investment-agent",
+  "version": "0.1.0",
+  "description": "AI agent that ranks US airports for modernization investment based on congestion and unmet demand.",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "ai-agent",
+    "airports",
+    "aviation",
+    "typescript"
+  ],
+  "author": "nadavher6",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}
