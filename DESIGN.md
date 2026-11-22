@@ -17,10 +17,11 @@ Score = 0.30·Congestion + 0.30·UnmetDemand + 0.20·LongHaul + 0.20·Growth   (
 
 - **KPIs & weights (budget allocation, Need 0.60 / Quality 0.40):**
   - *Congestion* 0.30 — annual departures/operations (BTS T-100, latest 12 months), a traffic-volume proxy for capacity pressure (a true utilization ratio ops ÷ FAA ASV needs runway-capacity data not freely tabulated).
-  - *Unmet demand* 0.30 — load factor = passengers ÷ seats (BTS T-100, latest 12 months). Boeing/Belobaba spill: turned-away demand becomes material above ~80–85% load. The profit the capacity captures.
+  - *Unmet demand* 0.30 — load factor = passengers ÷ seats (BTS T-100, latest 12 months). Boeing/Belobaba spill: turned-away demand becomes material above ~80–85% load. The profit the capacity captures. **Sub-score = the load factor as a percentage** (81.9% scores 81.9), capped at 100 (see "Percent scale" below).
   - *Long-haul share* 0.20 — international seats ÷ total seats (BTS T-100 (latest 12 months); international = total − domestic). Revenue quality (weight-based fees, FIS "gateway moat").
   - *Growth* 0.20 — enplanement 5-year CAGR, CY2019→CY2024, in **% per year** (FAA data). Durability of demand. No fallback: an airport without a CAGR has growth *missing* (see "Growth unit" below).
-- **Normalization:** `100 × (x − min)/(max − min)`, winsorized at 5th/95th percentile, bounds fixed to the full US dataset so scores are stable and comparable.
+- **Normalization:** `100 × (x − min)/(max − min)`, winsorized at 5th/95th percentile, bounds fixed to the full US dataset so scores are stable and comparable. This is the default (`scale: "minmax"`) for congestion, long-haul and growth. A KPI that is already a percentage uses `scale: "percent"` instead (next bullet).
+- **Percent scale (unmet demand):** a KPI definition can set `scale: "percent"` (`KpiDef` in `engine.ts`): the sub-score is the raw percentage itself, clamped to 0–100 and rounded to one decimal, with no winsorizing and no min-max. Unmet demand uses it, so a load factor of 81.7% scores 81.7. **Why:** min-max rescales to the compared set, and with two airports that is all-or-nothing (LAX 81.9% vs. SNA 79.3% would be 100 vs. 0, though both are about 80% full). A load factor already has a natural 0–100 meaning, and the ~80–85% spill threshold above is stated on that same scale, so the number should not depend on which airports are compared. It gives the same sub-score in relative and absolute mode. **Cap:** load factor can exceed 100% in T-100 data (1 of the airports in `data/t100.json`, ODW, is at 108.3%, from reported passengers above reported seats), so the sub-score is capped at 100 and the evidence sentence says so. Missing stays `null` (weights renormalized, as for any KPI). The option is generic: another percentage KPI can use it without special-case code.
 - **Aggregation:** weighted linear sum. *Fully compensatory* — a high KPI offsets a low one; geometric mean is the partial-compensability alternative (reported in sensitivity).
 - **Coverage/honesty:** the engine renormalizes weights over the KPIs it can actually compute and reports a `coverage` fraction + which KPIs are `missing`.
 - **Deterministic order:** the ranking sorts by score descending, then by airport code ascending (plain code-point order, not locale), so equal scores (common: scores are rounded to 0.1, and many tiny airports score 0) always come out in the same order, whatever order the codes were given in.
@@ -72,13 +73,33 @@ of both saturating at 100); a **single** airport is scored *absolute* vs. all US
      (`src/scoring/`); the model only decides which airports to look up and score, then explains.
    - **Scoring rule (the owner's, verbatim in the prompt):** questions about investment potential, or which
      airport is better / should be expanded, MUST go through `score_airports`; the model never ranks from memory.
-   - **Cap of 5 airports:** `score_airports` with more than 5 distinct codes does not run; the loop returns
-     "max 5 airports; pick the 5 most relevant" to the model (`MAX_SCORED_AIRPORTS` in `agent/flow/scoreAirports.ts`).
-   - **Guard (minimal, #49 replaces it with the full policy):** tool JSON is never shown to the user (a step is held
-     from its first `{` or backtick until it is parsed). An unreadable call or an unknown tool is fed back once; a
-     second one ends the turn with a plain sentence.
-   - **Step cap:** at most 6 tool runs, then one call that must answer in prose; if it still does not, a plain
-     "limit reached" sentence. The answer is never empty.
+   - **Cap of 5 airports:** `score_airports` with more than 5 distinct codes does not run; it is an `invalid_input`
+     error with the problem "max 5 airports; pick the 5 most relevant" (`MAX_SCORED_AIRPORTS` in
+     `agent/flow/scoreAirports.ts`), fed back like any other bad call (below).
+   - **Tool-call guardrails (#49, `agent/toolCall.ts`, `agent/toolGuard.ts`):** tool JSON is never shown to the user
+     (a step is held from its first `{` or backtick until it is parsed), and nothing the model writes is thrown.
+     A step is a call attempt when it starts with `{`, or when anywhere in it (after a lead-in, in a fence) there is
+     an object with both top-level keys `tool` and `input` in any order, quoted or not, or an object with a `tool`
+     key that sits right inside a ``` fence or never closes. Prose that only mentions `{"tool": ...}` (no `input`
+     key) is the answer and is shown whole. A trade-off: an answer that starts with `{`, or that quotes a whole
+     `{tool, input}` example, is taken as a call attempt and fed back. Calls are strict JSON, so unquoted keys are
+     `unparseable` and fed back. A bad
+     call is a typed `ToolCallError`: `unparseable` (looks like a call, JSON does not parse), `bad_shape` (not exactly
+     `{"tool": string, "input": object}`), `unknown_tool`, `invalid_input` (the tool's zod schema or the 5-airport rule),
+     `tool_failed` (the tool returned a `ToolError`) or `repeat_call` (the same tool and input as earlier in the turn,
+     keys order-insensitive). Each one shows as a failed tool card, and the model gets a delimited
+     `TOOL_CALL_ERROR ... END_TOOL_CALL_ERROR` block with the code, the problem, the expected input JSON Schema (for
+     `unknown_tool` and unreadable calls: every allowed tool with its schema) and its own previous call, and nothing
+     else from the user. Every model-controlled value in the block (tool name, raw text, problem, error message,
+     the previous call) is one JSON string literal capped at `MAX_ECHO_CHARS = 200` chars plus `…[truncated]`, so
+     it holds no line break, cannot forge the end marker, and keeps the block bounded; the card name and message are
+     capped the same way. A `not_found` is not retried: the model is told the data does not exist and to say so.
+     `repeat_call` only covers calls with a final result (a success or a `not_found`), so a call that failed as
+     `unavailable` or `internal` may be retried (it still counts toward the retry and step caps).
+     The model may retry at most `MAX_INVALID_RETRIES = 2` times in a row; at the 3rd invalid attempt in a row tools
+     are switched off (`TOOLS_DISABLED`) and the model answers in prose, or a plain sentence is shown.
+   - **Step cap:** at most 6 tool attempts (invalid ones and retries count), then one call that must answer in prose;
+     if it still does not, a plain "limit reached" sentence. The answer is never empty. An abort stops at once.
    - **Memory (#50)** is keyed ONLY by the optional `conversationId` in `ChatRequest` (the web app mints one per
      chat with `crypto.randomUUID()`, or a UUID v4 from `crypto.getRandomValues` over plain http; the server requires 16-64 characters of `[A-Za-z0-9_-]`, so the id is an unguessable bearer secret); never by message content, so two chats that start with the same text never
      share data. With no id there is no memory at all (no reads, no writes). Per chat it keeps the tool results by
@@ -88,7 +109,7 @@ of both saturating at 100); a **single** airport is scored *absolute* vs. all US
      they go into the loop's system prompt as "Airport data in focus". A `get_enplanements` or `score_airports`
      call with the same airport codes as an earlier one in the chat returns the cached output without running
      the tool (no re-fetch). **Bounds:** at most 200 chats (least recently used evicted), 1 hour TTL since the
-     chat's last turn, 50 airport records and 20 cached outputs per chat. It is in-process: a restart forgets it.
+     chat's last turn, 50 airport records and 20 cached outputs per chat. It is in-process: a restart forgets it. The cache sits INSIDE the guard (it wraps `tool.run`, which `runGuarded` calls last), so a cached call is still checked for `unknown_tool`, `repeat_call` and `invalid_input` first, and a cache hit is an ordinary success: it is recorded in the turn's `seen` set once, so asking for it again in the same turn is a `repeat_call`, while the same call in a later turn (new `seen`) is served from the cache with no error and no retry.
 
 This replaced #42's fixed candidates -> resolve -> score pipeline: the owner chose one model-driven loop, with
 the 5-airport cap and the scoring rule as the guardrails.

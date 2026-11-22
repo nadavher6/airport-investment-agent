@@ -8,6 +8,7 @@ import { MAX_TOOL_STEPS } from "./flow/toolLoop.ts";
 import { LlmPassthroughAgent } from "./llmPassthroughAgent.ts";
 import { GRADING_ANSWER_PROMPT } from "./prompts/grading.ts";
 import { SCORING_RULE, stepLimitAnswer } from "./prompts/toolLoop.ts";
+import { GRACEFUL_FALLBACK } from "./toolGuard.ts";
 import { CAPABILITIES_ANSWER } from "./responses/capabilities.ts";
 import { GREETING_ANSWER } from "./responses/greeting.ts";
 import { OFF_TOPIC_SUGGESTIONS } from "./responses/offTopic.ts";
@@ -136,10 +137,24 @@ describe("agent routing (#48): classifier first, fixed answers, everything else 
   });
 
   it("the step cap ends with a non-empty answer", async () => {
-    const { client, seen } = routeClient("in_scope", replies('{"tool":"get_enplanements","input":{"airport_code":"ATL"}}'));
+    const codes = ["ATL", "BOS", "LAX", "SFO", "JFK", "ORD", "SEA", "DEN"];
+    const { client, seen } = routeClient("in_scope", (_request, call) =>
+      JSON.stringify({ tool: "get_enplanements", input: { airport_code: codes[call] ?? "DFW" } }),
+    );
     const { events } = await run(client, "ATL?");
     expect(seen).toHaveLength(MAX_TOOL_STEPS + 1);
     expect(text(events)).toBe(stepLimitAnswer(MAX_TOOL_STEPS));
+    expect(events.at(-1)).toMatchObject({ type: "message_end" });
+  });
+
+  it("the same call over and over is a repeat_call (#49) and ends with a plain answer", async () => {
+    const { client, seen } = routeClient("in_scope", replies('{"tool":"get_enplanements","input":{"airport_code":"ATL"}}'));
+    const { events } = await run(client, "ATL?");
+    // 1 run, then 3 repeat_call attempts (the first + 2 retries), then the no-tools call.
+    expect(events.filter((e) => e.type === "tool_call" && e.name !== "classify_message")).toHaveLength(4);
+    expect(seen).toHaveLength(5);
+    expect(seen[2]!.messages.at(-1)!.content).toContain("code: repeat_call");
+    expect(text(events)).toBe(GRACEFUL_FALLBACK);
     expect(events.at(-1)).toMatchObject({ type: "message_end" });
   });
 

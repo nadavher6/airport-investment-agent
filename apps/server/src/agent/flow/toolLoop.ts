@@ -1,24 +1,38 @@
 import { randomUUID } from "node:crypto";
-import { asToolCallId, type AgentEvent, type JsonObject, type JsonValue, type MessageId, type StopReason } from "@airport/shared";
+import { asToolCallId, type AgentEvent, type JsonValue, type MessageId, type StopReason } from "@airport/shared";
 import type { LlmClient, LlmMessage } from "../../llm/llmClient.ts";
-import { ANSWER_NOW, BAD_CALL_ANSWER, badCallObservation, EMPTY_ANSWER, stepLimitAnswer } from "../prompts/toolLoop.ts";
-import { toWireResult, type RegisteredTool } from "../tools/tool.ts";
-import { parseToolCall } from "../toolCall.ts";
+import { EMPTY_ANSWER, stepLimitAnswer } from "../prompts/toolLoop.ts";
+import type { RegisteredTool } from "../tools/tool.ts";
+import { parseModelStep, type ParsedToolCall } from "../toolCall.ts";
+import {
+  GRACEFUL_FALLBACK,
+  MAX_TOOL_STEPS,
+  capEcho,
+  errorToolName,
+  errorUiMessage,
+  nextInvalidStreak,
+  renderFeedback,
+  renderToolsOff,
+  retriesExhausted,
+  runGuarded,
+  type GuardedResult,
+  type ToolsOffReason,
+} from "../toolGuard.ts";
 import { MAX_SCORED_AIRPORTS, SCORE_AIRPORTS_TOOL_NAME } from "./scoreAirports.ts";
 
-/** Most tool runs in one turn (#48). After it, the model gets one last call to answer with no tools. */
-export const MAX_TOOL_STEPS = 6;
+/** The policy constants live in toolGuard.ts (#49); re-exported for the agent and its prompt. */
+export { MAX_INVALID_RETRIES, MAX_TOOL_STEPS } from "../toolGuard.ts";
 
-/** The error fed back (the tool does not run) when score_airports gets more than MAX_SCORED_AIRPORTS codes. */
+/** The problem fed back (the tool does not run) when score_airports gets more than MAX_SCORED_AIRPORTS codes. */
 export const TOO_MANY_AIRPORTS = `max ${MAX_SCORED_AIRPORTS} airports; pick the ${MAX_SCORED_AIRPORTS} most relevant`;
 
 /** The loop's own input rule on top of the tool's zod schema: at most 5 distinct codes for score_airports. */
-function loopRejects(name: string, input: JsonObject): string | undefined {
-  if (name !== SCORE_AIRPORTS_TOOL_NAME) return undefined;
-  const codes = input.airport_codes;
-  if (!Array.isArray(codes)) return undefined; // the tool's schema reports it
+function loopRule(call: ParsedToolCall): string | null {
+  if (call.name !== SCORE_AIRPORTS_TOOL_NAME) return null;
+  const codes = call.input.airport_codes;
+  if (!Array.isArray(codes)) return null; // the tool's schema reports it
   const distinct = new Set(codes.map((c) => (typeof c === "string" ? c.trim().toUpperCase() : JSON.stringify(c))));
-  return distinct.size > MAX_SCORED_AIRPORTS ? TOO_MANY_AIRPORTS : undefined;
+  return distinct.size > MAX_SCORED_AIRPORTS ? `airport_codes — ${TOO_MANY_AIRPORTS}` : null;
 }
 
 export interface ToolLoopInput {
@@ -38,26 +52,28 @@ export interface ToolLoopInput {
 const HOLD_FROM = /[{`]/;
 
 /**
- * The agent's ReAct loop (#48) over the text-only LlmClient. Each step's reply is parsed as a whole
- * (toolCall.ts): a call is run through the registry tool's `run` (its zod schema validates the input first) and
- * shown as a tool_call/tool_result pair, and its result goes back to the model as delimited data. Prose before
- * any "{" or "`" streams live; the rest of a step is held until the step is parsed, so raw JSON never reaches
- * the user. A bad call (malformed JSON, unknown tool) is fed back ONCE; a second one ends with a plain answer.
- * score_airports with more than 5 codes does not run: the error goes back to the model as its tool_result.
- * After MAX_TOOL_STEPS tool runs the model gets one call to answer with no tools; the answer is never empty.
- * Yields no message_start/message_end (the agent does) and returns the stop reason. An abort rethrows at the
- * next step; an LlmError propagates to the agent.
+ * The agent's ReAct loop (#48) over the text-only LlmClient, with the tool-call guardrails (#49).
+ * Each step's reply is parsed as a whole (toolCall.ts). Prose before any "{" or "`" streams live; the rest
+ * of a step is held until the step is parsed, so raw JSON never reaches the user.
+ *
+ * Every attempted call shows as a tool_call/tool_result pair. A call that is unparseable, has the wrong
+ * shape, names an unknown tool, fails its input schema (or the 5-airport rule), fails in the tool, or
+ * repeats an earlier call of this turn is a typed ToolCallError: a failed card for the user, and a
+ * delimited TOOL_CALL_ERROR block (with the expected JSON Schema) for the model, never a throw.
+ * The model may retry MAX_INVALID_RETRIES times in a row (a `not_found` is not retried); every attempt
+ * counts toward MAX_TOOL_STEPS. Then tools are switched off and the model gets one call to answer in
+ * prose; the answer is never empty and never raw JSON.
+ * Yields no message_start/message_end (the agent does) and returns the stop reason. An abort rethrows at
+ * once, also mid-retry; an LlmError propagates to the agent.
  */
 export async function* runToolLoop(input: ToolLoopInput): AsyncGenerator<AgentEvent, StopReason> {
-  const { client, model, system, messageId, signal } = input;
-  const byName = new Map(input.tools.map((tool) => [tool.name, tool]));
-  const toolNames = [...byName.keys()];
+  const { client, model, system, messageId, signal, tools } = input;
   const convo: LlmMessage[] = [...input.messages];
+  const seen = new Set<string>();
   let thinkingSince: number | undefined;
   let shown = "";
   let separate = false;
-  let badCalls = 0;
-  let toolRuns = 0;
+  let invalidStreak = 0;
 
   function* endThinking(): Generator<AgentEvent> {
     if (thinkingSince === undefined) return;
@@ -119,46 +135,56 @@ export async function* runToolLoop(input: ToolLoopInput): AsyncGenerator<AgentEv
     return stopReason;
   }
 
-  while (toolRuns < MAX_TOOL_STEPS) {
+  let toolsOff: ToolsOffReason = "step_cap";
+  for (let attempt = 0; attempt < MAX_TOOL_STEPS; attempt++) {
     const { text, held, live, stopReason } = yield* step();
-    const parsed = parseToolCall(text);
+    const parsed = parseModelStep(text);
     if (parsed.kind === "answer") {
       yield* show(held);
       return yield* finish(stopReason, `${live}${held}`.trim() === "" ? EMPTY_ANSWER : undefined);
     }
-    const tool = parsed.kind === "call" ? byName.get(parsed.name) : undefined;
-    if (parsed.kind === "bad" || tool === undefined) {
-      // Unknown tool or unreadable JSON: one error back to the model, once; never shown to the user.
-      if (badCalls >= 1) return yield* finish(stopReason, BAD_CALL_ANSWER);
-      badCalls += 1;
-      separate = true;
-      const reason = parsed.kind === "bad" ? parsed.reason : `there is no tool named ${JSON.stringify(parsed.name.slice(0, 60))}`;
-      convo.push({ role: "assistant", content: text }, { role: "user", content: badCallObservation(reason, toolNames) });
-      continue;
-    }
-    if (parsed.kind !== "call") continue; // unreachable: narrows `parsed` for the type checker
+
+    // An attempted call, good or bad: one tool card, and one observation for the model.
     yield* endThinking();
     separate = true;
-    toolRuns += 1;
     const toolCallId = asToolCallId(randomUUID());
-    yield { type: "tool_call", messageId, toolCallId, name: tool.name, input: parsed.input };
-    // RegisteredTool.run validates the input with the tool's zod schema before the tool runs, and never throws.
-    const rejected = loopRejects(tool.name, parsed.input);
-    const wire = rejected !== undefined ? ({ ok: false, errorMessage: rejected } as const) : toWireResult(await tool.run(parsed.input, { signal }));
+    const name = parsed.kind === "call" ? capEcho(parsed.call.name) : errorToolName(parsed.error);
+    yield { type: "tool_call", messageId, toolCallId, name, input: parsed.kind === "call" ? parsed.call.input : {} };
+    const outcome: GuardedResult =
+      parsed.kind === "call"
+        ? await runGuarded(parsed.call, tools, seen, { signal }, loopRule)
+        : { ok: false, error: parsed.error };
     signal.throwIfAborted();
-    yield { type: "tool_result", messageId, toolCallId, result: wire };
-    if (wire.ok) input.onToolResult?.(tool.name, wire.output);
-    const note = parsed.extra ? "\nOnly the first tool call in your reply was run." : "";
-    convo.push(
-      { role: "assistant", content: JSON.stringify({ tool: tool.name, input: parsed.input }) },
-      { role: "user", content: `<tool_result name="${tool.name}">${JSON.stringify(wire)}</tool_result>${note}` },
-    );
+
+    if (outcome.ok) {
+      const wire = { ok: true, output: outcome.output } as const;
+      yield { type: "tool_result", messageId, toolCallId, result: wire };
+      input.onToolResult?.(outcome.tool.name, outcome.output);
+      const note = parsed.kind === "call" && parsed.extra ? "\nOnly the first tool call in your reply was run." : "";
+      convo.push(
+        { role: "assistant", content: JSON.stringify({ tool: outcome.tool.name, input: parsed.kind === "call" ? parsed.call.input : {} }) },
+        { role: "user", content: `<tool_result name="${outcome.tool.name}">${JSON.stringify(wire)}</tool_result>${note}` },
+      );
+      invalidStreak = nextInvalidStreak(invalidStreak, null);
+    } else {
+      yield { type: "tool_result", messageId, toolCallId, result: { ok: false, errorMessage: errorUiMessage(outcome.error) } };
+      convo.push({ role: "assistant", content: text }, { role: "user", content: renderFeedback(outcome.error, tools) });
+      invalidStreak = nextInvalidStreak(invalidStreak, outcome.error);
+      if (retriesExhausted(invalidStreak)) {
+        toolsOff = "retries_exhausted";
+        break;
+      }
+    }
   }
 
-  // The cap: one last call with no tools. A reply that still calls a tool, or is empty, gets the plain answer.
-  convo.push({ role: "user", content: ANSWER_NOW });
-  const last = yield* step();
-  const answered = parseToolCall(last.text).kind === "answer" && `${last.live}${last.held}`.trim() !== "";
-  if (answered) yield* show(last.held);
-  return yield* finish(last.stopReason, answered ? undefined : stepLimitAnswer(MAX_TOOL_STEPS));
+  // Tools are off (the retry budget or the step cap): one last call with no tools. A reply that still
+  // calls a tool, or is empty, gets the plain answer instead.
+  const last = convo.at(-1);
+  if (last !== undefined && last.role === "user") convo[convo.length - 1] = { role: "user", content: `${last.content}\n\n${renderToolsOff(toolsOff)}` };
+  else convo.push({ role: "user", content: renderToolsOff(toolsOff) });
+  const final = yield* step();
+  const answered = parseModelStep(final.text).kind === "answer" && `${final.live}${final.held}`.trim() !== "";
+  if (answered) yield* show(final.held);
+  const fallback = toolsOff === "retries_exhausted" ? GRACEFUL_FALLBACK : stepLimitAnswer(MAX_TOOL_STEPS);
+  return yield* finish(final.stopReason, answered ? undefined : fallback);
 }
