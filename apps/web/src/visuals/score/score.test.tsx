@@ -72,13 +72,13 @@ describe("score_airports: 1 airport is a report", () => {
     expect(screen.getByText("88.4")).toBeInTheDocument();
   });
 
-  it("keeps the raw JSON behind a Show data toggle", async () => {
+  it("keeps the raw JSON behind a Show data toggle inside the open card", async () => {
     render(<ToolUseBlockView block={block(SCORE_ONE)} />);
-    const toggle = screen.getByRole("button", { name: /score_airports Show data/ });
+    const toggle = screen.getByRole("button", { name: "Show data" });
     expect(toggle).toHaveAttribute("aria-expanded", "false");
     expect(screen.getByText(/"airportCode": "LAX"/)).not.toBeVisible();
     await userEvent.click(toggle);
-    expect(screen.getByRole("button", { name: /Hide data/ })).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("button", { name: "Hide data" })).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByText(/"airportCode": "LAX"/)).toBeVisible();
   });
 });
