@@ -122,7 +122,7 @@ describe("agent memory (#50)", () => {
     expect(text(second)).toContain("Answer from memory");
   });
 
-  it('"compare LAX and SNA" then "why is LAX higher?" reuses the cached scores (no re-fetch)', async () => {
+  it("a score_airports call with the same codes in a later turn returns the cached scores (no re-fetch)", async () => {
     const { agent, seen, score } = setup();
     const say = chat(agent, "chat-1");
 
@@ -139,12 +139,12 @@ describe("agent memory (#50)", () => {
     expect(block).toContain('"SNA"');
   });
 
-  it("brings back both scored airports for a follow-up naming only one, and answers from them", async () => {
+  it('"compare LAX and SNA" then "why is LAX higher?": both cached scores are in the prompt and nothing is re-scored', async () => {
     const { agent, seen, score } = setup();
     const say = chat(agent, "chat-1");
 
     await say("compare LAX and SNA");
-    const second = await say("why is LAX the top one?");
+    const second = await say("why is LAX higher?");
 
     expect(score.calls).toHaveLength(1);
     expect(toolCalls(second)).toEqual(["classify_message"]);
