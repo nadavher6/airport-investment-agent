@@ -20,8 +20,9 @@ export function useModels() {
       .models(controller.signal)
       .then(({ models, defaultModelId }) => {
         const stored = readStorage(STORAGE_KEY);
-        const isUsable = (id: string | null) => models.some((m) => m.id === id && m.available);
-        setSelectedId(isUsable(stored) ? (stored as ModelId) : defaultModelId);
+        const usable = (id: string | null) => models.find((m) => m.id === id && m.available)?.id;
+        // The server's default may lack an API key; then any available model beats one that always 503s.
+        setSelectedId(usable(stored) ?? usable(defaultModelId) ?? models.find((m) => m.available)?.id ?? null);
         setState({ status: "ready", models });
       })
       .catch((err: unknown) => {
@@ -39,5 +40,7 @@ export function useModels() {
 
   const selected = state.status === "ready" ? (state.models.find((m) => m.id === selectedId) ?? null) : null;
 
-  return { state, selected, select };
+  const noneAvailable = state.status === "ready" && !state.models.some((m) => m.available);
+
+  return { state, selected, select, noneAvailable };
 }

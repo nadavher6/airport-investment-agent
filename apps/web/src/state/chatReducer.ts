@@ -51,12 +51,18 @@ function updateMessage(
   return { ...state, messages: state.messages.map((m) => (m.id === id ? update(m) : m)) };
 }
 
-/** Closes out the in-flight assistant message (if any) with a terminal status. */
+/**
+ * Closes out the in-flight assistant message (if any) with a terminal status.
+ * If the request failed before any reply started, the user turn itself is marked
+ * "error" so it is shown as unsent and kept out of later history.
+ */
 function settleStreaming(state: ChatState, status: Exclude<MessageStatus, "streaming">): ChatState {
+  const last = state.messages.at(-1);
+  const unsentId = state.isStreaming && status === "error" && last?.role === "user" ? last.id : null;
   return {
     ...state,
     isStreaming: false,
-    messages: state.messages.map((m) => (m.status === "streaming" ? { ...m, status } : m)),
+    messages: state.messages.map((m) => (m.status === "streaming" || m.id === unsentId ? { ...m, status } : m)),
   };
 }
 
@@ -131,7 +137,10 @@ function applyAgentEvent(state: ChatState, event: AgentEvent): ChatState {
       return { ...settleStreaming(state, "error"), lastError: event.error };
 
     default:
-      return assertNever(event, "agent event");
+      // Compile-time exhaustive, but tolerant at runtime: a newer server may send
+      // types this bundle doesn't know, and throwing here would unmount the app.
+      event satisfies never;
+      return state;
   }
 }
 

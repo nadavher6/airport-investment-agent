@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { readSseData } from "./sse";
 
 function streamOf(chunks: (string | Uint8Array)[]): ReadableStream<Uint8Array> {
@@ -40,7 +40,36 @@ describe("readSseData", () => {
     expect(await readAll([bytes.slice(0, cut), bytes.slice(cut)])).toEqual(["שלום ✈"]);
   });
 
-  it("drops an unterminated trailing frame", async () => {
-    expect(await readAll(["data: done\n\ndata: partial"])).toEqual(["done"]);
+  it("delivers a final frame that has no closing blank line", async () => {
+    expect(await readAll(["data: done\n\ndata: last"])).toEqual(["done", "last"]);
+    expect(await readAll(["data: done\n\ndata: last\n"])).toEqual(["done", "last"]);
+  });
+
+  it("handles CR-only line endings", async () => {
+    expect(await readAll(["data: one\r\rdata: two\r\r"])).toEqual(["one", "two"]);
+  });
+
+  it("doesn't read a CRLF split across chunks as two line breaks", async () => {
+    // "\r" ends chunk 1 and "\n" starts chunk 2. Read as two breaks, this would close the
+    // frame after "a" and split one frame into two.
+    expect(await readAll(["data: a\r", "\ndata: b\r\n\r\n"])).toEqual(["a\nb"]);
+  });
+
+  it("cancels the stream when the consumer stops early", async () => {
+    const cancelled = vi.fn();
+    const encoder = new TextEncoder();
+    const endless = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(encoder.encode("data: first\n\ndata: second\n\n"));
+        // Never closes, like a server that's still streaming.
+      },
+      cancel: cancelled,
+    });
+
+    for await (const data of readSseData(endless)) {
+      expect(data).toBe("first");
+      break;
+    }
+    expect(cancelled).toHaveBeenCalledOnce();
   });
 });
