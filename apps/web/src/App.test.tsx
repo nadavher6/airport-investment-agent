@@ -40,7 +40,7 @@ describe("App", () => {
     render(<App />);
 
     expect(await screen.findByText("API online")).toBeInTheDocument();
-    expect(await screen.findByRole("button", { name: /Gemini 2.5 Flash/ })).toBeEnabled();
+    expect(await screen.findByRole("button", { name: /Gemini 3.5 Flash/ })).toBeEnabled();
 
     await user.click(screen.getByRole("button", { name: /Compare LA and Santa Ana/ }));
     await user.keyboard("{Enter}");
@@ -104,7 +104,7 @@ describe("App: switching to Claude (headless session)", () => {
   }
 
   async function pickClaude(user: ReturnType<typeof userEvent.setup>) {
-    await user.click(await screen.findByRole("button", { name: /Gemini 2.5 Flash/ }));
+    await user.click(await screen.findByRole("button", { name: /Gemini 3.5 Flash/ }));
     await user.click(screen.getByRole("option", { name: /Claude \(headless session\)/ }));
   }
 
@@ -142,8 +142,8 @@ describe("App: switching to Claude (headless session)", () => {
     await pickClaude(user);
     const alert = await screen.findByRole("alert");
     expect(alert).toHaveTextContent("Couldn't switch to Claude (headless session): The claude binary was not found on PATH.");
-    expect(alert).toHaveTextContent("Still using Gemini 2.5 Flash.");
-    expect(screen.getByRole("button", { name: /Gemini 2.5 Flash/ })).toBeEnabled();
+    expect(alert).toHaveTextContent("Still using Gemini 3.5 Flash.");
+    expect(screen.getByRole("button", { name: /Gemini 3.5 Flash/ })).toBeEnabled();
     expect(localStorage.getItem("runway.model")).not.toBe("claude-headless");
   });
 
@@ -155,6 +155,6 @@ describe("App: switching to Claude (headless session)", () => {
 
     await pickClaude(user);
     expect(await screen.findByRole("alert")).toHaveTextContent(/Couldn't reach the API server/);
-    expect(screen.getByRole("button", { name: /Gemini 2.5 Flash/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Gemini 3.5 Flash/ })).toBeInTheDocument();
   });
 });

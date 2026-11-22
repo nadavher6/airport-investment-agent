@@ -7,7 +7,7 @@ describe("loadConfig", () => {
     const config = loadConfig({});
     expect(config.port).toBe(8787);
     expect(config.version).toBe(packageJson.version);
-    expect(config.configuredProviders.size).toBe(0);
+    expect(config.gemini.apiKey).toBeUndefined();
   });
 
   it("reads PORT", () => {
@@ -23,14 +23,12 @@ describe("loadConfig", () => {
     expect(() => loadConfig({ PORT: port })).toThrow(/Invalid PORT/);
   });
 
-  it("detects which providers have API keys (empty values don't count)", () => {
-    const config = loadConfig({ GEMINI_API_KEY: "k1", GROQ_API_KEY: "", OPENROUTER_API_KEY: "k3" });
-    expect([...config.configuredProviders].sort()).toEqual(["gemini", "openrouter"]);
+  it("reads GEMINI_API_KEY trimmed", () => {
+    expect(loadConfig({ GEMINI_API_KEY: " test-key " }).gemini.apiKey).toBe("test-key");
   });
 
-  it("ignores API keys that are only whitespace", () => {
-    const config = loadConfig({ GEMINI_API_KEY: "  ", GROQ_API_KEY: "\n", OPENROUTER_API_KEY: " k3 " });
-    expect([...config.configuredProviders]).toEqual(["openrouter"]);
+  it.each(["", "  ", "\n"])("treats a blank GEMINI_API_KEY (%j) as unset", (key) => {
+    expect(loadConfig({ GEMINI_API_KEY: key }).gemini.apiKey).toBeUndefined();
   });
 
   it("defaults the Claude settings: claude on PATH, no model", () => {

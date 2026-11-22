@@ -12,19 +12,19 @@ import { providerHealthRouter } from "./routes/providerHealth.ts";
 export interface AppDependencies {
   readonly config: ServerConfig;
   readonly agent: Agent;
-  /** The LLM clients by provider, for the provider health route. */
-  readonly llmClients?: Partial<Record<ModelProvider, LlmClient>>;
+  /** The LLM client for each provider, for the provider health route. */
+  readonly llmClients: Readonly<Record<ModelProvider, LlmClient>>;
 }
 
 /** Builds the app without listening, so it can be mounted in tests. */
-export function createApp({ config, agent, llmClients = {} }: AppDependencies): Express {
+export function createApp({ config, agent, llmClients }: AppDependencies): Express {
   const app = express();
   app.disable("x-powered-by");
   app.use(express.json({ limit: "1mb" }));
 
   app.use(healthRouter(config));
   app.use(modelsRouter(config));
-  app.use(providerHealthRouter(config, llmClients));
+  app.use(providerHealthRouter(llmClients));
   app.use(chatRouter(config, agent));
 
   app.use(notFoundHandler);

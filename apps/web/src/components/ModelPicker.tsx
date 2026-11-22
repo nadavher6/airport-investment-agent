@@ -131,7 +131,9 @@ export function ModelPicker({ state, selected, onSelect, disabled = false }: Mod
                 <span className="model-option__chips">
                   {model.capabilities.thinking && <span className="chip">Thinking</span>}
                   {model.capabilities.toolUse && <span className="chip">Tools</span>}
-                  {!model.available && <span className="chip chip--muted">No API key</span>}
+                  {!model.available && (
+                    <span className="chip chip--muted">{model.provider === "gemini" ? "No API key" : "Not found"}</span>
+                  )}
                 </span>
               </span>
               <CheckIcon size={16} className="model-option__check" />

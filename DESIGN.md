@@ -23,7 +23,7 @@ _How do we decide an airport is a strong investment candidate?_
 - AI is used for: parsing the user's natural-language question, selecting which airports/KPIs
   are relevant, and explaining the deterministic results in plain language.
 - AI is NOT used for: the actual ranking math — that is deterministic code in `src/scoring/`.
-- Provider: pluggable (Gemini / Groq / OpenRouter).
+- Provider: Gemini (gemini-3.5-flash) or Claude headless, behind the LlmClient interface.
 - _TODO._
 
 ## 4. Assumptions & limitations

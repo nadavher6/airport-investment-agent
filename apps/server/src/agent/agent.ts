@@ -9,7 +9,7 @@ export interface AgentRunInput {
 
 /**
  * The seam between HTTP and intelligence. The route only knows how to pipe
- * AgentEvents to the client; a real LLM agent replaces the mock by implementing this.
+ * AgentEvents to the client. LlmPassthroughAgent implements it until the owner's agent replaces it.
  */
 export interface Agent {
   run(input: AgentRunInput): AsyncIterable<AgentEvent>;

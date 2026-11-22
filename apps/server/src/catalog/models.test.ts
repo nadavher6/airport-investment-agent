@@ -6,16 +6,20 @@ import { testConfig } from "../test/helpers.ts";
 import { DEFAULT_MODEL_ID, findModel, listModels } from "./models.ts";
 
 describe("model catalog", () => {
-  it("marks every API-key model available when no provider keys are set (mock mode)", () => {
-    const models = listModels(testConfig()).filter((m) => m.provider !== "claude-headless");
-    expect(models.every((m) => m.available)).toBe(true);
+  it("lists only Gemini and Claude headless, Gemini first (the default)", () => {
+    expect(listModels(testConfig()).map((m) => [m.id, m.provider])).toEqual([
+      ["gemini-3.5-flash", "gemini"],
+      ["claude-headless", "claude-headless"],
+    ]);
+    expect(DEFAULT_MODEL_ID).toBe("gemini-3.5-flash");
   });
 
-  it("marks only models of configured providers as available", () => {
-    const models = listModels(testConfig(["groq"])).filter((m) => m.provider !== "claude-headless");
-    for (const model of models) {
-      expect(model.available).toBe(model.provider === "groq");
-    }
+  it("marks Gemini available only when GEMINI_API_KEY is set, and never exposes the key", () => {
+    const gemini = (config: ReturnType<typeof testConfig>) => findModel(config, asModelId("gemini-3.5-flash"));
+    expect(gemini(testConfig())?.available).toBe(false);
+    const config = testConfig(["gemini"]);
+    expect(gemini(config)?.available).toBe(true);
+    expect(JSON.stringify(listModels(config))).not.toContain(config.gemini.apiKey);
   });
 
   describe("Claude (headless session)", () => {
@@ -34,7 +38,7 @@ describe("model catalog", () => {
     it("is available only when the claude binary is found, whatever API keys are set", () => {
       expect(claudeOf(testConfig())?.available).toBe(false);
       fake = fakeClaude();
-      expect(claudeOf(testConfig(["groq"], { searchPath: fake.dir }))?.available).toBe(true);
+      expect(claudeOf(testConfig(["gemini"], { searchPath: fake.dir }))?.available).toBe(true);
       expect(claudeOf(testConfig([], { bin: fake.bin }))?.available).toBe(true);
     });
   });

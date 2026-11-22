@@ -18,8 +18,9 @@ packages/
     src/api.ts       API_ROUTES, request/response bodies
     src/errors.ts    ApiError, ApiErrorCode
 apps/
-  server/            @airport/server: Express 5 API (agent is a mock for now)
-    src/agent/       Agent interface + MockAgent (swap in a real LLM agent here)
+  server/            @airport/server: Express 5 API
+    src/agent/       Agent interface + LlmPassthroughAgent (placeholder: sends the chat to the selected LLM)
+    src/llm/         LlmClient interface + GeminiClient (Gemini API) and ClaudeHeadlessClient (`claude -p`)
     src/catalog/     model catalog
     src/http/        SSE helpers, error middleware, request validation
     src/routes/      health, models, chat
@@ -44,7 +45,11 @@ In dev the browser only talks to Vite (`:5173`), which proxies `/api/*` to the s
 
 `/api/providers/:provider/health` checks one `ModelProvider`. For `claude-headless` it runs `claude --version`
 (5 s timeout) and answers `ok`, `unavailable` (no `claude` binary on PATH or at `CLAUDE_BIN`) or `error`, with a
-plain-English `detail`. Other providers are still served by the mock agent and are not checked live.
+plain-English `detail`. For `gemini` it lists one model with `GEMINI_API_KEY` (5 s timeout): `ok`, `unavailable` (no
+key in `.env`) or `error` (for example "Gemini: invalid API key"). The key is never returned or logged.
+
+There are two providers: **Gemini** (`gemini-3.5-flash`, the default, available when `GEMINI_API_KEY` is set) and
+**Claude headless** (available when the `claude` binary is found).
 
 Errors are always `{ "error": { "code", "message" } }` (`ApiErrorBody`) with a matching HTTP status.
 Validation and model lookup happen **before** the stream opens, so they return normal 4xx/5xx responses.
@@ -69,7 +74,7 @@ Closing the connection aborts the agent run via an `AbortSignal` (it cancels the
 
 ```bash
 npm install
-cp .env.example .env    # optional: add API key(s)
+cp .env.example .env    # then set GEMINI_API_KEY (from Google AI Studio) for the Gemini model
 ```
 
 ### Run with F5 (VS Code)
@@ -116,7 +121,7 @@ npm run test:watch -w @airport/web   # watch mode for one app
 
 | App | What's covered |
 | --- | --- |
-| server | request validation rules, config parsing, model catalog, MockAgent event order and abort, every route through `supertest` (SSE framing, 400/404/503 errors, mid-stream agent failure, agent aborted on client disconnect) |
+| server | request validation rules, config parsing, model catalog, the LLM clients against a shared contract (fake `claude` binary, fake fetch for Gemini), LlmPassthroughAgent event order and abort, `.env` stays gitignored, every route through `supertest` (SSE framing, 400/404/503 errors, mid-stream agent failure, agent aborted on client disconnect) |
 | web | `chatReducer` for every event and edge case, SSE reader (split frames, CRLF, split UTF-8), API client errors, `useChat` (history, stop, double-send, failures), Composer keys/IME, thinking and tool blocks, model picker keyboard and a11y, and a full App turn against a fake API |
 
 ## Design doc

@@ -10,12 +10,12 @@ import {
 
 export const MSG = asMessageId("assistant-1");
 export const TOOL = asToolCallId("tool-1");
-export const MODEL_ID = asModelId("gemini-2.5-flash");
+export const MODEL_ID = asModelId("gemini-3.5-flash");
 
 export function model(overrides: Partial<ModelInfo> = {}): ModelInfo {
   return {
     id: MODEL_ID,
-    label: "Gemini 2.5 Flash",
+    label: "Gemini 3.5 Flash",
     provider: "gemini",
     description: "Fast default.",
     capabilities: { thinking: true, toolUse: true },

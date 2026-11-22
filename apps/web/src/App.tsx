@@ -81,8 +81,8 @@ export function App() {
           {models.noneAvailable && (
             <div className="notice notice--info" role="status">
               <span className="notice__code">setup</span>
-              No model is available. Set GEMINI_API_KEY, GROQ_API_KEY or OPENROUTER_API_KEY in .env, or install
-              Claude Code (or set CLAUDE_BIN), and restart the server.
+              No model is available. Set GEMINI_API_KEY in .env, or install Claude Code (or set CLAUDE_BIN), and
+              restart the server.
             </div>
           )}
 

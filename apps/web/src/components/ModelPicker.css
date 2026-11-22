@@ -51,12 +51,6 @@
 .provider-dot[data-provider="gemini"] {
   background: var(--provider-gemini);
 }
-.provider-dot[data-provider="groq"] {
-  background: var(--provider-groq);
-}
-.provider-dot[data-provider="openrouter"] {
-  background: var(--provider-openrouter);
-}
 .provider-dot[data-provider="claude-headless"] {
   background: var(--provider-claude-headless);
 }

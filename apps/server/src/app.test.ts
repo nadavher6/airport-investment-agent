@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import type { Agent } from "./agent/agent.ts";
 import { createApp } from "./app.ts";
 import { DEFAULT_MODEL_ID } from "./catalog/models.ts";
-import { disconnectAfterFirstFrame, parseSse, scriptedAgent, startServer, testConfig } from "./test/helpers.ts";
+import { disconnectAfterFirstFrame, offlineClients, parseSse, scriptedAgent, startServer, testConfig } from "./test/helpers.ts";
 
 const messageId = asMessageId("msg-1");
 const script: AgentEvent[] = [
@@ -14,7 +14,9 @@ const script: AgentEvent[] = [
 ];
 const chatBody = { modelId: DEFAULT_MODEL_ID, messages: [{ role: "user", content: "Hi" }] };
 
-const appWith = (agent: Agent = scriptedAgent(script), config = testConfig()) => createApp({ config, agent });
+// The default model is Gemini, so the default config sets a (fake) Gemini key to make it available.
+const appWith = (agent: Agent = scriptedAgent(script), config = testConfig(["gemini"])) =>
+  createApp({ config, agent, llmClients: offlineClients() });
 
 describe("GET /api/health", () => {
   it("reports ok with version and uptime", async () => {
@@ -96,12 +98,12 @@ describe("POST /api/chat", () => {
   });
 
   it("returns 503 when the model's provider has no API key", async () => {
-    // Only groq is configured, so the default (gemini) model is unavailable.
-    const res = await request(appWith(scriptedAgent(script), testConfig(["groq"])))
+    // No GEMINI_API_KEY, so the default (gemini) model is unavailable.
+    const res = await request(appWith(scriptedAgent(script), testConfig()))
       .post(API_ROUTES.chat)
       .send(chatBody)
       .expect(503);
-    expect(res.body.error.code).toBe("model_unavailable");
+    expect(res.body.error).toEqual({ code: "model_unavailable", message: expect.stringMatching(/GEMINI_API_KEY is not set/) });
   });
 
   it("ends the stream with an error event when the agent throws mid-response", async () => {
