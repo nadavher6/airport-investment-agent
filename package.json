@@ -12,7 +12,8 @@
     "dev:server": "npm run dev -w @airport/server",
     "dev:web": "npm run dev -w @airport/web",
     "build": "npm run build -w @airport/web",
-    "typecheck": "npm run typecheck --workspaces --if-present"
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present"
   },
   "author": "nadavher6",
   "license": "MIT",
@@ -22,6 +23,7 @@
   "devDependencies": {
     "@types/node": "^22.10.0",
     "tsx": "^4.19.2",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "vitest": "^4.1.12"
   }
 }

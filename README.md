@@ -78,6 +78,20 @@ npm run typecheck       # all workspaces
 npm run build           # production build of the web app
 ```
 
+## Tests
+
+[Vitest](https://vitest.dev) in both apps. Test files sit next to the code they cover (`*.test.ts(x)`).
+
+```bash
+npm test                          # everything
+npm run test:watch -w @airport/web   # watch mode for one app
+```
+
+| App | What's covered |
+| --- | --- |
+| server | request validation rules, config parsing, model catalog, MockAgent event order and abort, every route through `supertest` (SSE framing, 400/404/503 errors, mid-stream agent failure, agent aborted on client disconnect) |
+| web | `chatReducer` for every event and edge case, SSE reader (split frames, CRLF, split UTF-8), API client errors, `useChat` (history, stop, double-send, failures), Composer keys/IME, thinking and tool blocks, model picker keyboard and a11y, and a full App turn against a fake API |
+
 ## Design doc
 
 See [`DESIGN.md`](./DESIGN.md) for scoring methodology, key tradeoffs, and where/how AI is used.

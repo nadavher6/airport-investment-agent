@@ -1,0 +1,68 @@
+import { describe, expect, it } from "vitest";
+import { HttpError } from "./errors.ts";
+import { validateChatRequest } from "./validateChatRequest.ts";
+
+const valid = { modelId: "gemini-2.5-flash", messages: [{ role: "user", content: "Hello" }] };
+
+function rejectionOf(body: unknown): string {
+  try {
+    validateChatRequest(body);
+  } catch (err) {
+    expect(err).toBeInstanceOf(HttpError);
+    expect((err as HttpError).code).toBe("bad_request");
+    return (err as HttpError).message;
+  }
+  throw new Error("expected validateChatRequest to throw");
+}
+
+describe("validateChatRequest", () => {
+  it("accepts a valid request and keeps the turns", () => {
+    const history = {
+      modelId: "m",
+      messages: [
+        { role: "user", content: "Q1" },
+        { role: "assistant", content: "A1" },
+        { role: "user", content: "Q2" },
+      ],
+    };
+    expect(validateChatRequest(history)).toEqual(history);
+  });
+
+  it("drops unknown fields from turns", () => {
+    const result = validateChatRequest({
+      modelId: "m",
+      messages: [{ role: "user", content: "hi", extra: true }],
+    });
+    expect(result.messages[0]).toEqual({ role: "user", content: "hi" });
+  });
+
+  it.each([
+    ["null body", null, "Body must be a JSON object"],
+    ["array body", [], "Body must be a JSON object"],
+    ["missing modelId", { messages: valid.messages }, "modelId must be a non-empty string"],
+    ["empty modelId", { ...valid, modelId: "" }, "modelId must be a non-empty string"],
+    ["missing messages", { modelId: "m" }, "messages must be a non-empty array"],
+    ["empty messages", { modelId: "m", messages: [] }, "messages must be a non-empty array"],
+    ["turn not an object", { modelId: "m", messages: ["hi"] }, "messages[0] must be an object"],
+    ["bad role", { modelId: "m", messages: [{ role: "system", content: "x" }] }, 'messages[0].role must be "user" or "assistant"'],
+    ["blank content", { modelId: "m", messages: [{ role: "user", content: "   " }] }, "messages[0].content must be a non-empty string"],
+    ["non-string content", { modelId: "m", messages: [{ role: "user", content: 42 }] }, "messages[0].content must be a non-empty string"],
+    [
+      "last turn from assistant",
+      { modelId: "m", messages: [{ role: "user", content: "q" }, { role: "assistant", content: "a" }] },
+      'The last message must have role "user"',
+    ],
+  ])("rejects %s", (_name, body, message) => {
+    expect(rejectionOf(body)).toBe(message);
+  });
+
+  it("rejects content over the length limit", () => {
+    const body = { modelId: "m", messages: [{ role: "user", content: "x".repeat(20_001) }] };
+    expect(rejectionOf(body)).toMatch(/exceeds 20000 characters/);
+  });
+
+  it("rejects too many turns", () => {
+    const messages = Array.from({ length: 101 }, () => ({ role: "user", content: "x" }));
+    expect(rejectionOf({ modelId: "m", messages })).toMatch(/at most 100 turns/);
+  });
+});
