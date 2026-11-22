@@ -99,8 +99,9 @@ It is not part of the `@airport/shared` wire contract — it's server-internal s
 Runs only on `in_scope`. Produces the **target codes** for this turn. Deterministic
 first, LLM only as a fallback:
 
-1. **Explicit extraction** — regex for 3-letter codes (`\b[A-Z]{3}\b` filtered against the
-   known-airport set) + a small **region gazetteer** ("Pacific Northwest" → {SEA, PDX, …}).
+1. **Explicit extraction** — 3-letter words in any case, kept only when `get_airport_by_code`
+   (#23) confirms them, + city and region phrases resolved with `find_airports_by_city` /
+   `find_airports_by_region` (#23; `data/metros.json`, `data/regions.json`). No local table.
 2. **Anaphora via focus stack** — if the message has references but no explicit entity
    ("it", "that one", "the second", "them", "compare it with Denver"), resolve against
    `focusStack`:
@@ -273,7 +274,7 @@ export function assembleMessages(
 
   // --- seam B: last N dialogue turns, text only ---
   const windowed: ChatMessage[] = memory.conversation.turns
-    .slice(-N * 2) // N user+assistant pairs
+    .slice(-N * 2) // N user+assistant pairs; then drop leading assistant turns (first must be user)
     .map((t) => ({ role: t.role, content: t.content }));
 
   return [
