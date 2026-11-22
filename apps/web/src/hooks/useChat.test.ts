@@ -83,16 +83,67 @@ describe("useChat", () => {
     expect(result.current.lastError).toBeNull();
   });
 
-  it("ignores a second send while a reply is still streaming", async () => {
+  it("ignores a second send while a reply is still streaming", { timeout: 1000 }, async () => {
     const stream = vi.spyOn(api, "streamChat").mockImplementation(hangingStream);
     const { result } = renderHook(() => useChat(MODEL_ID));
 
-    act(() => void result.current.send("One"));
+    let first!: Promise<void>;
+    act(() => {
+      first = result.current.send("One");
+    });
     await waitFor(() => expect(result.current.messages).toHaveLength(2));
     await act(() => result.current.send("Two"));
 
     expect(stream).toHaveBeenCalledTimes(1);
-    act(() => result.current.stop());
+    await act(async () => {
+      result.current.stop();
+      await first;
+    });
+  });
+
+  it("reset() aborts an in-flight stream and leaves an empty, idle chat", { timeout: 1000 }, async () => {
+    let signal!: AbortSignal;
+    vi.spyOn(api, "streamChat").mockImplementation((request, s) => {
+      signal = s;
+      return hangingStream(request, s);
+    });
+    const { result } = renderHook(() => useChat(MODEL_ID));
+
+    let sending!: Promise<void>;
+    act(() => {
+      sending = result.current.send("Hi");
+    });
+    await waitFor(() => expect(result.current.messages).toHaveLength(2));
+
+    await act(async () => {
+      result.current.reset();
+      await sending;
+    });
+
+    expect(signal.aborted).toBe(true);
+    expect(result.current.messages).toEqual([]);
+    expect(result.current.isStreaming).toBe(false);
+    expect(result.current.lastError).toBeNull();
+  });
+
+  it("aborts an in-flight stream on unmount", { timeout: 1000 }, async () => {
+    let signal!: AbortSignal;
+    vi.spyOn(api, "streamChat").mockImplementation((request, s) => {
+      signal = s;
+      return hangingStream(request, s);
+    });
+    const { result, unmount } = renderHook(() => useChat(MODEL_ID));
+
+    let sending!: Promise<void>;
+    act(() => {
+      sending = result.current.send("Hi");
+    });
+    await waitFor(() => expect(result.current.messages).toHaveLength(2));
+
+    unmount();
+    await sending;
+
+    expect(signal.aborted).toBe(true);
   });
 
   it("surfaces the server's error when the request is rejected", async () => {

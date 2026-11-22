@@ -1,11 +1,10 @@
-import type { AddressInfo } from "node:net";
 import { API_ROUTES, asMessageId, asModelId, type AgentEvent } from "@airport/shared";
 import request from "supertest";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { Agent } from "./agent/agent.ts";
 import { createApp } from "./app.ts";
 import { DEFAULT_MODEL_ID } from "./catalog/models.ts";
-import { parseSse, scriptedAgent, testConfig } from "./test/helpers.ts";
+import { disconnectAfterFirstFrame, parseSse, scriptedAgent, startServer, testConfig } from "./test/helpers.ts";
 
 const messageId = asMessageId("msg-1");
 const script: AgentEvent[] = [
@@ -73,6 +72,7 @@ describe("POST /api/chat", () => {
   });
 
   it("ends the stream with an error event when the agent throws mid-response", async () => {
+    const log = vi.spyOn(console, "error").mockImplementation(() => {});
     const res = await request(appWith(scriptedAgent(script.slice(0, 2), true)))
       .post(API_ROUTES.chat)
       .send(chatBody)
@@ -83,35 +83,104 @@ describe("POST /api/chat", () => {
       type: "error",
       error: { code: "internal", message: "The agent failed mid-response" },
     });
+    expect(log).toHaveBeenCalledOnce();
   });
 
-  it("aborts the agent run when the client disconnects", async () => {
-    let resolveAborted!: () => void;
-    const aborted = new Promise<void>((resolve) => (resolveAborted = resolve));
-    const hangingAgent: Agent = {
+  it("aborts the agent run when the client disconnects, without logging an error", { timeout: 2000 }, async () => {
+    const log = vi.spyOn(console, "error").mockImplementation(() => {});
+    let resolveFinished!: () => void;
+    const agentFinished = new Promise<void>((resolve) => (resolveFinished = resolve));
+    // Like a real provider: the pending request rejects with the abort reason.
+    const abortableAgent: Agent = {
       async *run({ signal }) {
-        signal.addEventListener("abort", () => resolveAborted());
-        yield { type: "message_start", messageId, modelId: asModelId("m") };
-        await new Promise(() => {}); // never finishes on its own
+        try {
+          yield { type: "message_start", messageId, modelId: asModelId("m") };
+          await new Promise((_, reject) => signal.addEventListener("abort", () => reject(signal.reason)));
+        } finally {
+          resolveFinished();
+        }
       },
     };
 
-    const server = appWith(hangingAgent).listen(0);
+    const server = await startServer(appWith(abortableAgent));
     try {
-      const { port } = server.address() as AddressInfo;
-      const client = new AbortController();
-      const res = await fetch(`http://localhost:${port}${API_ROUTES.chat}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(chatBody),
-        signal: client.signal,
-      });
-      await res.body!.getReader().read(); // first frame arrived
-      client.abort();
-      await expect(aborted).resolves.toBeUndefined();
+      await disconnectAfterFirstFrame(`${server.url}${API_ROUTES.chat}`, chatBody);
+      await agentFinished;
+      await new Promise((resolve) => setImmediate(resolve)); // let the route's catch/finally run
+      expect(log).not.toHaveBeenCalled();
     } finally {
-      server.closeAllConnections();
-      server.close();
+      await server.close();
+    }
+  });
+});
+
+/**
+ * Regression tests for the bugs reported on PR #1. The fixes (5e2687b) are on main and
+ * feat/frontend but not on this branch yet, so these are `it.fails` for now. Once this
+ * branch picks up 5e2687b they start failing: flip each `it.fails` to `it`.
+ */
+describe("PR #1 regressions (flip it.fails to it once 5e2687b is merged in)", () => {
+  it.fails("(a) accepts an assistant turn with empty content, e.g. a reply stopped before any text", async () => {
+    const body = {
+      ...chatBody,
+      messages: [
+        { role: "user", content: "Rank airports" },
+        { role: "assistant", content: "" },
+        { role: "user", content: "Continue" },
+      ],
+    };
+    await request(appWith()).post(API_ROUTES.chat).send(body).expect(200);
+  });
+
+  it.fails("(b) returns 413 for a body over the 1 MB limit, without logging", async () => {
+    const log = vi.spyOn(console, "error").mockImplementation(() => {});
+    const big = { ...chatBody, messages: [{ role: "user", content: "x".repeat(2_000_000) }] };
+    const res = await request(appWith()).post(API_ROUTES.chat).send(big);
+    expect(res.status).toBe(413);
+    expect(res.body.error.code).toBe("payload_too_large");
+    expect(log).not.toHaveBeenCalled();
+  });
+
+  it.fails("(b) returns 415 for an unsupported charset, without logging", async () => {
+    const log = vi.spyOn(console, "error").mockImplementation(() => {});
+    const res = await request(appWith())
+      .post(API_ROUTES.chat)
+      .set("Content-Type", "application/json; charset=latin-9")
+      .send(JSON.stringify(chatBody));
+    expect(res.status).toBe(415);
+    expect(res.body.error.code).toBe("bad_request");
+    expect(log).not.toHaveBeenCalled();
+  });
+
+  it.fails("(d) stops pulling events after the client leaves, even if the agent ignores the signal", async () => {
+    let yielded = 0;
+    let yieldedAtAbort = -1;
+    let resolveFinished!: () => void;
+    const agentFinished = new Promise<void>((resolve) => (resolveFinished = resolve));
+    const deafAgent: Agent = {
+      async *run({ signal }) {
+        signal.addEventListener("abort", () => (yieldedAtAbort = yielded));
+        try {
+          for (let i = 0; i < 100; i++) {
+            yield { type: "text_delta", messageId, delta: "." };
+            yielded++;
+            await new Promise((resolve) => setTimeout(resolve, 5));
+          }
+        } finally {
+          resolveFinished();
+        }
+      },
+    };
+
+    const server = await startServer(appWith(deafAgent));
+    try {
+      await disconnectAfterFirstFrame(`${server.url}${API_ROUTES.chat}`, chatBody);
+      await agentFinished;
+      expect(yieldedAtAbort).toBeGreaterThanOrEqual(0);
+      // The route should break out (calling return()) on the next event, not drain all 100.
+      expect(yielded - yieldedAtAbort).toBeLessThanOrEqual(2);
+    } finally {
+      await server.close();
     }
   });
 });
