@@ -4,9 +4,18 @@ import { HttpError } from "../http/errors.ts";
 import { LlmError, type LlmClient, type LlmRequest, type LlmStreamEvent } from "../llm/llmClient.ts";
 import { collect } from "../test/helpers.ts";
 import { CLASSIFIER_PROMPT } from "./classifier/prompt.ts";
+import { fakeScoreAirports } from "../test/fakeScoreAirports.ts";
+import { CANDIDATE_PROMPT } from "./prompts/candidates.ts";
+import { NO_CANDIDATES_PROMPT } from "./prompts/scoreAnswer.ts";
 import { LlmPassthroughAgent } from "./llmPassthroughAgent.ts";
 import { CAPABILITIES_ANSWER } from "./responses/capabilities.ts";
-import { OFF_TOPIC_ANSWER } from "./responses/offTopic.ts";
+import { GREETING_ANSWER } from "./responses/greeting.ts";
+import { OFF_TOPIC_INTRO, OFF_TOPIC_SUGGESTIONS, offTopicAnswer } from "./responses/offTopic.ts";
+
+/** A fixed rng that picks suggestion `i` of OFF_TOPIC_SUGGESTIONS (#44). */
+const rngFor = (i: number) => () => (i + 0.5) / OFF_TOPIC_SUGGESTIONS.length;
+/** The off_topic answer with the tests' default rng (suggestion 0). */
+const OFF_TOPIC_ANSWER = offTopicAnswer(rngFor(0));
 
 const modelOf = (provider: ModelProvider): ModelInfo => ({
   id: asModelId(`${provider}-model`),
@@ -19,13 +28,19 @@ const modelOf = (provider: ModelProvider): ModelInfo => ({
 
 const CLASSIFIED = '{"label":"in_scope","reason":"Asks about airports."}';
 
+/** The candidate step's reply when a test does not care: no airports, so score_airports is not called (#42). */
+const NO_CANDIDATES_REPLY = '{"codes":[],"cities":[],"region":null}';
+
 /**
- * A fake LlmClient. The classifier's call (system = CLASSIFIER_PROMPT) gets `classifierReply`; every other
- * call replays `events`, then optionally throws. Records the main calls in `seen`, classifier calls in `classified`.
+ * A fake LlmClient. The classifier's call (system = CLASSIFIER_PROMPT) gets `classifierReply`, the candidate
+ * step's call (system = CANDIDATE_PROMPT) gets `candidateReplies` in turn (the last one repeats); every other
+ * call replays `events`, then optionally throws. Records the main calls in `seen`, classifier calls in
+ * `classified`, candidate calls in `candidates`.
  */
-function fakeClient(events: LlmStreamEvent[], failWith?: LlmError, classifierReply = CLASSIFIED) {
+function fakeClient(events: LlmStreamEvent[], failWith?: LlmError, classifierReply = CLASSIFIED, candidateReplies: string[] = [NO_CANDIDATES_REPLY]) {
   const seen: LlmRequest[] = [];
   const classified: LlmRequest[] = [];
+  const candidates: LlmRequest[] = [];
   const client: LlmClient = {
     provider: "claude-headless",
     health: async () => ({ status: "ok", detail: "fake" }),
@@ -36,12 +51,18 @@ function fakeClient(events: LlmStreamEvent[], failWith?: LlmError, classifierRep
         yield { type: "done", stopReason: "end_turn" };
         return;
       }
+      if (request.system === CANDIDATE_PROMPT) {
+        candidates.push(request);
+        yield { type: "text_delta", text: candidateReplies[Math.min(candidates.length - 1, candidateReplies.length - 1)] ?? "" };
+        yield { type: "done", stopReason: "end_turn" };
+        return;
+      }
       seen.push(request);
       yield* events;
       if (failWith) throw failWith;
     },
   };
-  return { client, seen, classified };
+  return { client, seen, classified, candidates };
 }
 
 /** A client that must not be called: the passthrough should pick the other provider's client. */
@@ -53,10 +74,16 @@ const unused: LlmClient = {
   },
 };
 
-const runWith = (client: LlmClient, provider: ModelProvider = "claude-headless", signal = new AbortController().signal) => {
+const runWith = (
+  client: LlmClient,
+  provider: ModelProvider = "claude-headless",
+  signal = new AbortController().signal,
+  rng = rngFor(0),
+  scoreAirports = fakeScoreAirports().tool,
+) => {
   const clients: Record<ModelProvider, LlmClient> = { "claude-headless": unused, gemini: unused };
   clients[provider] = client;
-  const agent = new LlmPassthroughAgent(clients);
+  const agent = new LlmPassthroughAgent(clients, undefined, { rng, scoreAirports });
   const history = [
     { role: "user" as const, content: "Rank SFO" },
     { role: "assistant" as const, content: "It is busy." },
@@ -75,8 +102,11 @@ describe("LlmPassthroughAgent", () => {
       { type: "done", stopReason: "end_turn" },
     ]);
     const events = await runWith(client);
+    // classify_message, then pick_candidates (in_scope, #42), then the main model's stream.
     expect(events.map((e) => e.type)).toEqual([
       "message_start",
+      "tool_call",
+      "tool_result",
       "tool_call",
       "tool_result",
       "thinking_delta",
@@ -91,9 +121,9 @@ describe("LlmPassthroughAgent", () => {
     expect(events[0]).toMatchObject({ modelId: "claude-headless-model" });
     expect(events.at(-1)).toMatchObject({ stopReason: "end_turn" });
 
-    // The whole history goes to the client, with no system prompt.
+    // The whole history goes to the client; no airport was picked, so the system context says so (#42).
     expect(seen[0]!.messages).toHaveLength(3);
-    expect(seen[0]!.system).toBeUndefined();
+    expect(seen[0]!.system).toBe(NO_CANDIDATES_PROMPT);
   });
 
   it("passes max_tokens through and maps other stop reasons to end_turn", async () => {
@@ -111,7 +141,7 @@ describe("LlmPassthroughAgent", () => {
 
   it("turns an LlmError after output started into an error event", async () => {
     const events = await runWith(fakeClient([{ type: "text_delta", text: "Half" }], new LlmError("internal", "Claude crashed.")).client);
-    expect(events.map((e) => e.type)).toEqual(["message_start", "tool_call", "tool_result", "text_delta", "error"]);
+    expect(events.map((e) => e.type)).toEqual(["message_start", "tool_call", "tool_result", "tool_call", "tool_result", "text_delta", "error"]);
     expect(events.at(-1)).toEqual({ type: "error", error: { code: "internal", message: "Claude crashed." } });
   });
 
@@ -159,11 +189,36 @@ describe("LlmPassthroughAgent", () => {
         signal: new AbortController().signal,
       }),
     );
-    expect(events.flatMap((e) => (e.type === "text_delta" ? [e.delta] : [])).join("")).toBe(OFF_TOPIC_ANSWER);
+    // The default rng is Math.random: the answer is the fixed intro plus one of the listed suggestions.
+    const text = events.flatMap((e) => (e.type === "text_delta" ? [e.delta] : [])).join("");
+    expect(text.startsWith(OFF_TOPIC_INTRO)).toBe(true);
+    expect(OFF_TOPIC_SUGGESTIONS.some((s) => text === `${OFF_TOPIC_INTRO}\nTry something like *"${s}"*`)).toBe(true);
     expect(seen).toHaveLength(0);
   });
 
-  it.each(["greeting", "in_scope"])("still calls the main LLM for the %s label (#21)", async (label) => {
+  it("answers a greeting with exactly the fixed text, like the other static answers, and never calls the main LLM (#44)", async () => {
+    const { client, seen, classified } = fakeClient(
+      [{ type: "text_delta", text: "Hiiii! What can I help you with today?" }, { type: "done", stopReason: "end_turn" }],
+      new LlmError("internal", "the main LLM must not be called"),
+      '{"label":"greeting","reason":"Says hello."}',
+    );
+    const events = await runWith(client);
+    expect(events.map((e) => e.type)).toEqual(["message_start", "tool_call", "tool_result", "text_delta", "message_end"]);
+    expect(events[2]).toMatchObject({ type: "tool_result", result: { ok: true, output: { label: "greeting" } } });
+    expect(events.flatMap((e) => (e.type === "text_delta" ? [e.delta] : [])).join("")).toBe(GREETING_ANSWER);
+    expect(classified).toHaveLength(1);
+    expect(seen).toHaveLength(0);
+  });
+
+  it.each(OFF_TOPIC_SUGGESTIONS.map((s, i) => [i, s] as const))("off_topic with a fixed rng picks suggestion %i (#44)", async (i, suggestion) => {
+    const { client, seen } = fakeClient([{ type: "text_delta", text: "x" }, { type: "done", stopReason: "end_turn" }], undefined, '{"label":"off_topic","reason":"Weather."}');
+    const events = await runWith(client, "claude-headless", new AbortController().signal, rngFor(i));
+    const text = events.flatMap((e) => (e.type === "text_delta" ? [e.delta] : [])).join("");
+    expect(text).toBe(`${OFF_TOPIC_INTRO}\nTry something like *"${suggestion}"*`);
+    expect(seen).toHaveLength(0);
+  });
+
+  it.each(["in_scope"])("still calls the main LLM for the %s label (#21)", async (label) => {
     const { client, seen } = fakeClient(
       [{ type: "text_delta", text: "From the LLM." }, { type: "done", stopReason: "end_turn" }],
       undefined,
@@ -178,13 +233,13 @@ describe("LlmPassthroughAgent", () => {
     const { client, seen, classified } = fakeClient(
       [{ type: "text_delta", text: "LAX is busy." }, { type: "done", stopReason: "end_turn" }],
       undefined,
-      '{"label":"greeting","reason":"Says hello."}',
+      '{"label":"in_scope","reason":"Asks about LAX."}',
     );
     const events = await runWith(client);
-    expect(events.map((e) => e.type)).toEqual(["message_start", "tool_call", "tool_result", "text_delta", "message_end"]);
+    expect(events.map((e) => e.type)).toEqual(["message_start", "tool_call", "tool_result", "tool_call", "tool_result", "text_delta", "message_end"]);
     const [, call, result] = events;
     expect(call).toMatchObject({ type: "tool_call", name: "classify_message", input: { message: "And LAX?" } });
-    expect(result).toMatchObject({ type: "tool_result", result: { ok: true, output: { label: "greeting", reason: "Says hello.", attempts: 1 } } });
+    expect(result).toMatchObject({ type: "tool_result", result: { ok: true, output: { label: "in_scope", reason: "Asks about LAX.", attempts: 1 } } });
     expect(call && "toolCallId" in call && result && "toolCallId" in result && call.toolCallId === result.toolCallId).toBe(true);
 
     // One classifier call that sees the recent turns; the label changes nothing about the main call.
@@ -247,7 +302,7 @@ describe("LlmPassthroughAgent", () => {
   it.each(["gemini", "claude-headless"] as const)("sends a %s model's turn to that provider's client", async (provider) => {
     const { client, seen } = fakeClient([{ type: "text_delta", text: "Hi" }, { type: "done", stopReason: "end_turn" }]);
     const events = await runWith(client, provider);
-    expect(events.map((e) => e.type)).toEqual(["message_start", "tool_call", "tool_result", "text_delta", "message_end"]);
+    expect(events.map((e) => e.type)).toEqual(["message_start", "tool_call", "tool_result", "tool_call", "tool_result", "text_delta", "message_end"]);
     expect(seen).toHaveLength(1);
   });
 });
