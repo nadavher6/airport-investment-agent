@@ -14,8 +14,7 @@ export function DataTable({ spec, note }: { spec: Pick<TableSpec, "title" | "col
         </figcaption>
       ) : null}
       <div className="viz-table__scroll">
-        <table className="viz-table">
-          {spec.title ? <caption className="viz-sr-only">{spec.title}</caption> : null}
+        <table className="viz-table" aria-label={spec.title}>
           <thead>
             <tr>
               {spec.columns.map((c, i) => (
