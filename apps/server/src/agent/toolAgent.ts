@@ -162,7 +162,8 @@ export class ToolAgent implements Agent {
 
         const parsed = parseModelStep(reply);
         if (parsed.kind === "answer") {
-          yield* text(reply.slice(shown));
+          // An empty reply still ends with a readable answer.
+          yield* text(reply.trim() === "" ? GRACEFUL_FALLBACK : reply.slice(shown));
           yield* endThinking();
           yield { type: "message_end", messageId, stopReason: "end_turn" };
           this.memory.commitFocus(convId, focus.codes);
