@@ -204,6 +204,59 @@ describe("VisualBoundary", () => {
   });
 });
 
+describe("memo, reset, a11y and edge data", () => {
+  it("a line chart with one point renders, and with huge values falls back without hanging", () => {
+    const one = fence("chart", { type: "line", series: [{ name: "A", points: [[2020, 5]] }] });
+    expect(one.container.querySelectorAll(".viz-line")).toHaveLength(1);
+    const huge = fence("chart", { type: "line", series: [{ name: "A", points: [[2020, 1e17], [2021, 1e17 + 16]] }] });
+    expect(huge.container.querySelector(".viz-note")).toHaveTextContent(NOTE);
+    expect(huge.container.querySelector(".viz-line")).toBeNull();
+  });
+
+  it("a flat line chart (all values equal) renders", () => {
+    const { container } = fence("chart", { type: "line", series: [{ name: "A", points: [[1, 3], [2, 3], [3, 3]] }] });
+    expect(container.querySelectorAll(".viz-grid text").length).toBeLessThanOrEqual(20);
+  });
+
+  it("the boundary resets when the body changes", () => {
+    const Boom = (): ReactNode => {
+      throw new Error("boom");
+    };
+    vi.spyOn(console, "error").mockImplementation(() => undefined);
+    const r = render(
+      <VisualBoundary key="a" body="a">
+        <Boom />
+      </VisualBoundary>,
+    );
+    expect(screen.getByText(`${NOTE}: it failed to render.`)).toBeInTheDocument();
+    const ok = demo("Bar");
+    r.rerender(<>{renderVisual(ok.lang)(ok.body)}</>);
+    expect(screen.queryByText(`${NOTE}: it failed to render.`)).not.toBeInTheDocument();
+    expect(screen.getByRole("img")).toBeInTheDocument();
+  });
+
+  it("renderVisual keys the boundary by body, so a new body is not stuck on an old failure", () => {
+    const first = renderVisual("chart")("a") as { key: string | null };
+    const second = renderVisual("chart")("b") as { key: string | null };
+    expect(first.key).toBe("a");
+    expect(second.key).toBe("b");
+  });
+
+  it("the line chart focus target has a role and a label", () => {
+    const f = demo("Line");
+    fence(f.lang, f.body);
+    expect(screen.getByRole("group", { name: /use the arrow keys/ })).toBeInTheDocument();
+  });
+
+  it("bar values are visible without hover or focus", () => {
+    const f = demo("Bar");
+    const { container } = fence(f.lang, f.body);
+    const labels = [...container.querySelectorAll(".viz-label")].map((n) => n.textContent);
+    expect(labels.length).toBeGreaterThan(0);
+    expect(labels.every((t) => /\d/.test(t ?? ""))).toBe(true);
+  });
+});
+
 describe("registration", () => {
   it("registers chart, table and kpi through the registry interface", () => {
     const seen = new Map<string, FenceRenderer>();

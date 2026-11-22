@@ -1,4 +1,4 @@
-import { useState, type KeyboardEvent } from "react";
+import { useMemo, useState, type KeyboardEvent } from "react";
 import type { Cell, LineSpec } from "./spec";
 import { formatCompact, formatFull, formatX, niceScale, project, sampleIndexes, withUnit } from "./format";
 import { Legend, SrTable, VisualFrame, seriesColor } from "./parts";
@@ -33,16 +33,22 @@ export function summariseLine(spec: LineSpec, xs: readonly X[]): string {
 
 export function LineChart({ spec }: { spec: LineSpec }) {
   const [active, setActive] = useState<number | null>(null);
-  const { xs, numeric } = collectXs(spec);
-  const ys = spec.series.flatMap((s) => s.points.map((p) => p[1]));
-  const y = niceScale(ys, 5, false);
+  const { xs, numeric, y, xMin, xMax, xTicks, label } = useMemo(() => {
+    const { xs, numeric } = collectXs(spec);
+    const ys = spec.series.flatMap((s) => s.points.map((p) => p[1]));
+    const xNums = xs.map((x, i) => (numeric ? (x as number) : i));
+    const xMin = Math.min(...xNums);
+    const xMax = Math.max(...xNums);
+    // Numeric x gets round, evenly spaced ticks (2016, 2018, ...); text x gets every k-th label.
+    const xTicks: X[] = numeric
+      ? niceScale(xNums, 6, false).ticks.filter((t) => t >= xMin && t <= xMax && (xMax - xMin > 10 || Number.isInteger(t)))
+      : sampleIndexes(xs.length, 7).map((i) => xs[i] as X);
+    return { xs, numeric, y: niceScale(ys, 5, false), xMin, xMax, xTicks, label: summariseLine(spec, xs) };
+  }, [spec]);
   const plotL = M.left;
   const plotR = W - M.right;
   const plotT = M.top;
   const plotB = H - M.bottom;
-  const xNums = xs.map((x, i) => (numeric ? (x as number) : i));
-  const xMin = Math.min(...xNums);
-  const xMax = Math.max(...xNums);
   const px = (x: X): number => project(numeric ? (x as number) : xs.indexOf(x), xMin, xMax, plotL, plotR);
   const py = (v: number): number => project(v, y.min, y.max, plotB, plotT);
 
@@ -57,12 +63,6 @@ export function LineChart({ spec }: { spec: LineSpec }) {
   const sortedEndY = ends.map((e) => e.y).sort((a, b) => a - b);
   const endsClear = sortedEndY.every((v, i) => i === 0 || v - (sortedEndY[i - 1] ?? 0) >= LABEL_GAP);
   const directLabels = spec.series.length <= 4 && endsClear;
-
-  // Numeric x gets round, evenly spaced ticks (2016, 2018, ...); text x gets every k-th label.
-  const xTicks: X[] = numeric
-    ? niceScale(xNums, 6, false).ticks.filter((t) => t >= xMin && t <= xMax && (xMax - xMin > 10 || Number.isInteger(t)))
-    : sampleIndexes(xs.length, 7).map((i) => xs[i] as X);
-  const label = summariseLine(spec, xs);
   const activeX = active === null ? undefined : xs[active];
 
   const onKey = (e: KeyboardEvent<HTMLDivElement>) => {
@@ -82,6 +82,7 @@ export function LineChart({ spec }: { spec: LineSpec }) {
       ) : null}
       <div
         className="viz__plot"
+        role="group"
         tabIndex={0}
         aria-label={`${spec.title ?? "Line chart"}: use the arrow keys to read values`}
         onKeyDown={onKey}

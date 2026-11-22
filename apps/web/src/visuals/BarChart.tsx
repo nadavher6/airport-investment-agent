@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { BarSpec } from "./spec";
 import { formatCompact, formatFull, niceScale, project, withUnit } from "./format";
 import { SrTable, VisualFrame, seriesColor } from "./parts";
@@ -45,12 +45,17 @@ function barPath(x0: number, x1: number, y: number, h: number): string {
 
 export function BarChart({ spec }: { spec: BarSpec }) {
   const [active, setActive] = useState<number | null>(null);
-  const items = sortItems(spec);
-  const scale = niceScale(items.map((i) => i.value), 4, true);
+  const { items, scale, label } = useMemo(() => {
+    const sorted = sortItems(spec);
+    return {
+      items: sorted,
+      scale: niceScale(sorted.map((i) => i.value), 4, true),
+      label: summariseBar(spec, sorted),
+    };
+  }, [spec]);
   const H = M.top + M.bottom + items.length * ROW;
   const px = (v: number): number => project(v, scale.min, scale.max, M.left, W - M.right);
   const base = px(0);
-  const label = summariseBar(spec, items);
 
   return (
     <VisualFrame title={spec.title} subtitle={spec.unit ? `in ${spec.unit}` : undefined}>
