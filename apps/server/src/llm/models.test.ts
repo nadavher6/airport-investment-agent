@@ -2,6 +2,7 @@ import { asModelId, type ModelInfo, type ModelProvider } from "@airport/shared";
 import { describe, expect, it } from "vitest";
 import { LlmPassthroughAgent } from "../agent/llmPassthroughAgent.ts";
 import { classifyMessage } from "../agent/classifier/classifier.ts";
+import { CLASSIFIER_PROMPT } from "../agent/classifier/prompt.ts";
 import { collect } from "../test/helpers.ts";
 import type { LlmClient, LlmRequest } from "./llmClient.ts";
 import { MODELS, mainModel } from "./models.ts";
@@ -15,7 +16,10 @@ const info = (provider: ModelProvider): ModelInfo => ({
   available: true,
 });
 
-/** A fake client that records every request and answers every call with the classifier's JSON (prose to the tool loop). */
+/**
+ * A fake client that records every request: the classifier gets its JSON, the tool loop gets prose (a reply that
+ * starts with "{" is a tool-call attempt to the loop, #49).
+ */
 function recorder(provider: ModelProvider): { client: LlmClient; requests: LlmRequest[] } {
   const requests: LlmRequest[] = [];
   const client: LlmClient = {
@@ -23,7 +27,7 @@ function recorder(provider: ModelProvider): { client: LlmClient; requests: LlmRe
     health: async () => ({ status: "ok", detail: "fake" }),
     async *stream(request) {
       requests.push(request);
-      const text = '{"label":"in_scope","reason":"Airports."}';
+      const text = request.system === CLASSIFIER_PROMPT ? '{"label":"in_scope","reason":"Airports."}' : "SFO ranks well.";
       yield { type: "text_delta", text };
       yield { type: "done", stopReason: "end_turn" };
     },

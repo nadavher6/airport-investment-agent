@@ -72,13 +72,33 @@ of both saturating at 100); a **single** airport is scored *absolute* vs. all US
      (`src/scoring/`); the model only decides which airports to look up and score, then explains.
    - **Scoring rule (the owner's, verbatim in the prompt):** questions about investment potential, or which
      airport is better / should be expanded, MUST go through `score_airports`; the model never ranks from memory.
-   - **Cap of 5 airports:** `score_airports` with more than 5 distinct codes does not run; the loop returns
-     "max 5 airports; pick the 5 most relevant" to the model (`MAX_SCORED_AIRPORTS` in `agent/flow/scoreAirports.ts`).
-   - **Guard (minimal, #49 replaces it with the full policy):** tool JSON is never shown to the user (a step is held
-     from its first `{` or backtick until it is parsed). An unreadable call or an unknown tool is fed back once; a
-     second one ends the turn with a plain sentence.
-   - **Step cap:** at most 6 tool runs, then one call that must answer in prose; if it still does not, a plain
-     "limit reached" sentence. The answer is never empty.
+   - **Cap of 5 airports:** `score_airports` with more than 5 distinct codes does not run; it is an `invalid_input`
+     error with the problem "max 5 airports; pick the 5 most relevant" (`MAX_SCORED_AIRPORTS` in
+     `agent/flow/scoreAirports.ts`), fed back like any other bad call (below).
+   - **Tool-call guardrails (#49, `agent/toolCall.ts`, `agent/toolGuard.ts`):** tool JSON is never shown to the user
+     (a step is held from its first `{` or backtick until it is parsed), and nothing the model writes is thrown.
+     A step is a call attempt when it starts with `{`, or when anywhere in it (after a lead-in, in a fence) there is
+     an object with both top-level keys `tool` and `input` in any order, quoted or not, or an object with a `tool`
+     key that sits right inside a ``` fence or never closes. Prose that only mentions `{"tool": ...}` (no `input`
+     key) is the answer and is shown whole. A trade-off: an answer that starts with `{`, or that quotes a whole
+     `{tool, input}` example, is taken as a call attempt and fed back. Calls are strict JSON, so unquoted keys are
+     `unparseable` and fed back. A bad
+     call is a typed `ToolCallError`: `unparseable` (looks like a call, JSON does not parse), `bad_shape` (not exactly
+     `{"tool": string, "input": object}`), `unknown_tool`, `invalid_input` (the tool's zod schema or the 5-airport rule),
+     `tool_failed` (the tool returned a `ToolError`) or `repeat_call` (the same tool and input as earlier in the turn,
+     keys order-insensitive). Each one shows as a failed tool card, and the model gets a delimited
+     `TOOL_CALL_ERROR ... END_TOOL_CALL_ERROR` block with the code, the problem, the expected input JSON Schema (for
+     `unknown_tool` and unreadable calls: every allowed tool with its schema) and its own previous call, and nothing
+     else from the user. Every model-controlled value in the block (tool name, raw text, problem, error message,
+     the previous call) is one JSON string literal capped at `MAX_ECHO_CHARS = 200` chars plus `…[truncated]`, so
+     it holds no line break, cannot forge the end marker, and keeps the block bounded; the card name and message are
+     capped the same way. A `not_found` is not retried: the model is told the data does not exist and to say so.
+     `repeat_call` only covers calls with a final result (a success or a `not_found`), so a call that failed as
+     `unavailable` or `internal` may be retried (it still counts toward the retry and step caps).
+     The model may retry at most `MAX_INVALID_RETRIES = 2` times in a row; at the 3rd invalid attempt in a row tools
+     are switched off (`TOOLS_DISABLED`) and the model answers in prose, or a plain sentence is shown.
+   - **Step cap:** at most 6 tool attempts (invalid ones and retries count), then one call that must answer in prose;
+     if it still does not, a plain "limit reached" sentence. The answer is never empty. An abort stops at once.
    - **Memory** is not wired in yet (#50: it needs a conversation id in the contract).
 
 This replaced #42's fixed candidates -> resolve -> score pipeline: the owner chose one model-driven loop, with
