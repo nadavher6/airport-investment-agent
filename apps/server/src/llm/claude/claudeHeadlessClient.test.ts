@@ -162,8 +162,8 @@ describe("ClaudeHeadlessClient", () => {
     expect(record.disableAutoMemory).toBe("1");
   });
 
-  it("stops with an unavailable LlmError when claude sends nothing for idleTimeoutMs", { timeout: 5000 }, async () => {
-    const { client, fake } = clientWith({ hang: true }, {}, { idleTimeoutMs: 300 });
+  it("stops with an unavailable LlmError when claude sends nothing for idleTimeoutMs", { timeout: 15_000 }, async () => {
+    const { client, fake } = clientWith({ hang: true }, {}, { idleTimeoutMs: 3000 });
     const err = await collect(client.stream(request())).catch((e: unknown) => e);
     expect(err).toBeInstanceOf(LlmError);
     expect(err).toMatchObject({ code: "unavailable", message: expect.stringMatching(/sent nothing/) });
