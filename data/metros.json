@@ -1,0 +1,957 @@
+{
+  "metros": {
+    "New York": {
+      "aliases": [
+        "NYC",
+        "New York City",
+        "NY Metro",
+        "New York Metro"
+      ],
+      "airports": [
+        {
+          "code": "JFK",
+          "secondary": false
+        },
+        {
+          "code": "EWR",
+          "secondary": false
+        },
+        {
+          "code": "LGA",
+          "secondary": false
+        },
+        {
+          "code": "HPN",
+          "secondary": true
+        },
+        {
+          "code": "ISP",
+          "secondary": true
+        }
+      ]
+    },
+    "Los Angeles": {
+      "aliases": [
+        "LA",
+        "Greater Los Angeles",
+        "Southern California",
+        "SoCal"
+      ],
+      "airports": [
+        {
+          "code": "LAX",
+          "secondary": false
+        },
+        {
+          "code": "SNA",
+          "secondary": true
+        },
+        {
+          "code": "ONT",
+          "secondary": true
+        },
+        {
+          "code": "BUR",
+          "secondary": true
+        },
+        {
+          "code": "LGB",
+          "secondary": true
+        }
+      ]
+    },
+    "San Francisco Bay Area": {
+      "aliases": [
+        "Bay Area",
+        "San Francisco",
+        "SF",
+        "San Francisco Bay",
+        "SF Bay Area"
+      ],
+      "airports": [
+        {
+          "code": "SFO",
+          "secondary": false
+        },
+        {
+          "code": "SJC",
+          "secondary": false
+        },
+        {
+          "code": "OAK",
+          "secondary": false
+        }
+      ]
+    },
+    "Chicago": {
+      "aliases": [
+        "Chicagoland"
+      ],
+      "airports": [
+        {
+          "code": "ORD",
+          "secondary": false
+        },
+        {
+          "code": "MDW",
+          "secondary": false
+        }
+      ]
+    },
+    "Washington DC": {
+      "aliases": [
+        "DC",
+        "Washington",
+        "Capital Region"
+      ],
+      "airports": [
+        {
+          "code": "BWI",
+          "secondary": false
+        },
+        {
+          "code": "IAD",
+          "secondary": false
+        },
+        {
+          "code": "DCA",
+          "secondary": false
+        }
+      ]
+    },
+    "Baltimore": {
+      "aliases": [],
+      "airports": [
+        {
+          "code": "BWI",
+          "secondary": false
+        }
+      ]
+    },
+    "Dallas-Fort Worth": {
+      "aliases": [
+        "DFW",
+        "Dallas",
+        "Fort Worth",
+        "Metroplex"
+      ],
+      "airports": [
+        {
+          "code": "DFW",
+          "secondary": false
+        },
+        {
+          "code": "DAL",
+          "secondary": false
+        }
+      ]
+    },
+    "Houston": {
+      "aliases": [],
+      "airports": [
+        {
+          "code": "IAH",
+          "secondary": false
+        },
+        {
+          "code": "HOU",
+          "secondary": false
+        }
+      ]
+    },
+    "Miami": {
+      "aliases": [
+        "South Florida",
+        "Fort Lauderdale",
+        "Miami-Fort Lauderdale"
+      ],
+      "airports": [
+        {
+          "code": "MIA",
+          "secondary": false
+        },
+        {
+          "code": "FLL",
+          "secondary": false
+        },
+        {
+          "code": "PBI",
+          "secondary": true
+        }
+      ]
+    },
+    "West Palm Beach": {
+      "aliases": [
+        "Palm Beach"
+      ],
+      "airports": [
+        {
+          "code": "PBI",
+          "secondary": false
+        }
+      ]
+    },
+    "Orlando": {
+      "aliases": [
+        "Central Florida"
+      ],
+      "airports": [
+        {
+          "code": "MCO",
+          "secondary": false
+        },
+        {
+          "code": "SFB",
+          "secondary": true
+        }
+      ]
+    },
+    "Tampa": {
+      "aliases": [
+        "Tampa Bay",
+        "Tampa-St. Petersburg",
+        "St. Petersburg",
+        "Clearwater"
+      ],
+      "airports": [
+        {
+          "code": "TPA",
+          "secondary": false
+        },
+        {
+          "code": "PIE",
+          "secondary": true
+        }
+      ]
+    },
+    "Atlanta": {
+      "aliases": [
+        "ATL"
+      ],
+      "airports": [
+        {
+          "code": "ATL",
+          "secondary": false
+        }
+      ]
+    },
+    "Charlotte": {
+      "aliases": [],
+      "airports": [
+        {
+          "code": "CLT",
+          "secondary": false
+        }
+      ]
+    },
+    "Denver": {
+      "aliases": [],
+      "airports": [
+        {
+          "code": "DEN",
+          "secondary": false
+        }
+      ]
+    },
+    "Las Vegas": {
+      "aliases": [
+        "Vegas"
+      ],
+      "airports": [
+        {
+          "code": "LAS",
+          "secondary": false
+        }
+      ]
+    },
+    "Phoenix": {
+      "aliases": [],
+      "airports": [
+        {
+          "code": "PHX",
+          "secondary": false
+        }
+      ]
+    },
+    "Seattle": {
+      "aliases": [
+        "Seattle-Tacoma",
+        "Sea-Tac",
+        "Tacoma"
+      ],
+      "airports": [
+        {
+          "code": "SEA",
+          "secondary": false
+        }
+      ]
+    },
+    "Boston": {
+      "aliases": [
+        "Greater Boston"
+      ],
+      "airports": [
+        {
+          "code": "BOS",
+          "secondary": false
+        },
+        {
+          "code": "PVD",
+          "secondary": true
+        },
+        {
+          "code": "MHT",
+          "secondary": true
+        }
+      ]
+    },
+    "Providence": {
+      "aliases": [
+        "Warwick"
+      ],
+      "airports": [
+        {
+          "code": "PVD",
+          "secondary": false
+        }
+      ]
+    },
+    "Manchester": {
+      "aliases": [
+        "Manchester NH"
+      ],
+      "airports": [
+        {
+          "code": "MHT",
+          "secondary": false
+        }
+      ]
+    },
+    "Minneapolis": {
+      "aliases": [
+        "Twin Cities",
+        "Minneapolis-St. Paul",
+        "St. Paul",
+        "Saint Paul",
+        "MSP"
+      ],
+      "airports": [
+        {
+          "code": "MSP",
+          "secondary": false
+        }
+      ]
+    },
+    "Detroit": {
+      "aliases": [],
+      "airports": [
+        {
+          "code": "DTW",
+          "secondary": false
+        }
+      ]
+    },
+    "Philadelphia": {
+      "aliases": [
+        "Philly"
+      ],
+      "airports": [
+        {
+          "code": "PHL",
+          "secondary": false
+        }
+      ]
+    },
+    "Salt Lake City": {
+      "aliases": [
+        "SLC"
+      ],
+      "airports": [
+        {
+          "code": "SLC",
+          "secondary": false
+        }
+      ]
+    },
+    "San Diego": {
+      "aliases": [],
+      "airports": [
+        {
+          "code": "SAN",
+          "secondary": false
+        }
+      ]
+    },
+    "Nashville": {
+      "aliases": [],
+      "airports": [
+        {
+          "code": "BNA",
+          "secondary": false
+        }
+      ]
+    },
+    "Austin": {
+      "aliases": [],
+      "airports": [
+        {
+          "code": "AUS",
+          "secondary": false
+        }
+      ]
+    },
+    "Honolulu": {
+      "aliases": [
+        "Oahu"
+      ],
+      "airports": [
+        {
+          "code": "HNL",
+          "secondary": false
+        }
+      ]
+    },
+    "Portland": {
+      "aliases": [
+        "Portland OR",
+        "Portland Oregon"
+      ],
+      "airports": [
+        {
+          "code": "PDX",
+          "secondary": false
+        }
+      ]
+    },
+    "St. Louis": {
+      "aliases": [
+        "Saint Louis"
+      ],
+      "airports": [
+        {
+          "code": "STL",
+          "secondary": false
+        }
+      ]
+    },
+    "Raleigh-Durham": {
+      "aliases": [
+        "Raleigh",
+        "Durham",
+        "Research Triangle"
+      ],
+      "airports": [
+        {
+          "code": "RDU",
+          "secondary": false
+        }
+      ]
+    },
+    "Sacramento": {
+      "aliases": [],
+      "airports": [
+        {
+          "code": "SMF",
+          "secondary": false
+        }
+      ]
+    },
+    "New Orleans": {
+      "aliases": [
+        "NOLA",
+        "Kenner"
+      ],
+      "airports": [
+        {
+          "code": "MSY",
+          "secondary": false
+        }
+      ]
+    },
+    "San Juan": {
+      "aliases": [],
+      "airports": [
+        {
+          "code": "SJU",
+          "secondary": false
+        }
+      ]
+    },
+    "Kansas City": {
+      "aliases": [
+        "KC"
+      ],
+      "airports": [
+        {
+          "code": "MCI",
+          "secondary": false
+        }
+      ]
+    },
+    "San Jose": {
+      "aliases": [],
+      "airports": [
+        {
+          "code": "SJC",
+          "secondary": false
+        }
+      ]
+    },
+    "San Antonio": {
+      "aliases": [],
+      "airports": [
+        {
+          "code": "SAT",
+          "secondary": false
+        }
+      ]
+    },
+    "Fort Myers": {
+      "aliases": [
+        "Southwest Florida",
+        "Ft. Myers"
+      ],
+      "airports": [
+        {
+          "code": "RSW",
+          "secondary": false
+        }
+      ]
+    },
+    "Oakland": {
+      "aliases": [],
+      "airports": [
+        {
+          "code": "OAK",
+          "secondary": false
+        }
+      ]
+    },
+    "Indianapolis": {
+      "aliases": [
+        "Indy"
+      ],
+      "airports": [
+        {
+          "code": "IND",
+          "secondary": false
+        }
+      ]
+    },
+    "Cleveland": {
+      "aliases": [],
+      "airports": [
+        {
+          "code": "CLE",
+          "secondary": false
+        }
+      ]
+    },
+    "Pittsburgh": {
+      "aliases": [],
+      "airports": [
+        {
+          "code": "PIT",
+          "secondary": false
+        }
+      ]
+    },
+    "Cincinnati": {
+      "aliases": [
+        "Cincinnati/Northern Kentucky",
+        "Northern Kentucky",
+        "Covington"
+      ],
+      "airports": [
+        {
+          "code": "CVG",
+          "secondary": false
+        }
+      ]
+    },
+    "Columbus": {
+      "aliases": [
+        "Columbus OH",
+        "Columbus Ohio"
+      ],
+      "airports": [
+        {
+          "code": "CMH",
+          "secondary": false
+        }
+      ]
+    },
+    "Jacksonville": {
+      "aliases": [],
+      "airports": [
+        {
+          "code": "JAX",
+          "secondary": false
+        }
+      ]
+    },
+    "Maui": {
+      "aliases": [
+        "Kahului"
+      ],
+      "airports": [
+        {
+          "code": "OGG",
+          "secondary": false
+        }
+      ]
+    },
+    "Hartford": {
+      "aliases": [
+        "Windsor Locks"
+      ],
+      "airports": [
+        {
+          "code": "BDL",
+          "secondary": false
+        }
+      ]
+    },
+    "Charleston": {
+      "aliases": [
+        "Charleston SC"
+      ],
+      "airports": [
+        {
+          "code": "CHS",
+          "secondary": false
+        }
+      ]
+    },
+    "Milwaukee": {
+      "aliases": [],
+      "airports": [
+        {
+          "code": "MKE",
+          "secondary": false
+        }
+      ]
+    },
+    "Anchorage": {
+      "aliases": [],
+      "airports": [
+        {
+          "code": "ANC",
+          "secondary": false
+        }
+      ]
+    },
+    "Albuquerque": {
+      "aliases": [],
+      "airports": [
+        {
+          "code": "ABQ",
+          "secondary": false
+        }
+      ]
+    },
+    "Omaha": {
+      "aliases": [],
+      "airports": [
+        {
+          "code": "OMA",
+          "secondary": false
+        }
+      ]
+    },
+    "Buffalo": {
+      "aliases": [],
+      "airports": [
+        {
+          "code": "BUF",
+          "secondary": false
+        }
+      ]
+    },
+    "Boise": {
+      "aliases": [],
+      "airports": [
+        {
+          "code": "BOI",
+          "secondary": false
+        }
+      ]
+    },
+    "Portland, ME": {
+      "aliases": [
+        "Portland Maine"
+      ],
+      "airports": [
+        {
+          "code": "PWM",
+          "secondary": false
+        }
+      ]
+    },
+    "Burlington": {
+      "aliases": [
+        "Burlington VT"
+      ],
+      "airports": [
+        {
+          "code": "BTV",
+          "secondary": false
+        }
+      ]
+    },
+    "Spokane": {
+      "aliases": [],
+      "airports": [
+        {
+          "code": "GEG",
+          "secondary": false
+        }
+      ]
+    },
+    "Eugene": {
+      "aliases": [],
+      "airports": [
+        {
+          "code": "EUG",
+          "secondary": false
+        }
+      ]
+    },
+    "Tucson": {
+      "aliases": [],
+      "airports": [
+        {
+          "code": "TUS",
+          "secondary": false
+        }
+      ]
+    },
+    "El Paso": {
+      "aliases": [],
+      "airports": [
+        {
+          "code": "ELP",
+          "secondary": false
+        }
+      ]
+    },
+    "Billings": {
+      "aliases": [],
+      "airports": [
+        {
+          "code": "BIL",
+          "secondary": false
+        }
+      ]
+    },
+    "Bozeman": {
+      "aliases": [],
+      "airports": [
+        {
+          "code": "BZN",
+          "secondary": false
+        }
+      ]
+    },
+    "Mobile": {
+      "aliases": [],
+      "airports": [
+        {
+          "code": "MOB",
+          "secondary": false
+        }
+      ]
+    },
+    "Pensacola": {
+      "aliases": [],
+      "airports": [
+        {
+          "code": "PNS",
+          "secondary": false
+        }
+      ]
+    },
+    "Corpus Christi": {
+      "aliases": [],
+      "airports": [
+        {
+          "code": "CRP",
+          "secondary": false
+        }
+      ]
+    },
+    "Gulfport-Biloxi": {
+      "aliases": [
+        "Gulfport",
+        "Biloxi"
+      ],
+      "airports": [
+        {
+          "code": "GPT",
+          "secondary": false
+        }
+      ]
+    },
+    "Sarasota": {
+      "aliases": [
+        "Sarasota-Bradenton",
+        "Bradenton"
+      ],
+      "airports": [
+        {
+          "code": "SRQ",
+          "secondary": false
+        }
+      ]
+    },
+    "Norfolk": {
+      "aliases": [
+        "Virginia Beach",
+        "Hampton Roads"
+      ],
+      "airports": [
+        {
+          "code": "ORF",
+          "secondary": false
+        }
+      ]
+    },
+    "Savannah": {
+      "aliases": [],
+      "airports": [
+        {
+          "code": "SAV",
+          "secondary": false
+        }
+      ]
+    },
+    "Birmingham": {
+      "aliases": [
+        "Birmingham AL"
+      ],
+      "airports": [
+        {
+          "code": "BHM",
+          "secondary": false
+        }
+      ]
+    },
+    "Memphis": {
+      "aliases": [],
+      "airports": [
+        {
+          "code": "MEM",
+          "secondary": false
+        }
+      ]
+    },
+    "Louisville": {
+      "aliases": [],
+      "airports": [
+        {
+          "code": "SDF",
+          "secondary": false
+        }
+      ]
+    },
+    "Des Moines": {
+      "aliases": [],
+      "airports": [
+        {
+          "code": "DSM",
+          "secondary": false
+        }
+      ]
+    },
+    "Madison": {
+      "aliases": [],
+      "airports": [
+        {
+          "code": "MSN",
+          "secondary": false
+        }
+      ]
+    },
+    "Grand Rapids": {
+      "aliases": [],
+      "airports": [
+        {
+          "code": "GRR",
+          "secondary": false
+        }
+      ]
+    },
+    "Oklahoma City": {
+      "aliases": [
+        "OKC"
+      ],
+      "airports": [
+        {
+          "code": "OKC",
+          "secondary": false
+        }
+      ]
+    },
+    "Tulsa": {
+      "aliases": [],
+      "airports": [
+        {
+          "code": "TUL",
+          "secondary": false
+        }
+      ]
+    },
+    "Reno": {
+      "aliases": [
+        "Reno-Tahoe",
+        "Lake Tahoe"
+      ],
+      "airports": [
+        {
+          "code": "RNO",
+          "secondary": false
+        }
+      ]
+    },
+    "Colorado Springs": {
+      "aliases": [],
+      "airports": [
+        {
+          "code": "COS",
+          "secondary": false
+        }
+      ]
+    },
+    "Albany": {
+      "aliases": [
+        "Albany NY"
+      ],
+      "airports": [
+        {
+          "code": "ALB",
+          "secondary": false
+        }
+      ]
+    },
+    "Rochester": {
+      "aliases": [
+        "Rochester NY"
+      ],
+      "airports": [
+        {
+          "code": "ROC",
+          "secondary": false
+        }
+      ]
+    },
+    "Syracuse": {
+      "aliases": [],
+      "airports": [
+        {
+          "code": "SYR",
+          "secondary": false
+        }
+      ]
+    }
+  }
+}
