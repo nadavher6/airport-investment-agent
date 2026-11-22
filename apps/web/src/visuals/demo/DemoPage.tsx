@@ -1,5 +1,7 @@
 import { DEMO_FENCES } from "./faaDemo";
 import { renderVisual } from "../Visual";
+import { renderCompare } from "../compare/Compare";
+import { COMPARE_DEMO_BODY } from "../compare/demo";
 
 /** Dev-only: every visual type, plus the two fallbacks. Not part of the app bundle. */
 export function DemoPage() {
@@ -19,6 +21,14 @@ export function DemoPage() {
           {renderVisual(f.lang)(f.body)}
         </section>
       ))}
+      <section>
+        <h2 style={{ fontSize: "var(--text-sm)", color: "var(--ink-3)", fontWeight: 500 }}>Compare (#39): LAX vs SNA</h2>
+        {renderCompare(COMPARE_DEMO_BODY)}
+      </section>
+      <section style={{ maxWidth: 420 }}>
+        <h2 style={{ fontSize: "var(--text-sm)", color: "var(--ink-3)", fontWeight: 500 }}>Compare, narrow: stacked</h2>
+        {renderCompare(COMPARE_DEMO_BODY)}
+      </section>
     </main>
   );
 }

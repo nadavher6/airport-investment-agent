@@ -1,0 +1,93 @@
+/*
+ * ```compare (#39): airports side by side inside an answer. A borderless 2-D table: no rules
+ * or boxes, only whitespace, and only app tokens (tokens.css), so the dark theme follows.
+ * Placement comes from inline --cmp-row / --cmp-col / --cmp-order (see Compare.tsx).
+ */
+.viz-compare {
+  container-type: inline-size;
+  margin: var(--space-5) 0;
+  font-family: var(--font-ui);
+  color: var(--ink);
+}
+
+.viz-compare__title {
+  margin-bottom: var(--space-4);
+  font-size: var(--text-md);
+  font-weight: 600;
+}
+
+.viz-compare__grid {
+  display: grid;
+  grid-template-columns: repeat(var(--cmp-cols, 2), minmax(0, 1fr));
+  column-gap: var(--space-6);
+  row-gap: var(--space-2);
+  border: 0;
+}
+
+.viz-compare__grid > * {
+  grid-row: var(--cmp-row);
+  grid-column: var(--cmp-col);
+  min-width: 0;
+}
+
+.viz-compare__head {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.viz-compare__label,
+.viz-compare__cell-label {
+  margin-top: var(--space-5);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.viz-compare__cell-label {
+  display: none;
+  margin: var(--space-4) 0 var(--space-2);
+}
+
+.viz-compare__cell > * + * {
+  margin-top: var(--space-3);
+}
+
+/* #33 visuals sit flat inside the comparison: no card border, padding or fill. */
+.viz-compare .viz {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.viz-compare .md > :last-child {
+  margin-bottom: 0;
+}
+
+/* Narrow: stack the columns (all of A, then all of B) and repeat the row label in each cell. */
+@container (max-width: 719px) {
+  .viz-compare__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .viz-compare__grid > * {
+    grid-row: auto;
+    grid-column: 1;
+    order: var(--cmp-order);
+  }
+
+  .viz-compare__label {
+    display: none;
+  }
+
+  .viz-compare__cell-label {
+    display: block;
+  }
+
+  .viz-compare__head:not(:first-child) {
+    margin-top: var(--space-6);
+  }
+}
