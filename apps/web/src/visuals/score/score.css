@@ -218,3 +218,23 @@
   text-decoration: underline;
   cursor: pointer;
 }
+
+/* A wide score table scrolls inside its card (#78): .tool-card clips overflow for its rounded corners, so the card body and the table's figure must be allowed to shrink to the card instead of growing to the table's width. */
+.tool-card__score {
+  min-width: 0;
+}
+
+.score-table {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.score-table .viz-table__scroll {
+  max-width: 100%;
+}
+
+/* Nine columns: tighter cell padding so the table fits a 1200 px card without scrolling. */
+.score-table .viz-table th,
+.score-table .viz-table td {
+  padding-inline: 6px;
+}
