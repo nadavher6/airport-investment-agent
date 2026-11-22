@@ -10,10 +10,22 @@ export type Direction = "higher" | "lower";
 /**
  * How a KPI's raw value becomes a 0-100 sub-score:
  * - "minmax" (default): winsorize, then min-max against the reference bounds (relative to the population);
- * - "percent": the raw value is already a percentage, so the sub-score IS the value, clamped to 0-100
- *   (87 -> 87, 108.3 -> 100). No winsorizing and no bounds, so it is the same in absolute and relative mode.
+ * - `{ kind: "percent", fullAt }`: the raw value is a share of a natural "full" level, so the sub-score is
+ *   raw ÷ fullAt × 100, clamped to 0-100. With fullAt 1.0 a ratio of 0.868 scores 86.8 and 1.279 scores 100;
+ *   with fullAt 100 a raw percentage scores itself (81.7 -> 81.7). No winsorizing and no bounds, so it is the
+ *   same in absolute and relative mode.
  */
-export type Scale = "minmax" | "percent";
+export interface PercentScale {
+  readonly kind: "percent";
+  /** The raw value that earns the full 100 points (1.0 for a ratio, 100 for a percentage). Must be > 0. */
+  readonly fullAt: number;
+}
+export type Scale = "minmax" | PercentScale;
+
+/** Whether a KPI uses the percent scale. */
+export function isPercentScale(scale: Scale | undefined): scale is PercentScale {
+  return typeof scale === "object" && scale.kind === "percent";
+}
 
 /** The "show your work" record for one KPI: the formula, the raw inputs, and a plain sentence. */
 export interface KpiEvidence {
@@ -35,7 +47,7 @@ export interface KpiDef<A> {
   readonly weight: number;
   /** "higher" = larger raw value is more attractive; "lower" = inverse. */
   readonly direction: Direction;
-  /** How the raw value becomes a 0-100 sub-score; default "minmax". "percent" needs a raw value in percent. */
+  /** How the raw value becomes a 0-100 sub-score; default "minmax". See `Scale`. */
   readonly scale?: Scale;
   /** Assumption / proxy note, surfaced so the agent can explain and caveat. */
   readonly note?: string;
@@ -51,7 +63,7 @@ export interface KpiBreakdown {
   readonly weight: number;
   readonly available: boolean;
   readonly raw: number | null;
-  /** 0-100 after winsorize + min-max (or the percentage itself for scale "percent"); null when unavailable. */
+  /** 0-100 after winsorize + min-max (or raw ÷ fullAt × 100 for the percent scale); null when unavailable. */
   readonly normalized: number | null;
   /** renormalized-weight × normalized; null when unavailable. */
   readonly contribution: number | null;
@@ -103,10 +115,13 @@ export function normalize(raw: number, bounds: Bounds, direction: Direction): nu
   return Math.round(oriented * 1000) / 10; // 0-100, one decimal
 }
 
-/** The "percent" scale: the raw percentage itself, clamped to 0-100, one decimal ("lower" = 100 − value). NaN and ±Infinity are missing (null). */
-export function percentScore(raw: number, direction: Direction): number | null {
-  if (!Number.isFinite(raw)) return null;
-  const clamped = Math.min(100, Math.max(0, raw));
+/**
+ * The percent scale: raw ÷ fullAt × 100, clamped to 0-100, one decimal ("lower" = 100 − value). fullAt defaults
+ * to 100 (raw already in percent). NaN, ±Infinity and a fullAt that is not a positive number are missing (null).
+ */
+export function percentScore(raw: number, direction: Direction, fullAt = 100): number | null {
+  if (!Number.isFinite(raw) || !Number.isFinite(fullAt) || fullAt <= 0) return null;
+  const clamped = Math.min(100, Math.max(0, (raw / fullAt) * 100));
   return Math.round((direction === "higher" ? clamped : 100 - clamped) * 10) / 10;
 }
 
@@ -162,8 +177,8 @@ export function buildScorer<A>(
       const scored =
         raw === null || !Number.isFinite(raw)
           ? null
-          : k.scale === "percent"
-            ? percentScore(raw, k.direction)
+          : isPercentScale(k.scale)
+            ? percentScore(raw, k.direction, k.scale.fullAt)
             : normalize(raw, bounds.get(k.key) as Bounds, k.direction);
       if (raw === null || scored === null) {
         missing.push(k.key);

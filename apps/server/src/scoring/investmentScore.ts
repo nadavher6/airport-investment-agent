@@ -2,9 +2,10 @@
  * Airport Investment Attractiveness Score (tasks/06-scoring-formula-research.md).
  *
  * Full model = Need 0.60 (congestion + unmet demand) / Quality 0.40 (long-haul + growth):
- * - congestion   — annual departures (BTS T-100 (latest 12 months)), a traffic-volume proxy for capacity pressure
+ * - congestion   — runway utilization = operations (BTS T-100 (latest 12 months) departures × 2) ÷ ASV
+ *                  (FAA AC 150/5060-5 Figure 2-1, from the FAA NASR runway layout); sub-score = the percentage, capped at 100
  * - unmet_demand — load factor = passengers ÷ seats (BTS T-100 (latest 12 months)), proxy for spilled demand;
- *                  its sub-score is the load factor percentage itself (scale "percent", capped at 100)
+ *                  its sub-score is the load factor percentage itself (percent scale, fullAt 100, capped at 100)
  * - long_haul    — international seats ÷ total seats (BTS T-100 (latest 12 months))
  * - growth       — enplanement 5-year CAGR, CY2019 -> CY2024, % per year (FAA data); missing if no CAGR
  *
@@ -14,6 +15,8 @@
  */
 import { enplanementsDataset } from "../data/enplanements/dataset.ts";
 import type { AirportRecord } from "../data/enplanements/types.ts";
+import { getCapacity } from "../data/capacity/dataset.ts";
+import type { CapacityAirport } from "../data/capacity/types.ts";
 import { getT100 } from "../data/t100/dataset.ts";
 import { buildScorer, type KpiDef, type ScoredItem } from "./engine.ts";
 
@@ -25,26 +28,107 @@ export function growthPctPerYear(a: AirportRecord): number | null {
   return a.trend.cagr5yr;
 }
 
+/** FAA rule of thumb for runway utilization (operations ÷ ASV): start planning at 60%, start building at 80%. */
+export const FAA_PLANNING_TRIGGER_PCT = 60;
+export const FAA_CONSTRUCTION_TRIGGER_PCT = 80;
+
+/** The congestion KPI's scale: utilization is a ratio, 1.0 (100% of the ASV) earns the full 100 points. */
+export const CONGESTION_SCALE = { kind: "percent", fullAt: 1.0 } as const;
+
+/**
+ * Runway utilization as a ratio, 4 decimals: operations ÷ ASV (1.0 = at capacity). Not capped here (the
+ * percent scale caps the sub-score at 100), so the raw value stays the honest ratio. null when either input
+ * is missing or not a usable number: never estimated.
+ */
+export function utilizationRatio(operations: number | null, asv: number | null): number | null {
+  if (operations === null || asv === null || !Number.isFinite(operations) || !Number.isFinite(asv)) return null;
+  if (asv <= 0 || operations < 0) return null;
+  return Math.round((operations / asv) * 10_000) / 10_000;
+}
+
+/** A ratio in percent, one decimal, with the same arithmetic as the percent scale (fullAt 1.0), so they agree. */
+export const ratioToPct = (ratio: number): number => Math.round((ratio / CONGESTION_SCALE.fullAt) * 100 * 10) / 10;
+
+export interface RunwayUtilization {
+  /** BTS T-100 departures × 2 (arrivals ≈ departures), latest 12 months. */
+  readonly operations: number;
+  readonly asv: number;
+  /** operations ÷ ASV (the KPI's raw value). */
+  readonly ratio: number;
+  /** The ratio in percent, one decimal (uncapped). */
+  readonly utilizationPct: number;
+}
+
+/** The congestion KPI's inputs for one airport, or null when the T-100 record or the ASV is missing. */
+export function runwayUtilization(code: string): RunwayUtilization | null {
+  const departures = getT100(code)?.departures ?? null;
+  const asv = getCapacity(code)?.configuration?.asv ?? null;
+  const operations = departures === null ? null : departures * 2;
+  const ratio = utilizationRatio(operations, asv);
+  if (ratio === null || operations === null || asv === null) return null;
+  return { operations, asv, ratio, utilizationPct: ratioToPct(ratio) };
+}
+
+const fmt = (n: number): string => n.toLocaleString("en-US");
+
+/** Where a utilization sits against the FAA's 60% / 80% triggers, in words. */
+export function triggerPhrase(pct: number): string {
+  if (pct >= FAA_CONSTRUCTION_TRIGGER_PCT) return "past the FAA's 80% trigger to start building more capacity";
+  if (pct >= FAA_PLANNING_TRIGGER_PCT) return "past the FAA's 60% planning trigger";
+  return "below the FAA's 60% planning trigger";
+}
+
+/** The congestion evidence sentence, with the real numbers, or why it is missing. */
+function utilizationSentence(departures: number | null, c: CapacityAirport | null, u: RunwayUtilization | null): string {
+  if (departures === null) return "No BTS T-100 record for this airport, so its annual operations are unknown and congestion is missing.";
+  const cfg = c?.configuration ?? null;
+  if (cfg === null || u === null) {
+    return `No runway capacity estimate: ${c?.missingReason ?? "the airport is not in the FAA runway data"}, so congestion is missing.`;
+  }
+  const cap = u.utilizationPct > 100 ? " The sub-score is capped at 100." : "";
+  const more =
+    c !== null && c.layoutRunways > cfg.runwaysUsed
+      ? ` The airport has ${c.layoutRunways} runways but the closest Figure 2-1 configuration has ${cfg.runwaysUsed}, so the ASV is likely understated and the utilization overstated.`
+      : "";
+  return (
+    `${fmt(u.operations)} operations a year (${fmt(departures)} T-100 departures × 2) against an estimated ` +
+    `${fmt(cfg.asv)} (FAA AC 150/5060-5 Figure 2-1 configuration ${cfg.figure21No}, ${cfg.label}): ` +
+    `at ${u.utilizationPct}% of its estimated capacity, ${triggerPhrase(u.utilizationPct)}.${cap}${more} ` +
+    "General-aviation and military flights are not in T-100, so on that side the real figure is higher."
+  );
+}
+
 /** Ties in the ranking are ordered by airport code, ascending. */
 const byAirportCode = (a: AirportRecord): string => a.airportCode;
 
 export const INVESTMENT_KPIS: readonly KpiDef<AirportRecord>[] = [
   {
     key: "congestion",
-    label: "Congestion / capacity pressure",
+    label: "Congestion: runway utilization",
     weight: 0.3,
     direction: "higher",
-    note: "Annual departures (operations) from BTS T-100 (latest 12 months) — a traffic-volume proxy; a true utilization ratio (operations ÷ FAA ASV) needs runway-capacity data not freely tabulated.",
-    extract: (a) => getT100(a.airportCode)?.departures ?? null,
+    scale: CONGESTION_SCALE,
+    note: "Runway utilization = annual operations ÷ Annual Service Volume (ASV), a ratio (1.0 = at capacity). Operations = BTS T-100 (latest 12 months) departures × 2 (arrivals ≈ departures); ASV = FAA AC 150/5060-5 Figure 2-1 midpoint for the airport's runway configuration (FAA NASR runways, data/capacity.json). Sub-score = utilization as a percentage (ratio 0.868 scores 86.8), capped at 100. T-100 has no general-aviation or military flights, so this is a lower bound; the ASV is a long-range planning estimate. FAA rule of thumb: plan more capacity at 60%, build at 80%.",
+    extract: (a) => runwayUtilization(a.airportCode)?.ratio ?? null,
     evidence: (a) => {
       const t = getT100(a.airportCode);
+      const c = getCapacity(a.airportCode);
+      const u = runwayUtilization(a.airportCode);
+      const cfg = c?.configuration ?? null;
       return {
-        formula: "annual departures (operations), BTS T-100 (latest 12 months) — proxy for capacity pressure (true form: operations ÷ ASV)",
-        inputs: { departures: t?.departures ?? null },
-        value: t?.departures ?? null,
-        explanation: t
-          ? `${t.departures.toLocaleString("en-US")} departures over the latest 12 months — a busy airfield is more congestion-prone (capacity denominator ASV is not freely published, so volume is used as the proxy).`
-          : "No BTS T-100 record for this airport.",
+        formula:
+          "runway utilization = annual operations ÷ ASV (ratio, 1.0 = at capacity); operations = BTS T-100 (latest 12 months) departures × 2; ASV = FAA AC 150/5060-5 Figure 2-1 midpoint for the runway configuration. Sub-score = utilization as a percentage, capped at 100",
+        inputs: {
+          departures: t?.departures ?? null,
+          operations: u?.operations ?? null,
+          asv: cfg?.asv ?? null,
+          utilization: u?.ratio ?? null,
+          utilizationPct: u?.utilizationPct ?? null,
+          runwayConfiguration: cfg ? `Figure 2-1 no. ${cfg.figure21No}: ${cfg.label}` : null,
+          runways: c && c.runways.length > 0 ? c.runways.map((r) => r.id).join(", ") : null,
+        },
+        value: u?.ratio ?? null,
+        explanation: utilizationSentence(t?.departures ?? null, c, u),
       };
     },
   },
@@ -53,7 +137,8 @@ export const INVESTMENT_KPIS: readonly KpiDef<AirportRecord>[] = [
     label: "Unmet demand (load factor)",
     weight: 0.3,
     direction: "higher",
-    scale: "percent",
+    // Raw load factor is in percent, so 100 is full. (#57 moves load factor to a ratio with fullAt 1.0.)
+    scale: { kind: "percent", fullAt: 100 },
     note: "Load factor = passengers ÷ seats (BTS T-100 (latest 12 months)). A capacity-pressure proxy for spill: turned-away demand becomes material above ~80-85% load factor; true spill needs booking data. Sub-score = the load factor as a percentage (81.7% scores 81.7), capped at 100.",
     extract: (a) => getT100(a.airportCode)?.loadFactor ?? null,
     evidence: (a) => {

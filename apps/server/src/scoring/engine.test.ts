@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildScorer, normalize, percentScore, type KpiDef } from "./engine.ts";
+import { buildScorer, isPercentScale, normalize, percentScore, type KpiDef } from "./engine.ts";
 
 describe("normalize", () => {
   const bounds = { lo: 0, hi: 100 };
@@ -98,7 +98,7 @@ describe("scale: percent", () => {
     readonly other: number;
   }
   const pk: KpiDef<P>[] = [
-    { key: "pct", label: "Pct", weight: 0.5, direction: "higher", scale: "percent", extract: (r) => r.pct },
+    { key: "pct", label: "Pct", weight: 0.5, direction: "higher", scale: { kind: "percent", fullAt: 100 }, extract: (r) => r.pct },
     { key: "other", label: "Other", weight: 0.5, direction: "higher", extract: (r) => r.other },
   ];
   const rows: P[] = [
@@ -123,6 +123,16 @@ describe("scale: percent", () => {
 
   it("inverts for direction lower", () => {
     expect(percentScore(81.7, "lower")).toBe(18.3);
+  });
+
+  it("scales by fullAt: { kind: 'percent', fullAt: 1.0 } takes a ratio (#54)", () => {
+    expect(percentScore(0.868, "higher", 1.0)).toBe(86.8);
+    expect(percentScore(1.279, "higher", 1.0)).toBe(100);
+    expect(percentScore(0.3, "higher", 0.5)).toBe(60);
+    expect(percentScore(0.5, "higher", 0)).toBeNull(); // a fullAt that is not positive is unusable
+    expect(isPercentScale({ kind: "percent", fullAt: 1.0 })).toBe(true);
+    expect(isPercentScale("minmax")).toBe(false);
+    expect(isPercentScale(undefined)).toBe(false);
   });
 
   it("percentScore treats NaN, +Infinity and -Infinity as missing (null)", () => {
