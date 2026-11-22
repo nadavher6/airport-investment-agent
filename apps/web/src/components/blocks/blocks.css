@@ -1,0 +1,261 @@
+/* --- text -------------------------------------------------------------- */
+
+.text-block {
+  font-size: var(--text-lg);
+  line-height: 1.7;
+}
+
+.text-block p {
+  margin: 0 0 0.8em;
+}
+
+.text-block p:last-child {
+  margin-bottom: 0;
+}
+
+.text-block strong {
+  font-weight: 600;
+}
+
+.text-block code {
+  padding: 1px 6px;
+  border-radius: 5px;
+  background: var(--surface-sunken);
+  font-size: 0.85em;
+}
+
+/* Blinking runway-light caret at the end of a streaming answer. */
+.text-block.is-live p:last-child::after {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 1.05em;
+  margin-left: 3px;
+  vertical-align: -0.15em;
+  border-radius: 2px;
+  background: var(--accent);
+  animation: caret 1s steps(2, jump-none) infinite;
+}
+
+@keyframes caret {
+  50% {
+    opacity: 0;
+  }
+}
+
+/* --- thinking ----------------------------------------------------------- */
+
+.thinking {
+  border-left: 2px solid var(--line-strong);
+  padding-left: var(--space-3);
+  transition: border-color var(--dur) var(--ease-out);
+}
+
+.thinking[data-state="active"] {
+  border-left-color: var(--accent);
+}
+
+.thinking__header {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 2px 6px 2px 0;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--ink-2);
+}
+
+.thinking__header:hover {
+  color: var(--ink);
+}
+
+.thinking__icon {
+  color: var(--ink-3);
+}
+
+.thinking[data-state="active"] .thinking__icon {
+  color: var(--accent-strong);
+  animation: radar 1.6s linear infinite;
+}
+
+@keyframes radar {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Light sweeping across the label while the model is thinking. */
+.thinking[data-state="active"] .thinking__label {
+  background: linear-gradient(90deg, var(--ink-3) 0%, var(--ink) 45%, var(--ink-3) 90%);
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: sweep 1.8s linear infinite;
+}
+
+@keyframes sweep {
+  from {
+    background-position: 110% 0;
+  }
+  to {
+    background-position: -110% 0;
+  }
+}
+
+.thinking__chevron {
+  color: var(--ink-3);
+  transform: rotate(-90deg);
+  transition: transform var(--dur) var(--ease-out);
+}
+
+.thinking[data-open="true"] .thinking__chevron {
+  transform: rotate(0deg);
+}
+
+.thinking__body {
+  padding: var(--space-1) 0 var(--space-1);
+  animation: reveal var(--dur) var(--ease-out);
+}
+
+.thinking__body p {
+  margin: 0;
+  font-size: var(--text-sm);
+  line-height: 1.65;
+  color: var(--ink-2);
+  white-space: pre-wrap;
+}
+
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+}
+
+/* --- tool use: styled like a flight progress strip ----------------------- */
+
+.tool-card {
+  --status: var(--accent);
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  animation: reveal var(--dur-slow) var(--ease-out);
+}
+
+.tool-card[data-status="succeeded"] {
+  --status: var(--ok);
+}
+
+.tool-card[data-status="failed"] {
+  --status: var(--err);
+}
+
+.tool-card__header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 42px;
+  padding: 0 var(--space-3) 0 0;
+  text-align: left;
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+
+.tool-card__header:hover {
+  background: var(--surface-sunken);
+}
+
+/* Colored status band on the left edge, like a strip holder. */
+.tool-card__glyph {
+  align-self: stretch;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  border-right: 1px dashed var(--line-strong);
+  background: color-mix(in srgb, var(--status) 12%, transparent);
+  color: var(--status);
+  transition:
+    background-color var(--dur) var(--ease-out),
+    color var(--dur) var(--ease-out);
+}
+
+.tool-card__name {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.tool-card__summary {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: var(--text-sm);
+  color: var(--ink-3);
+}
+
+.tool-card__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--status);
+}
+
+.tool-card__spinner {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  border: 1.5px solid currentColor;
+  border-right-color: transparent;
+  animation: radar 0.8s linear infinite;
+}
+
+.tool-card__chevron {
+  color: var(--ink-3);
+  transition: transform var(--dur) var(--ease-out);
+}
+
+.tool-card[data-open="true"] .tool-card__chevron {
+  transform: rotate(180deg);
+}
+
+.tool-card__body {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-top: 1px solid var(--line);
+  background: var(--surface-sunken);
+}
+
+.tool-card__section {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.tool-card__section pre {
+  margin: 0;
+  padding: var(--space-3);
+  overflow-x: auto;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  font-size: 0.75rem;
+  line-height: 1.6;
+  color: var(--ink-2);
+}
+
+.tool-card__error {
+  color: var(--err) !important;
+}

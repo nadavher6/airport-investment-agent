@@ -23,7 +23,15 @@ apps/
     src/catalog/     model catalog
     src/http/        SSE helpers, error middleware, request validation
     src/routes/      health, models, chat
+  web/               @airport/web: Vite + React chat UI, hand-written CSS
+    src/api/         typed fetch client + SSE stream reader
+    src/state/       chatReducer: applies AgentEvents to messages (pure, exhaustive)
+    src/hooks/       useChat, useModels, useHealth, useTheme, useStickToBottom
+    src/components/  TopBar, Composer, ModelPicker, MessageView, blocks/ (text, thinking, tool use)
+    src/styles/      design tokens (light/dark) + base
 ```
+
+In dev the browser only talks to Vite (`:5173`), which proxies `/api/*` to the server (`:8787`), so no CORS setup is needed.
 
 ## API
 
@@ -50,8 +58,24 @@ Closing the connection aborts the agent run via an `AbortSignal`.
 ```bash
 npm install
 cp .env.example .env    # optional: add API key(s)
+```
+
+### Run with F5 (VS Code)
+
+Open **Run and Debug**, pick **Full stack**, and press **F5**. It starts:
+
+- **Server** in its own terminal, with the debugger attached (breakpoints in `apps/server` work)
+- **Web** in its own terminal; the browser opens once Vite is ready
+
+Stopping either one stops both.
+
+### Run from the terminal
+
+```bash
 npm run dev:server      # API on http://localhost:8787
+npm run dev:web         # UI  on http://localhost:5173
 npm run typecheck       # all workspaces
+npm run build           # production build of the web app
 ```
 
 ## Design doc

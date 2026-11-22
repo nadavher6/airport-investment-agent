@@ -1,0 +1,133 @@
+.empty {
+  padding: clamp(var(--space-5), 8vh, var(--space-8)) 0 var(--space-5);
+  animation: message-in var(--dur-slow) var(--ease-out);
+}
+
+.empty__eyebrow {
+  margin: 0 0 var(--space-4);
+}
+
+.empty__title {
+  margin: 0;
+  max-width: 14ch;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(2.5rem, 6vw, 3.75rem);
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+}
+
+.empty__title em {
+  font-style: italic;
+  color: var(--accent-strong);
+}
+
+.empty__lede {
+  max-width: 54ch;
+  margin: var(--space-4) 0 var(--space-6);
+  font-size: var(--text-lg);
+  color: var(--ink-2);
+}
+
+.empty__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* A departure strip: tear-off stub on the left, prompt on the right. */
+.strip {
+  display: grid;
+  grid-template-columns: 132px 1fr;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  text-align: left;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  transition:
+    transform var(--dur) var(--ease-out),
+    border-color var(--dur) var(--ease-out),
+    box-shadow var(--dur) var(--ease-out);
+}
+
+.strip:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+  box-shadow: var(--shadow-md);
+}
+
+.strip__stub {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-right: 1px dashed var(--line-strong);
+  background: var(--surface-sunken);
+}
+
+/* Punched notches where the stub tears off. */
+.strip__stub::before,
+.strip__stub::after {
+  content: "";
+  position: absolute;
+  right: -6px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 1px solid var(--line);
+}
+
+.strip__stub::before {
+  top: -6px;
+}
+
+.strip__stub::after {
+  bottom: -6px;
+}
+
+.strip__kind {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent-strong);
+}
+
+.strip__codes {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  line-height: 1.3;
+  white-space: nowrap;
+  color: var(--ink);
+}
+
+.strip__prompt {
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-md);
+  line-height: 1.45;
+  color: var(--ink-2);
+  transition: color var(--dur) var(--ease-out);
+}
+
+.strip:hover .strip__prompt {
+  color: var(--ink);
+}
+
+@media (max-width: 640px) {
+  .empty {
+    padding-top: var(--space-6);
+  }
+  .empty__grid {
+    grid-template-columns: 1fr;
+  }
+}
