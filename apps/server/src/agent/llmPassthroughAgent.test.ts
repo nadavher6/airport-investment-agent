@@ -1,8 +1,8 @@
-import { asMessageId, asModelId, type ModelInfo, type ModelProvider } from "@airport/shared";
+import { asModelId, type ModelInfo, type ModelProvider } from "@airport/shared";
 import { describe, expect, it } from "vitest";
 import { HttpError } from "../http/errors.ts";
 import { LlmError, type LlmClient, type LlmRequest, type LlmStreamEvent } from "../llm/llmClient.ts";
-import { collect, scriptedAgent } from "../test/helpers.ts";
+import { collect } from "../test/helpers.ts";
 import { LlmPassthroughAgent } from "./llmPassthroughAgent.ts";
 
 const modelOf = (provider: ModelProvider): ModelInfo => ({
@@ -29,9 +29,19 @@ function fakeClient(events: LlmStreamEvent[], failWith?: LlmError) {
   return { client, seen };
 }
 
-const mock = scriptedAgent([{ type: "text_delta", messageId: asMessageId("mock"), delta: "from the mock" }]);
+/** A client that must not be called: the passthrough should pick the other provider's client. */
+const unused: LlmClient = {
+  provider: "gemini",
+  health: async () => ({ status: "ok", detail: "unused" }),
+  stream: () => {
+    throw new Error("the wrong provider's client was called");
+  },
+};
+
 const runWith = (client: LlmClient, provider: ModelProvider = "claude-headless") => {
-  const agent = new LlmPassthroughAgent({ "claude-headless": client }, mock);
+  const clients: Record<ModelProvider, LlmClient> = { "claude-headless": unused, gemini: unused };
+  clients[provider] = client;
+  const agent = new LlmPassthroughAgent(clients);
   const history = [
     { role: "user" as const, content: "Rank SFO" },
     { role: "assistant" as const, content: "It is busy." },
@@ -88,9 +98,10 @@ describe("LlmPassthroughAgent", () => {
     expect(events.at(-1)).toEqual({ type: "error", error: { code: "internal", message: "Claude crashed." } });
   });
 
-  it.each(["gemini", "groq", "openrouter"] as const)("uses the fallback (MockAgent) for %s, which has no client", async (provider) => {
-    const { client, seen } = fakeClient([]);
-    expect(await runWith(client, provider)).toEqual([{ type: "text_delta", messageId: "mock", delta: "from the mock" }]);
-    expect(seen).toHaveLength(0);
+  it.each(["gemini", "claude-headless"] as const)("sends a %s model's turn to that provider's client", async (provider) => {
+    const { client, seen } = fakeClient([{ type: "text_delta", text: "Hi" }, { type: "done", stopReason: "end_turn" }]);
+    const events = await runWith(client, provider);
+    expect(events.map((e) => e.type)).toEqual(["message_start", "text_delta", "message_end"]);
+    expect(seen).toHaveLength(1);
   });
 });

@@ -1,6 +1,6 @@
 import { LlmPassthroughAgent } from "./agent/llmPassthroughAgent.ts";
-import { MockAgent } from "./agent/mockAgent.ts";
 import { ClaudeHeadlessClient } from "./llm/claude/claudeHeadlessClient.ts";
+import { GeminiClient } from "./llm/geminiClient.ts";
 import { createApp } from "./app.ts";
 import { loadConfig } from "./config.ts";
 
@@ -12,10 +12,10 @@ try {
 }
 
 const config = loadConfig();
-// Selecting the claude-headless model sends every LLM call to a `claude -p` child; the rest use the mock.
+// The selected model's provider gets every LLM call: a `claude -p` child (claude-headless) or the Gemini API.
 const claude = new ClaudeHeadlessClient({ config: config.claude });
-const llmClients = { "claude-headless": claude };
-const agent = new LlmPassthroughAgent(llmClients, new MockAgent());
+const llmClients = { "claude-headless": claude, gemini: new GeminiClient({ apiKey: config.gemini.apiKey }) };
+const agent = new LlmPassthroughAgent(llmClients);
 const app = createApp({ config, agent, llmClients });
 
 // Express 5 also calls this callback on the server's "error" event (e.g. EADDRINUSE).

@@ -4,15 +4,34 @@ import type { AgentEvent, ModelProvider } from "@airport/shared";
 import type { Express } from "express";
 import type { Agent } from "../agent/agent.ts";
 import type { ClaudeConfig, ServerConfig } from "../config.ts";
+import type { LlmClient } from "../llm/llmClient.ts";
 
-/** By default no `claude` is found (empty PATH, no CLAUDE_BIN), so tests can never reach the real one. */
+/** A fake Gemini key: tests never call the real Gemini API. */
+export const TEST_GEMINI_KEY = "test-key-not-real";
+
+/**
+ * By default no `claude` is found (empty PATH, no CLAUDE_BIN) and no Gemini key is set, so tests can never
+ * reach a real LLM. Listing "gemini" sets a fake key (the Gemini model becomes available).
+ */
 export function testConfig(providers: ModelProvider[] = [], claude: Partial<ClaudeConfig> = {}): ServerConfig {
   return {
     port: 0,
     version: "test",
-    configuredProviders: new Set(providers),
+    gemini: { apiKey: providers.includes("gemini") ? TEST_GEMINI_KEY : undefined },
     claude: { bin: undefined, searchPath: "", model: undefined, ...claude },
   };
+}
+
+/** Fake LlmClients that report themselves unavailable and never stream: for tests that don't use them. */
+export function offlineClients(): Record<ModelProvider, LlmClient> {
+  const offline = (provider: ModelProvider): LlmClient => ({
+    provider,
+    health: async () => ({ status: "unavailable", detail: `${provider} is offline in this test` }),
+    stream: () => {
+      throw new Error(`${provider} must not be called in this test`);
+    },
+  });
+  return { gemini: offline("gemini"), "claude-headless": offline("claude-headless") };
 }
 
 /** An agent that replays a fixed script of events (optionally failing afterwards). */

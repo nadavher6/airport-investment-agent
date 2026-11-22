@@ -7,10 +7,9 @@ import { model } from "../test/fixtures";
 import { ModelPicker } from "./ModelPicker";
 
 const gemini = model();
-const llama = model({ id: asModelId("llama"), label: "Llama 3.3 70B", provider: "groq", capabilities: { thinking: false, toolUse: true } });
-const gpt = model({ id: asModelId("gpt"), label: "GPT-OSS 120B", provider: "openrouter", available: false });
 const claude = model({ id: asModelId("claude-headless"), label: "Claude (headless session)", provider: "claude-headless" });
-const ready: ModelsState = { status: "ready", models: [gemini, llama, gpt] };
+const claudeMissing = { ...claude, available: false };
+const ready: ModelsState = { status: "ready", models: [gemini, claude] };
 
 function setup(state: ModelsState = ready) {
   const onSelect = vi.fn();
@@ -19,18 +18,34 @@ function setup(state: ModelsState = ready) {
 }
 
 describe("ModelPicker", () => {
-  it("opens a listbox with every model, the selected one marked, and capability chips", async () => {
+  it("opens a listbox with the two models, the selected one marked, and capability chips", async () => {
     const { trigger, user } = setup();
     await user.click(trigger);
 
     expect(trigger).toHaveAttribute("aria-expanded", "true");
     const options = screen.getAllByRole("option");
-    expect(options).toHaveLength(3);
+    expect(options).toHaveLength(2);
     expect(options[0]).toHaveAttribute("aria-selected", "true");
+    expect(options[0]).toHaveTextContent("Gemini 2.5 Flash");
+    expect(options[1]).toHaveTextContent("Claude (headless session)");
+    expect(options[1]).toHaveTextContent("Thinking");
     expect(options[1]).toHaveTextContent("Tools");
-    expect(options[1]).not.toHaveTextContent("Thinking");
-    expect(options[2]).toHaveAttribute("aria-disabled", "true");
-    expect(options[2]).toHaveTextContent("No API key");
+  });
+
+  it("shows why a model is unavailable: no API key for Gemini, not found for Claude", async () => {
+    const { trigger, user } = setup({ status: "ready", models: [gemini, claudeMissing] });
+    await user.click(trigger);
+    const options = screen.getAllByRole("option");
+    expect(options[1]).toHaveAttribute("aria-disabled", "true");
+    expect(options[1]).toHaveTextContent("Not found");
+    expect(options[1]).not.toHaveTextContent("No API key");
+  });
+
+  it("marks Gemini without a key as No API key", async () => {
+    const onSelect = vi.fn();
+    render(<ModelPicker state={{ status: "ready", models: [{ ...gemini, available: false }, claude] }} selected={claude} onSelect={onSelect} />);
+    await userEvent.setup().click(screen.getByRole("button", { name: /Claude/ }));
+    expect(screen.getAllByRole("option")[0]).toHaveTextContent("No API key");
   });
 
   it("selects with the keyboard and returns focus to the trigger", async () => {
@@ -38,7 +53,7 @@ describe("ModelPicker", () => {
     await user.click(trigger);
     await user.keyboard("{ArrowDown}{Enter}");
 
-    expect(onSelect).toHaveBeenCalledWith(llama.id);
+    expect(onSelect).toHaveBeenCalledWith(claude.id);
     expect(screen.queryByRole("listbox")).toBeNull();
     expect(trigger).toHaveFocus();
   });
@@ -46,14 +61,14 @@ describe("ModelPicker", () => {
   it("wraps around with the arrow keys", async () => {
     const { onSelect, trigger, user } = setup();
     await user.click(trigger);
-    await user.keyboard("{ArrowUp}{ArrowUp}{Enter}"); // gemini -> gpt (disabled) -> llama
-    expect(onSelect).toHaveBeenCalledWith(llama.id);
+    await user.keyboard("{ArrowUp}{Enter}"); // gemini -> (wraps) claude
+    expect(onSelect).toHaveBeenCalledWith(claude.id);
   });
 
   it("won't select an unavailable model", async () => {
-    const { onSelect, trigger, user } = setup();
+    const { onSelect, trigger, user } = setup({ status: "ready", models: [gemini, claudeMissing] });
     await user.click(trigger);
-    await user.click(screen.getByRole("option", { name: /GPT-OSS/ }));
+    await user.click(screen.getByRole("option", { name: /Claude/ }));
 
     expect(onSelect).not.toHaveBeenCalled();
     expect(screen.getByRole("listbox")).toBeInTheDocument();

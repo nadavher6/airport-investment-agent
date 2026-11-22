@@ -14,18 +14,14 @@ const API_CODE: Record<LlmError["code"], ApiErrorCode> = {
 
 /**
  * Placeholder agent until the owner's agent replaces it: sends the conversation to the LlmClient for the
- * model's provider and maps its stream to AgentEvents. Providers without a client use `fallback` (MockAgent).
+ * model's provider (every provider has one) and maps its stream to AgentEvents.
  * An LlmError before the first event becomes an HttpError (normal 4xx/5xx); after it, an `error` event.
  */
 export class LlmPassthroughAgent implements Agent {
-  constructor(
-    private readonly clients: Partial<Record<ModelProvider, LlmClient>>,
-    private readonly fallback: Agent,
-  ) {}
+  constructor(private readonly clients: Readonly<Record<ModelProvider, LlmClient>>) {}
 
   async *run(input: AgentRunInput): AsyncGenerator<AgentEvent> {
     const client = this.clients[input.model.provider];
-    if (!client) return yield* this.fallback.run(input);
 
     const messageId = asMessageId(randomUUID());
     const { messages } = input.request;

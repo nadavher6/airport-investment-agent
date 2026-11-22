@@ -17,7 +17,10 @@ export function chatRouter(config: ServerConfig, agent: Agent): Router {
     const model = findModel(config, request.modelId);
     if (!model) throw new HttpError("not_found", `Unknown model "${request.modelId}"`);
     if (!model.available) {
-      const why = model.provider === "claude-headless" ? "is unavailable: the claude binary was not found" : "has no API key configured";
+      const why =
+        model.provider === "claude-headless"
+          ? "is unavailable: the claude binary was not found"
+          : "is unavailable: GEMINI_API_KEY is not set in .env";
       throw new HttpError("model_unavailable", `${model.label} ${why}`);
     }
 

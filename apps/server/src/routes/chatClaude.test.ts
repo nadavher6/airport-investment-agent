@@ -2,11 +2,10 @@ import { API_ROUTES } from "@airport/shared";
 import request from "supertest";
 import { afterEach, describe, expect, it } from "vitest";
 import { LlmPassthroughAgent } from "../agent/llmPassthroughAgent.ts";
-import { MockAgent } from "../agent/mockAgent.ts";
 import { createApp } from "../app.ts";
 import { ClaudeHeadlessClient } from "../llm/claude/claudeHeadlessClient.ts";
 import { fakeClaude, fixtureLines, type FakeClaude, type FakeClaudeSpec } from "../test/fakeClaude.ts";
-import { parseSse, testConfig } from "../test/helpers.ts";
+import { offlineClients, parseSse, testConfig } from "../test/helpers.ts";
 
 const body = (modelId: string) => ({ modelId, messages: [{ role: "user", content: "Hi" }] });
 
@@ -17,8 +16,8 @@ afterEach(() => fake?.cleanup());
 function wiredApp(spec: FakeClaudeSpec | null) {
   fake = spec ? fakeClaude(spec) : undefined;
   const config = testConfig([], { bin: fake?.bin ?? "/nope/claude" });
-  const llmClients = { "claude-headless": new ClaudeHeadlessClient({ config: config.claude, killGraceMs: 200 }) };
-  return createApp({ config, agent: new LlmPassthroughAgent(llmClients, new MockAgent(0)), llmClients });
+  const llmClients = { ...offlineClients(), "claude-headless": new ClaudeHeadlessClient({ config: config.claude, killGraceMs: 200 }) };
+  return createApp({ config, agent: new LlmPassthroughAgent(llmClients), llmClients });
 }
 
 describe("POST /api/chat with claude-headless", () => {
@@ -50,11 +49,4 @@ describe("POST /api/chat with claude-headless", () => {
     expect(res.body.error.message).toMatch(/claude binary was not found/);
   });
 
-  it("still uses MockAgent for a non-Claude model", async () => {
-    const res = await request(wiredApp(null)).post(API_ROUTES.chat).send(body("gemini-2.5-flash")).expect(200);
-    const text = parseSse(res.text)
-      .flatMap((e) => (e.type === "text_delta" ? [e.delta] : []))
-      .join("");
-    expect(text).toMatch(/mock response/);
-  });
 });
