@@ -1,7 +1,15 @@
 import { describe, expect, it } from "vitest";
 import { extractExplicitCodes, resolveFocus } from "./focus.ts";
 import { selectFocusedRecords } from "./assemble.ts";
+import { findAirportsByCityTool } from "../tools/findAirportsByCity.ts";
+import { findAirportsByRegionTool } from "../tools/findAirportsByRegion.ts";
+
+/** The codes #23's city tool returns for one name: the single source of truth for places. */
+const cityCodes = (city: string): string[] =>
+  findAirportsByCityTool.run({ cities: [city] }).results[city]?.airports.map((a) => a.code) ?? [];
 import type { AirportRecord, MemoryState } from "./types.ts";
+
+const unique = (xs: readonly string[]): string[] => [...new Set(xs)];
 
 const state = (over: Partial<MemoryState> = {}): MemoryState => ({
   workingSet: new Map<string, AirportRecord>(),
@@ -33,9 +41,35 @@ describe("extractExplicitCodes", () => {
     expect(r.focusStack).toEqual(["LAX"]);
   });
 
-  it("resolves city and region names via the gazetteer", () => {
-    expect(extractExplicitCodes("add Denver to the comparison")).toEqual(["DEN"]);
-    expect(extractExplicitCodes("look at the Bay Area")).toEqual(["SFO", "OAK", "SJC"]);
+  it("resolves city names with find_airports_by_city (#23), not a local table", () => {
+    expect(extractExplicitCodes("add Denver to the comparison")).toEqual(cityCodes("Denver"));
+    expect(extractExplicitCodes("look at the Bay Area")).toEqual(cityCodes("Bay Area"));
+    expect(extractExplicitCodes("what about Seattle?")).toEqual(cityCodes("Seattle"));
+    const ny = extractExplicitCodes("rank New York airports");
+    expect(ny).toEqual(cityCodes("New York"));
+    expect(ny).toEqual(expect.arrayContaining(["JFK", "LGA", "EWR", "HPN", "ISP"]));
+  });
+
+  it("resolves region names with find_airports_by_region (#23)", () => {
+    const region = findAirportsByRegionTool.run({ region: "Pacific Northwest" });
+    const expected = [...new Set(region.cities.flatMap((c) => region.results[c]?.airports.map((a) => a.code) ?? []))];
+    expect(expected.length).toBeGreaterThan(0);
+    expect(extractExplicitCodes("invest in the Pacific Northwest")).toEqual(expected);
+  });
+
+  it("'NYC' resolves through the city tool and is never itself a code", () => {
+    const codes = extractExplicitCodes("Compare JFK and NYC");
+    expect(codes).not.toContain("NYC");
+    expect(codes).toEqual([...new Set(["JFK", ...cityCodes("NYC")])]);
+  });
+
+  it("a multi-word city wins over a code inside it", () => {
+    expect(extractExplicitCodes("San Diego vs Las Vegas")).toEqual([...cityCodes("San Diego"), ...cityCodes("Las Vegas")]);
+    expect(extractExplicitCodes("San Diego vs Las Vegas")).toEqual(expect.arrayContaining(["SAN", "LAS"]));
+  });
+
+  it("finds no places in a general question", () => {
+    expect(extractExplicitCodes("what does unmet demand mean for capacity growth?")).toEqual([]);
   });
 });
 
@@ -49,8 +83,8 @@ describe("resolveFocus", () => {
 
   it("'add X' extends the current focus instead of replacing it", () => {
     const r = resolveFocus("add Denver to the comparison", state({ focusStack: ["LAX", "SFO"] }));
-    expect(r.codes).toEqual(["DEN", "LAX", "SFO"]);
-    expect(r.explicitCodes).toEqual(["DEN"]);
+    expect(r.codes).toEqual(unique(["DEN", ...cityCodes("Denver"), "LAX", "SFO"]));
+    expect(r.explicitCodes).toEqual(cityCodes("Denver"));
   });
 
   it("'add X' with a full focus stack keeps X and trims the oldest focus (K-cap)", () => {

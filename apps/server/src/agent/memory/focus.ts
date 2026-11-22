@@ -1,4 +1,7 @@
+import { findAirportsByCityTool } from "../tools/findAirportsByCity.ts";
+import { findAirportsByRegionTool } from "../tools/findAirportsByRegion.ts";
 import { getAirportByCodeTool } from "../tools/getAirportByCode.ts";
+import type { CityResult } from "../../data/places/airports.ts";
 import type { MemoryState } from "./types.ts";
 
 /**
@@ -8,28 +11,6 @@ import type { MemoryState } from "./types.ts";
  */
 
 const MAX_FOCUS_STACK = 8;
-
-/**
- * Minimal city / region -> IATA gazetteer. This is a starter set; replace or extend it
- * with the airports reference dataset (see tasks/02 / the enplanements work) so every
- * US commercial airport resolves.
- */
-const GAZETTEER: Record<string, readonly string[]> = {
-  "los angeles": ["LAX"],
-  "san francisco": ["SFO"],
-  denver: ["DEN"],
-  boston: ["BOS"],
-  seattle: ["SEA"],
-  atlanta: ["ATL"],
-  chicago: ["ORD", "MDW"],
-  "new york": ["JFK", "LGA", "EWR"],
-  // regions
-  "pacific northwest": ["SEA", "PDX"],
-  "bay area": ["SFO", "OAK", "SJC"],
-};
-
-// Longest keys first so "san francisco" wins before any substring could.
-const GAZETTEER_ENTRIES = Object.entries(GAZETTEER).sort((a, b) => b[0].length - a[0].length);
 
 /** 0-based position into the last presented list; `last` -> sentinel -1. */
 const ORDINALS: Record<string, number> = {
@@ -47,8 +28,6 @@ const ORDINALS: Record<string, number> = {
   last: -1,
 };
 
-/** Any 3-letter word, any case; only codes that get_airport_by_code confirms are kept. */
-const CODE_CANDIDATE = /\b[A-Za-z]{3}\b/g;
 const ADDITIVE = /\b(add|also|include|as well|along with|plus)\b/i;
 const PRONOUN_PLURAL = /\b(them|those|these|both|all|the (?:airports|ones|hubs))\b/i;
 const PRONOUN_SINGULAR = /\b(it|that|this|the (?:airport|one|hub|asset))\b/i;
@@ -57,23 +36,71 @@ const unique = (codes: readonly string[]): string[] => [...new Set(codes)];
 
 const escapeRegExp = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
+/** Longest place name scanned, in words ("salt lake city", "dallas fort worth"). */
+const MAX_PLACE_WORDS = 4;
+/** Most words of one message scanned for place names (bounds the lookups per turn). */
+const MAX_SCANNED_WORDS = 60;
+/** find_airports_by_city resolves at most this many names per call (#23's MAX_CITIES). */
+const CITY_BATCH = 50;
+const WORD = /[\p{L}\p{N}]+(?:['’.][\p{L}\p{N}]+)*/gu;
+
 /** The canonical code when get_airport_by_code (#23) knows the token, in any case; else undefined. */
 function confirmCode(token: string): string | undefined {
   const found = getAirportByCodeTool.run({ code: token });
   return "error" in found ? undefined : found.code;
 }
 
-/** Explicit airport codes in the message: 3-letter tokens confirmed by get_airport_by_code + gazetteer phrases. */
+interface Span {
+  readonly start: number;
+  readonly end: number; // exclusive
+  readonly text: string;
+}
+
+const cityCodes = (result: CityResult | undefined): string[] => (result ? result.airports.map((a) => a.code) : []);
+
+/**
+ * Explicit airports in the message, in message order. Place names (1-4 word phrases) are resolved
+ * with find_airports_by_region and find_airports_by_city (#23), longest phrase first, so
+ * "San Diego" is a city and not the code SAN. Leftover 3-letter words are kept only when
+ * get_airport_by_code (#23) confirms them. There is no local table of places or codes.
+ */
 export function extractExplicitCodes(message: string): string[] {
-  const codes: string[] = [];
-  for (const m of message.matchAll(CODE_CANDIDATE)) {
-    const code = confirmCode(m[0]);
-    if (code !== undefined) codes.push(code);
+  const words = [...message.matchAll(WORD)].map((m) => m[0]).slice(0, MAX_SCANNED_WORDS);
+  const spans: Span[] = [];
+  for (let len = Math.min(MAX_PLACE_WORDS, words.length); len >= 1; len--) {
+    for (let start = 0; start + len <= words.length; start++) {
+      spans.push({ start, end: start + len, text: words.slice(start, start + len).join(" ") });
+    }
   }
-  for (const [name, mapped] of GAZETTEER_ENTRIES) {
-    if (new RegExp(`\\b${escapeRegExp(name)}\\b`, "i").test(message)) codes.push(...mapped);
+
+  const cityResults: Record<string, CityResult> = {};
+  const names = [...new Set(spans.map((sp) => sp.text))];
+  for (let i = 0; i < names.length; i += CITY_BATCH) {
+    Object.assign(cityResults, findAirportsByCityTool.run({ cities: names.slice(i, i + CITY_BATCH) }).results);
   }
-  return unique(codes);
+
+  const used = new Array<boolean>(words.length).fill(false);
+  const hits: { start: number; codes: string[] }[] = [];
+  for (const sp of spans) {
+    if (used.slice(sp.start, sp.end).some(Boolean)) continue;
+    let codes: string[] = [];
+    const region = findAirportsByRegionTool.run({ region: sp.text });
+    if (region.matchedAs === "region") {
+      for (const city of region.cities) codes.push(...cityCodes(region.results[city]));
+    } else {
+      codes = cityCodes(cityResults[sp.text]);
+    }
+    if (codes.length === 0 && sp.end - sp.start === 1 && /^[A-Za-z]{3}$/.test(sp.text)) {
+      const code = confirmCode(sp.text);
+      if (code !== undefined) codes = [code];
+    }
+    if (codes.length > 0) {
+      used.fill(true, sp.start, sp.end);
+      hits.push({ start: sp.start, codes });
+    }
+  }
+  hits.sort((a, b) => a.start - b.start);
+  return unique(hits.flatMap((h) => h.codes));
 }
 
 function findOrdinal(message: string): number | undefined {
