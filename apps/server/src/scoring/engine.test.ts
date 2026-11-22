@@ -237,6 +237,16 @@ describe("scale: percent with fullAt 0.5 (long-haul)", () => {
     expect([0, 1, 2, 3].map((i) => sub(sc.score(rows[i] as L)))).toEqual([80, 61.6, 4.2, 100]);
   });
 
+  it("long_haul scale: 0% scores 0 and exactly 50% scores 100 through the engine", () => {
+    const edge: L[] = [
+      { id: "Z", intl: 0, other: 1 },
+      { id: "H", intl: 50, other: 2 },
+    ];
+    const sc = buildScorer(rows, lk);
+    expect(sub(sc.score(edge[0] as L))).toBe(0);
+    expect(sub(sc.score(edge[1] as L))).toBe(100);
+  });
+
   it("is the same in absolute (all rows) and relative (a pair) mode", () => {
     const absolute = buildScorer(rows, lk);
     const relative = buildScorer(rows.slice(0, 2), lk);
