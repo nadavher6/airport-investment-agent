@@ -59,18 +59,34 @@ of both saturating at 100); a **single** airport is scored *absolute* vs. all US
 - Provider: Gemini (gemini-3.5-flash) or Claude headless, behind the LlmClient interface.
 - _TODO._
 
-### The in-scope flow: candidates -> lookup -> score -> explain
+### The agent: classify, then a ReAct tool loop (#48)
 
-1. **Classify** the message (greeting, capabilities, off_topic, grading, in_scope). Only `in_scope` continues below.
-2. **Candidates (AI, fast model):** one call returns strict JSON `{ codes, cities, region }` (zod-checked, one retry, then "no candidates"). The model only names places; it never scores.
-3. **Lookup (deterministic):** `get_airport_by_code`, `find_airports_by_city` and `find_airports_by_region` confirm and expand them. Unknown codes are dropped, and a failed lookup is reported as a failed lookup, not as a wrong code. Model-returned codes are never copied into the answer model's instructions.
-4. **Cap:** at most 5 airports are scored (`MAX_SCORED_AIRPORTS` in `agent/flow/resolve.ts`; the owner can change it). Airports named in the question are kept first; free slots go to the busiest (latest enplanements) airports of the named places. The answer says when the cap cut the list.
-5. **Score (deterministic):** the real `score_airports` tool. Every step is shown as a `tool_call` / `tool_result` pair.
-6. **Explain (AI, main model):** the results are in the system context; the model explains them and does not invent numbers.
+1. **Classify** the message (greeting, capabilities, off_topic, grading, in_scope). `greeting`, `capabilities`
+   and `off_topic` get fixed answers (no model call, no tools).
+2. **Tool loop (AI, main model)** for `in_scope` and `grading` (`agent/flow/toolLoop.ts`). The LlmClient has no
+   native function calling, so the model writes one `{"tool": ..., "input": {...}}` object per step. The agent
+   parses the whole step (bare, in a ```json fence or after a lead-in; `agent/toolCall.ts`), runs it through the
+   registry tool (`TOOLS`; each tool's zod schema validates the input before its code runs), shows it as a
+   `tool_call` / `tool_result` pair, and sends the result back wrapped as `<tool_result>` data, never as instructions.
+   - **Tools:** all five registry tools, `score_airports` included. The **scores are always deterministic code**
+     (`src/scoring/`); the model only decides which airports to look up and score, then explains.
+   - **Scoring rule (the owner's, verbatim in the prompt):** questions about investment potential, or which
+     airport is better / should be expanded, MUST go through `score_airports`; the model never ranks from memory.
+   - **Cap of 5 airports:** `score_airports` with more than 5 distinct codes does not run; the loop returns
+     "max 5 airports; pick the 5 most relevant" to the model (`MAX_SCORED_AIRPORTS` in `agent/flow/scoreAirports.ts`).
+   - **Guard (minimal, #49 replaces it with the full policy):** tool JSON is never shown to the user (a step is held
+     from its first `{` or backtick until it is parsed). An unreadable call or an unknown tool is fed back once; a
+     second one ends the turn with a plain sentence.
+   - **Step cap:** at most 6 tool runs, then one call that must answer in prose; if it still does not, a plain
+     "limit reached" sentence. The answer is never empty.
+   - **Memory** is not wired in yet (#50: it needs a conversation id in the contract).
 
-Two **skills** (Markdown in `agent/skills/`) are added to the system context when they apply:
-- **Grading** (`grading.md`, for the `grading` label, no tools): explains how airports are scored, in the owner's plain-language wording. Its How/Status lines are tested against `INVESTMENT_KPIS`.
-- **Compare** (`compare.md`, when 2-5 airports were scored): verdict first, why (largest contribution gaps), trade-offs, honesty about mode and coverage. It does not retype the score table, and its one `compare` fence example is checked against the web's compare parser.
+This replaced #42's fixed candidates -> resolve -> score pipeline: the owner chose one model-driven loop, with
+the 5-airport cap and the scoring rule as the guardrails.
+
+Two **skills** (Markdown in `agent/skills/`) are in the loop's system prompt:
+- **Grading** (`grading.md`, for the `grading` label): explains how airports are scored, in the owner's plain-language wording. Its How/Status lines are tested against `INVESTMENT_KPIS`.
+- **Compare** (`compare.md`, always, framed as "how to compare and format when score_airports returns 2-5 airports"): verdict first, why (largest contribution gaps), trade-offs, honesty about mode and coverage. It does not retype the score table, and its one `compare` fence example is checked against the web's compare parser.
 
 ## 4. Assumptions & limitations
 
