@@ -17,6 +17,8 @@ const model: ModelInfo = {
   available: true,
 };
 
+const CLARIFICATION = "a comparison of ONE category";
+
 /** Which category tool a question is about, by the words ANSWER_SCOPE_RULE lists for it. */
 const CATEGORY_WORDS: ReadonlyArray<readonly [RegExp, string]> = [
   [/congest|busy/i, "get_congestion"],
@@ -36,7 +38,10 @@ function followsRules(request: LlmRequest): string {
   const question = request.messages.filter((m) => m.role === "user").at(-1)!.content;
   const codes = question.match(/\b[A-Z]{3}\b/g) ?? [];
   const system = request.system ?? "";
-  if (system.includes(SCORING_RULE) && /better|investment|rank/i.test(question)) {
+  const oneCategory = CATEGORY_WORDS.some(([re]) => re.test(question));
+  // The clarified ANSWER_SCOPE_RULE: a comparison naming ONE category goes to that tool, even though SCORING_RULE says "any comparison".
+  const overall = /better|investment|rank/i.test(question) || (/compare/i.test(question) && !oneCategory);
+  if (system.includes(SCORING_RULE) && overall && !(oneCategory && system.includes(CLARIFICATION))) {
     return JSON.stringify({ tool: "score_airports", input: { airport_codes: codes } });
   }
   const category = CATEGORY_WORDS.find(([re]) => re.test(question))?.[1];
@@ -89,6 +94,14 @@ describe("the answer-scope rule (#64) with the category tools folded in (#61): p
     expect(flat).toContain('do NOT report the other categories or the overall score, and OFFER the rest instead ("I can also compare growth or long-haul if useful.")');
     expect(flat).toContain('A general grade / score / rank / "compare for investment" request (no single factor named) goes to score_airports (the scoring rule) and gets the FULL breakdown.');
     expect(system).toContain("- Be concise: lead with the direct answer");
+  });
+
+  it("clarifies that SCORING_RULE's 'any comparison' means an overall comparison: one category -> its tool", () => {
+    const flat = ANSWER_SCOPE_RULE.replace(/\s+/g, " ");
+    expect(flat).toContain('even though the scoring rule says "any comparison"');
+    expect(flat).toContain("a comparison of ONE category (e.g. congestion at LAX vs SNA, \"which has higher growth, LAX or SFO?\") -> that category's tool");
+    expect(flat).toContain('an overall / investment / "which is better" comparison (no single category named) -> score_airports');
+    expect(SCORING_RULE).toContain("(any comparison or ranking)");
   });
 
   it("names each factor's tool, says NOT score_airports, with the issue's examples", () => {
@@ -146,5 +159,23 @@ describe("the answer-scope rule (#61, #64): a fake model that follows the prompt
     const { events, score } = await run("which is better, LAX or SNA");
     expect(calls(events).map((c) => c.name)).toEqual(["score_airports"]);
     expect(score.calls).toEqual([["LAX", "SNA"]]);
+  });
+
+  it('"compare congestion at LAX and SNA" calls get_congestion, even with the scoring rule in the prompt', async () => {
+    const { events, score } = await run("compare congestion at LAX and SNA");
+    expect(calls(events)).toEqual([{ name: "get_congestion", input: { airport_codes: ["LAX", "SNA"] } }]);
+    expect(score.calls).toEqual([]);
+  });
+
+  it('"compare LAX and SNA" (overall) calls score_airports', async () => {
+    const { events, score } = await run("compare LAX and SNA");
+    expect(calls(events).map((c) => c.name)).toEqual(["score_airports"]);
+    expect(score.calls).toEqual([["LAX", "SNA"]]);
+  });
+
+  it('"which has higher growth, LAX or SFO?" calls get_growth', async () => {
+    const { events, score } = await run("which has higher growth, LAX or SFO?");
+    expect(calls(events)).toEqual([{ name: "get_growth", input: { airport_codes: ["LAX", "SFO"] } }]);
+    expect(score.calls).toEqual([]);
   });
 });

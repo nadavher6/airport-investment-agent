@@ -21,6 +21,9 @@ export const ANSWER_SCOPE_RULE = `ANSWER THE SPECIFIC QUESTION. If the user asks
   ("compare congestion at LAX and SFO") is still a one-factor question: call that factor's tool with all the
   codes. Examples: "How congested is JFK?" -> get_congestion([JFK]); "Compare LA and Santa Ana congestion" ->
   find the codes, then get_congestion([LAX, SNA]); "Is SFO's traffic growing?" -> get_growth([SFO]).
+  This holds even though the scoring rule says "any comparison": a comparison of ONE category (e.g. congestion
+  at LAX vs SNA, "which has higher growth, LAX or SFO?") -> that category's tool; an overall / investment /
+  "which is better" comparison (no single category named) -> score_airports.
   Focus the answer on that factor only: do NOT report the other categories or the overall score, and OFFER the
   rest instead ("I can also compare growth or long-haul if useful."). A general grade / score / rank /
   "compare for investment" request (no single factor named) goes to score_airports (the scoring rule) and gets
