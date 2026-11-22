@@ -16,11 +16,11 @@ what the scoring code computes today (they follow `INVESTMENT_KPIS` in `apps/ser
    - **Status:** computed (BTS T-100, latest 12 months): load factor = passengers ÷ seats; sub-score = the load factor as a percentage, capped at 100.
 3. **Long-haul share: "Does it fly the valuable routes?"**
    - **Meaning:** the share of long international trips (widebodies to Europe or Asia).
-   - **How:** international seats ÷ total seats. These flights are worth more:
+   - **How:** international seats ÷ total seats, scored out of 50%: 50% international seats = full marks (40% scores 80; LAX at 30.8% scores 61.6; above 50% is capped at 100), the same whichever airports are compared. These flights are worth more:
      - landing fees scale with weight (a 777 pays ~$5,400 per landing vs. a few hundred for a small jet);
      - international passengers spend more;
      - customs facilities are expensive and hard to copy, so this traffic is sticky and high-margin.
-   - **Status:** computed (BTS T-100, latest 12 months): international seats ÷ total seats.
+   - **Status:** computed (BTS T-100, latest 12 months): international seats ÷ total seats; sub-score = that share ÷ 50% × 100, capped at 100.
 4. **Growth: "Is demand real and lasting?"**
    - **Meaning:** is traffic truly rising over the years, or was a busy year a fluke?
    - **How:** the 5-year passenger (enplanement) growth rate, CY2019→CY2024, in percent per year. Rising means durable demand; falling means risky.
@@ -29,6 +29,6 @@ what the scoring code computes today (they follow `INVESTMENT_KPIS` in `apps/ser
 ## The formula
 - **Score = 0.30·Congestion + 0.30·Unmet demand + 0.20·Long-haul + 0.20·Growth**, each category scored 0–100, so the final score is 0–100.
 - **Need 0.60** (Congestion + Unmet demand) / **Quality 0.40** (Long-haul + Growth).
-- **Method:** each raw KPI is winsorized at the 5th and 95th percentile (so one extreme airport does not squash the rest), then min-max scaled to 0–100 (except congestion and unmet demand, which are the runway-utilization and load-factor percentages themselves, capped at 100 and not winsorized), then the weighted sum above is taken.
+- **Method:** each raw KPI is winsorized at the 5th and 95th percentile (so one extreme airport does not squash the rest), then min-max scaled to 0–100 (except the three percentage categories, which are not winsorized: congestion is the runway-utilization percentage itself and unmet demand the load factor percentage itself, both capped at 100, and long-haul is the international share out of 50%, capped at 100), then the weighted sum above is taken.
 - **Coverage renormalization:** if a category has no data for an airport, it is left out and the remaining weights are scaled up to sum to 1. `coverage` is the share of the full model that had data (1.0 = all four categories); `missing` lists the categories left out.
-- **Relative mode vs. absolute mode:** with 2 or more airports, they are scaled against each other (for the min-max categories, 100 = the best of the compared set; for unmet demand the score is the load factor % itself, capped at 100). With 1 airport, it is scaled against all US airports (absolute mode).
+- **Relative mode vs. absolute mode:** with 2 or more airports, they are scaled against each other (for the min-max categories, 100 = the best of the compared set; for congestion, unmet demand and long-haul the score does not depend on the compared set: the runway utilization %, the load factor %, and the international share out of 50%, each capped at 100). With 1 airport, it is scaled against all US airports (absolute mode).

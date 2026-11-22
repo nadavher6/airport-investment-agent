@@ -4,6 +4,7 @@ import { capacityDataset } from "../data/capacity/dataset.ts";
 import { findAirport } from "../data/enplanements/dataset.ts";
 import type { AirportRecord } from "../data/enplanements/types.ts";
 import { getT100 } from "../data/t100/dataset.ts";
+import { buildScorer, type KpiDef } from "./engine.ts";
 import {
   INVESTMENT_KPIS,
   rankAirports,
@@ -20,7 +21,7 @@ const records = (...codes: string[]) => codes.map((c) => findAirport(c)).filter(
 const sub = (s: ReturnType<typeof scoreAirport>, key: string) => s.kpis.find((k) => k.key === key)!;
 
 describe("congestion = runway utilization (#54)", () => {
-  it("is labelled and on the percent scale with fullAt 1.0 (a ratio)", () => {
+  it("is labelled and on #57's percent scale with fullAt 1.0 (raw value in percent points)", () => {
     expect(congestion).toMatchObject({
       label: "Congestion: runway utilization",
       weight: 0.3,
@@ -45,13 +46,16 @@ describe("congestion = runway utilization (#54)", () => {
     expect(san.operations).toBe(getT100("SAN")!.departures * 2);
     expect(san.asv).toBe(217_500);
     expect(san.ratio).toBe(utilizationRatio(san.operations, 217_500));
-    expect(congestion.extract(findAirport("SAN")!)).toBe(san.ratio);
+    expect(san.utilizationPct).toBe(ratioToPct(san.ratio));
+    // The raw value is in percent points (104.6), the unit the percent scale expects, not the ratio (1.046).
+    expect(congestion.extract(findAirport("SAN")!)).toBe(san.utilizationPct);
+    expect(congestion.evidence!(findAirport("SAN")!).value).toBe(san.utilizationPct);
   });
 
   it("caps the sub-score at 100 and says so (SAN, LGA, ATL are above 100%)", () => {
     for (const code of ["SAN", "LGA", "ATL"]) {
       const k = sub(scoreAirport(findAirport(code)!), "congestion");
-      expect(k.raw!).toBeGreaterThan(1);
+      expect(k.raw!).toBeGreaterThan(100);
       expect(k.normalized).toBe(100);
       expect(k.evidence!.explanation).toContain("capped at 100");
       expect(k.evidence!.explanation).toContain("80% trigger");
@@ -106,17 +110,63 @@ describe("congestion = runway utilization (#54)", () => {
       `${s.item.airportCode} ` +
       s.kpis.filter((k) => k.key !== "congestion").map((k) => `${k.key}:${k.raw}:${k.normalized}`).join(" ");
     const codes = ["LAX", "SNA", "ATL", "JFK"];
+    // long_haul values are #57's (share ÷ 50%), identical to its own golden in investmentScore.test.ts.
     expect(rankAirports(records(...codes)).map(line).sort()).toEqual([
-      "ATL unmet_demand:82.2:82.2 long_haul:13.6:100 growth:-0.3745:53.6",
+      "ATL unmet_demand:82.2:82.2 long_haul:13.6:27.2 growth:-0.3745:53.6",
       "JFK unmet_demand:81.9:81.9 long_haul:52.9:100 growth:0.2752:56.4",
-      "LAX unmet_demand:81.9:81.9 long_haul:30.8:100 growth:-2.5375:44.1",
-      "SNA unmet_demand:79.3:79.3 long_haul:2.1:20 growth:0.8283:58.8",
+      "LAX unmet_demand:81.9:81.9 long_haul:30.8:61.6 growth:-2.5375:44.1",
+      "SNA unmet_demand:79.3:79.3 long_haul:2.1:4.2 growth:0.8283:58.8",
     ]);
     expect(rankAirportsRelative(records(...codes)).map(line).sort()).toEqual([
-      "ATL unmet_demand:82.2:82.2 long_haul:13.6:22.6 growth:-0.3745:64.3",
+      "ATL unmet_demand:82.2:82.2 long_haul:13.6:27.2 growth:-0.3745:64.3",
       "JFK unmet_demand:81.9:81.9 long_haul:52.9:100 growth:0.2752:83.6",
-      "LAX unmet_demand:81.9:81.9 long_haul:30.8:56.5 growth:-2.5375:0",
-      "SNA unmet_demand:79.3:79.3 long_haul:2.1:0 growth:0.8283:100",
+      "LAX unmet_demand:81.9:81.9 long_haul:30.8:61.6 growth:-2.5375:0",
+      "SNA unmet_demand:79.3:79.3 long_haul:2.1:4.2 growth:0.8283:100",
     ]);
+  });
+});
+
+/**
+ * One golden per percent-scale KPI, through the real KPI definitions and the real engine. #57's engine divides the
+ * raw value by 100 and `fullAt` is a fraction, so a KPI whose raw value is in the wrong unit is off by 100x:
+ * these numbers would then read 0.9 or 100 instead of 86.8, and 0.8 instead of 81.9.
+ */
+describe("percent-scale goldens per KPI (#54 on #57's scale shape)", () => {
+  const kpi = (key: string) => INVESTMENT_KPIS.find((k) => k.key === key)!;
+
+  it("LAX unmet demand: load factor 81.9% -> 81.9", () => {
+    const u = sub(scoreAirport(findAirport("LAX")!), "unmet_demand");
+    expect([u.raw, u.normalized]).toEqual([81.9, 81.9]);
+  });
+
+  it("long-haul is #57's: LAX 30.8% -> 61.6, SNA 2.1% -> 4.2, JFK 52.9% -> 100", () => {
+    const lh = (code: string) => sub(scoreAirport(findAirport(code)!), "long_haul");
+    expect([lh("LAX").raw, lh("LAX").normalized]).toEqual([30.8, 61.6]);
+    expect([lh("SNA").raw, lh("SNA").normalized]).toEqual([2.1, 4.2]);
+    expect([lh("JFK").raw, lh("JFK").normalized]).toEqual([52.9, 100]);
+  });
+
+  it("runway utilization 0.868 (86.8%) -> 86.8 and 205% -> 100, on the congestion KPI's own scale", () => {
+    const c = kpi("congestion");
+    const util: KpiDef<{ readonly pct: number }> = {
+      key: c.key,
+      label: c.label,
+      weight: c.weight,
+      direction: c.direction,
+      scale: c.scale!,
+      extract: (r) => r.pct,
+    };
+    const scorer = buildScorer([{ pct: ratioToPct(0.868) }, { pct: 205 }], [util]);
+    expect(ratioToPct(0.868)).toBe(86.8);
+    expect(scorer.score({ pct: ratioToPct(0.868) }).kpis[0]!.normalized).toBe(86.8);
+    expect(scorer.score({ pct: 205 }).kpis[0]!.normalized).toBe(100);
+  });
+
+  it("real airports: LAX congestion 86.8% -> 86.8, SNA 47.3% -> 47.3, DEN 205% -> 100 (from the committed data)", () => {
+    const c = (code: string) => sub(scoreAirport(findAirport(code)!), "congestion");
+    expect([c("LAX").raw, c("LAX").normalized]).toEqual([86.8, 86.8]);
+    expect([c("SNA").raw, c("SNA").normalized]).toEqual([47.3, 47.3]);
+    expect([c("DEN").raw, c("DEN").normalized]).toEqual([205, 100]);
+    expect(c("LAX").evidence!.explanation).toContain("at 86.8% of its estimated capacity");
   });
 });
