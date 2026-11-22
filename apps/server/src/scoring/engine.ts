@@ -9,11 +9,12 @@ export type Direction = "higher" | "lower";
 
 /**
  * How a KPI's raw value becomes a 0-100 sub-score:
- * - "minmax" (default): winsorize, then min-max against the reference bounds (relative to the population);
- * - "percent": the raw value is already a percentage, so the sub-score IS the value, clamped to 0-100
- *   (87 -> 87, 108.3 -> 100). No winsorizing and no bounds, so it is the same in absolute and relative mode.
+ * - `{ kind: "minmax" }` (default): winsorize, then min-max against the reference bounds (relative to the population);
+ * - `{ kind: "percent", fullAt }`: the raw value is a percentage (0-100 points, as T-100 stores it) and `fullAt` is
+ *   the share, as a FRACTION, that scores 100. Sub-score = share / fullAt * 100, capped at 100 (fullAt 1.0: 87% -> 87;
+ *   fullAt 0.5: 40% -> 80). No winsorizing and no bounds, so it is the same in absolute and relative mode.
  */
-export type Scale = "minmax" | "percent";
+export type Scale = { readonly kind: "minmax" } | { readonly kind: "percent"; readonly fullAt: number };
 
 /** The "show your work" record for one KPI: the formula, the raw inputs, and a plain sentence. */
 export interface KpiEvidence {
@@ -35,7 +36,7 @@ export interface KpiDef<A> {
   readonly weight: number;
   /** "higher" = larger raw value is more attractive; "lower" = inverse. */
   readonly direction: Direction;
-  /** How the raw value becomes a 0-100 sub-score; default "minmax". "percent" needs a raw value in percent. */
+  /** How the raw value becomes a 0-100 sub-score; default `{ kind: "minmax" }`. `{ kind: "percent", fullAt }` needs a raw value in percent points. */
   readonly scale?: Scale;
   /** Assumption / proxy note, surfaced so the agent can explain and caveat. */
   readonly note?: string;
@@ -51,7 +52,7 @@ export interface KpiBreakdown {
   readonly weight: number;
   readonly available: boolean;
   readonly raw: number | null;
-  /** 0-100 after winsorize + min-max (or the percentage itself for scale "percent"); null when unavailable. */
+  /** 0-100 after winsorize + min-max (or share ÷ fullAt × 100 for a percent scale); null when unavailable. */
   readonly normalized: number | null;
   /** renormalized-weight × normalized; null when unavailable. */
   readonly contribution: number | null;
@@ -103,11 +104,30 @@ export function normalize(raw: number, bounds: Bounds, direction: Direction): nu
   return Math.round(oriented * 1000) / 10; // 0-100, one decimal
 }
 
-/** The "percent" scale: the raw percentage itself, clamped to 0-100, one decimal ("lower" = 100 − value). NaN and ±Infinity are missing (null). */
-export function percentScore(raw: number, direction: Direction): number | null {
-  if (!Number.isFinite(raw)) return null;
-  const clamped = Math.min(100, Math.max(0, raw));
+/**
+ * The "percent" scale. `share` is a FRACTION (0.40 = 40%); `fullAt` is the fraction that scores 100.
+ * Sub-score = share / fullAt * 100, clamped to 0-100, one decimal ("lower" = 100 − score).
+ * NaN and ±Infinity are missing (null).
+ */
+export function percentScore(share: number, direction: Direction, fullAt: number): number | null {
+  if (!Number.isFinite(share) || !Number.isFinite(fullAt) || fullAt <= 0) return null;
+  const clamped = Math.min(100, Math.max(0, (share / fullAt) * 100));
   return Math.round((direction === "higher" ? clamped : 100 - clamped) * 10) / 10;
+}
+
+/** A finite raw value to its 0-100 sub-score by the KPI's scale (an exhaustive switch: a new kind fails to compile). */
+function subScore<A>(k: KpiDef<A>, raw: number, bounds: ReadonlyMap<string, Bounds>): number | null {
+  const scale: Scale = k.scale ?? { kind: "minmax" };
+  switch (scale.kind) {
+    case "percent":
+      return percentScore(raw / 100, k.direction, scale.fullAt);
+    case "minmax":
+      return normalize(raw, bounds.get(k.key) as Bounds, k.direction);
+    default: {
+      const unreachable: never = scale;
+      throw new Error(`Unknown scale: ${JSON.stringify(unreachable)}`);
+    }
+  }
 }
 
 /**
@@ -149,7 +169,10 @@ export function buildScorer<A>(
 
   const score = (item: A): ScoredItem<A> => {
     const availableWeight = kpis
-      .filter((k) => k.extract(item) !== null)
+      .filter((k) => {
+        const v = k.extract(item);
+        return v !== null && Number.isFinite(v);
+      })
       .reduce((sum, k) => sum + k.weight, 0);
     const totalWeight = kpis.reduce((sum, k) => sum + k.weight, 0);
 
@@ -159,12 +182,7 @@ export function buildScorer<A>(
       const raw = k.extract(item);
       const noteField = k.note !== undefined ? { note: k.note } : {};
       const evidenceField = k.evidence ? { evidence: k.evidence(item) } : {};
-      const scored =
-        raw === null || !Number.isFinite(raw)
-          ? null
-          : k.scale === "percent"
-            ? percentScore(raw, k.direction)
-            : normalize(raw, bounds.get(k.key) as Bounds, k.direction);
+      const scored = raw === null || !Number.isFinite(raw) ? null : subScore(k, raw, bounds);
       if (raw === null || scored === null) {
         missing.push(k.key);
         return { key: k.key, label: k.label, weight: k.weight, available: false, raw: null, normalized: null, contribution: null, ...noteField, ...evidenceField };
