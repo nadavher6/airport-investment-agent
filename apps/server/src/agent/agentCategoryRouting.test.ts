@@ -2,7 +2,7 @@ import { asModelId, type AgentEvent, type ModelInfo } from "@airport/shared";
 import { describe, expect, it } from "vitest";
 import type { LlmClient, LlmRequest } from "../llm/llmClient.ts";
 import { fakeScoreAirports } from "../test/fakeScoreAirports.ts";
-import { collect } from "../test/helpers.ts";
+import { collect, finalAnswerJson, shownAnswer } from "../test/helpers.ts";
 import { CLASSIFIER_PROMPT } from "./classifier/prompt.ts";
 import { LlmPassthroughAgent } from "./llmPassthroughAgent.ts";
 import { ANSWER_SCOPE_RULE, SCORING_RULE, buildToolLoopPrompt } from "./prompts/toolLoop.ts";
@@ -34,7 +34,7 @@ const CATEGORY_WORDS: ReadonlyArray<readonly [RegExp, string]> = [
  */
 function followsRules(request: LlmRequest): string {
   const last = request.messages.at(-1)!.content;
-  if (last.startsWith("<tool_result")) return `Answered from ${/name="([a-z_]+)"/.exec(last)?.[1] ?? "?"}.`;
+  if (last.startsWith("<tool_result")) return finalAnswerJson(`Answered from ${/name="([a-z_]+)"/.exec(last)?.[1] ?? "?"}.`);
   const question = request.messages.filter((m) => m.role === "user").at(-1)!.content;
   const codes = question.match(/\b[A-Z]{3}\b/g) ?? [];
   const system = request.system ?? "";
@@ -49,7 +49,7 @@ function followsRules(request: LlmRequest): string {
     return JSON.stringify({ tool: category, input: { airport_codes: codes } });
   }
   if (category !== undefined) return JSON.stringify({ tool: "score_airports", input: { airport_codes: codes } });
-  return "I would guess.";
+  return finalAnswerJson("I would guess.");
 }
 
 function client(): LlmClient {
@@ -123,7 +123,7 @@ describe("the answer-scope rule (#61, #64): a fake model that follows the prompt
     expect(calls(events)).toEqual([{ name: "get_congestion", input: { airport_codes: ["JFK"] } }]);
     expect(score.calls).toEqual([]);
     expect(events.find((e) => e.type === "tool_result" && e.result.ok && JSON.stringify(e.result.output).includes('"category":"congestion"'))).toBeDefined();
-    expect(text(events)).toBe("Answered from get_congestion.");
+    expect(text(events)).toBe(shownAnswer("Answered from get_congestion."));
   });
 
   it('"compare congestion at LAX and SFO" calls get_congestion [LAX, SFO]', async () => {

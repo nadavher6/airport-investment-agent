@@ -2,7 +2,7 @@ import { asModelId, type AgentEvent, type ModelInfo } from "@airport/shared";
 import { describe, expect, it } from "vitest";
 import type { LlmClient, LlmRequest } from "../llm/llmClient.ts";
 import { fakeScoreAirports } from "../test/fakeScoreAirports.ts";
-import { collect } from "../test/helpers.ts";
+import { collect, finalAnswerJson, shownAnswer } from "../test/helpers.ts";
 import { CLASSIFIER_PROMPT } from "./classifier/prompt.ts";
 import { LlmPassthroughAgent } from "./llmPassthroughAgent.ts";
 import { GROWTH_RULE, buildToolLoopPrompt } from "./prompts/toolLoop.ts";
@@ -37,8 +37,8 @@ function explain(out: GrowthOutput): string {
 function followsGrowthRule(request: LlmRequest): string {
   const last = request.messages.at(-1)!.content;
   const result = /^<tool_result name="get_growth">(.*)<\/tool_result>/s.exec(last);
-  if (result) return explain((JSON.parse(result[1]!) as { output: GrowthOutput }).output);
-  if (last.startsWith("<tool_result")) return "Answered.";
+  if (result) return finalAnswerJson(explain((JSON.parse(result[1]!) as { output: GrowthOutput }).output));
+  if (last.startsWith("<tool_result")) return finalAnswerJson("Answered.");
   const question = request.messages.filter((m) => m.role === "user").at(-1)!.content;
   const codes = question.match(/\b[A-Z]{3}\b/g) ?? [];
   const system = request.system ?? "";
@@ -108,7 +108,10 @@ describe("the growth rule (#67): a fake model that follows the prompt", () => {
     expect(score.calls).toEqual([]);
     const out = growthOutput(events);
     expect(out.airports[0]!.growth.series).toHaveLength(10);
-    const answer = text(events);
+    // The final answer (#63) is shown as the bold summary, then the markdown body: check the body.
+    const shown = text(events);
+    expect(shown.startsWith(shownAnswer(""))).toBe(true);
+    const answer = shown.slice(shownAnswer("").length);
     expect(answer).toMatch(/^BOS traffic changed/);
     // No yearly table: no markdown table row, and no yearly enplanement figure is retyped.
     expect(answer).not.toMatch(/\|/);
