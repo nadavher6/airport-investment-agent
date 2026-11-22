@@ -4,7 +4,7 @@
 export interface MetroAirport {
   /** FAA LocID; must exist in data/enplanements.json (checked by places.integrity.test.ts). */
   readonly code: string;
-  /** A smaller airport serving the metro alongside its main one(s); see data/SOURCES.md. */
+  /** A smaller airport serving the metro alongside its main one(s); see data/raw/SOURCES.md. */
   readonly secondary: boolean;
 }
 

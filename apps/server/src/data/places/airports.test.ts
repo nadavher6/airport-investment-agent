@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { findAirportsByCity, findAirportsByRegion, getAirportByCode } from "./airports.ts";
+import { MAX_CITIES, findAirportsByCity, findAirportsByRegion, getAirportByCode } from "./airports.ts";
 import type { CityResult } from "./airports.ts";
 import { isCloseMatch, levenshtein, normalizePlace } from "./text.ts";
 
@@ -120,5 +120,29 @@ describe("speed", () => {
     expect(time(() => findAirportsByCity(["New York"]))).toBeLessThan(5);
     expect(time(() => findAirportsByCity(["Bostn"]))).toBeLessThan(5);
     expect(time(() => findAirportsByRegion("West Coast"))).toBeLessThan(5);
+  });
+});
+
+describe("find_airports_by_city limits and odd names", () => {
+  it("resolves the first 50 distinct names and reports how many were left out", () => {
+    const names = Array.from({ length: MAX_CITIES + 30 }, (_, i) => `Nowhereville ${String.fromCharCode(97 + (i % 26))}${i}`);
+    const r = findAirportsByCity(names);
+    expect(Object.keys(r.results)).toEqual(names.slice(0, MAX_CITIES));
+    expect(r.truncated).toEqual({ limit: MAX_CITIES, omitted: 30 });
+  });
+
+  it("does not mark a list of exactly 50 as truncated, and duplicates do not count", () => {
+    const names = Array.from({ length: MAX_CITIES }, (_, i) => `Zed ${i}`);
+    expect(findAirportsByCity([...names, ...names]).truncated).toBeUndefined();
+    expect(Object.keys(findAirportsByCity(names).results)).toHaveLength(MAX_CITIES);
+  });
+
+  it("keeps '__proto__' and 'constructor' as ordinary city names", () => {
+    const r = findAirportsByCity(["__proto__", "constructor", "Boston"]);
+    expect(Object.keys(r.results)).toEqual(["__proto__", "constructor", "Boston"]);
+    expect(Object.hasOwn(r.results, "__proto__")).toBe(true);
+    expect(r.results["__proto__"]).toMatchObject({ airports: [], reason: "no_match" });
+    expect(r.results["constructor"]).toMatchObject({ airports: [], reason: "no_match" });
+    expect(codes(r.results["Boston"])).toContain("BOS");
   });
 });

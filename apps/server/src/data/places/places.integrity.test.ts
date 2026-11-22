@@ -57,7 +57,7 @@ describe("metros.json / regions.json integrity (real files)", () => {
     }
   });
 
-  it("secondary is true exactly when the airport has under 20% of the metro's largest airport (rule in data/SOURCES.md)", () => {
+  it("secondary is true exactly when the airport has under 20% of the metro's largest airport (rule in data/raw/SOURCES.md)", () => {
     for (const [name, m] of metros) {
       const enpl = (code: string): number => enplanementsDataset.airports[code]?.latest.enplanements ?? 0;
       const top = Math.max(...m.airports.map((a) => enpl(a.code)));

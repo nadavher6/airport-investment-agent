@@ -1,6 +1,6 @@
 // Place resolvers: airport by code, airports by city/metro name, airports by region. In-memory, no network.
 // Airport facts come from the FAA dataset (../enplanements); the metro and region groupings are the
-// curated files described in data/SOURCES.md. Nothing here invents a code.
+// curated files described in data/raw/SOURCES.md. Nothing here invents a code.
 import { enplanementsDataset, findAirport } from "../enplanements/dataset.ts";
 import type { AirportRecord, HubType } from "../enplanements/types.ts";
 import { metrosFile, regionsFile } from "./files.ts";
@@ -40,6 +40,8 @@ export type CityResult = CityMatch | CityNoMatch;
 export interface CitiesResult {
   /** Keyed by the name exactly as the caller gave it. */
   readonly results: Readonly<Record<string, CityResult>>;
+  /** Present only when the list was longer than MAX_CITIES: the first MAX_CITIES distinct names were resolved, `omitted` were not. */
+  readonly truncated?: { readonly limit: number; readonly omitted: number };
 }
 
 export interface RegionResult {
@@ -122,14 +124,23 @@ function resolveCity(query: string): CityResult {
     : { airports: [], reason: "no_match" };
 }
 
+/** Most city names resolved per call. The input is LLM output and every unmatched name costs a fuzzy scan. */
+export const MAX_CITIES = 50;
+
 /** Airports for each name in the list: curated metro first, then the dataset's city text; close names are suggested, never swapped in. */
 export function findAirportsByCity(cities: unknown): CitiesResult {
-  const results: Record<string, CityResult> = {};
-  if (!Array.isArray(cities)) return { results };
+  if (!Array.isArray(cities)) return { results: {} };
+  // A Map, not a plain object: a name such as "__proto__" must stay an ordinary key.
+  const resolved = new Map<string, CityResult>();
+  let omitted = 0;
   for (const city of cities as unknown[]) {
-    if (typeof city === "string" && !Object.hasOwn(results, city)) results[city] = resolveCity(city);
+    if (typeof city !== "string" || resolved.has(city)) continue;
+    if (resolved.size >= MAX_CITIES) omitted++;
+    else resolved.set(city, resolveCity(city));
   }
-  return { results };
+  // Object.fromEntries defines own properties, so "__proto__" is kept as a key.
+  const results: Record<string, CityResult> = Object.fromEntries(resolved);
+  return omitted > 0 ? { results, truncated: { limit: MAX_CITIES, omitted } } : { results };
 }
 
 const regionByText = new Map<string, string>();
