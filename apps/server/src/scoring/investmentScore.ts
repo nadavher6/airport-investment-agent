@@ -4,8 +4,9 @@
  * Full model = Need 0.60 (congestion + unmet demand) / Quality 0.40 (long-haul + growth):
  * - congestion   — annual departures (BTS T-100 (latest 12 months)), a traffic-volume proxy for capacity pressure
  * - unmet_demand — load factor = passengers ÷ seats (BTS T-100 (latest 12 months)), proxy for spilled demand;
- *                  its sub-score is the load factor percentage itself (scale "percent", capped at 100)
- * - long_haul    — international seats ÷ total seats (BTS T-100 (latest 12 months))
+ *                  its sub-score is the load factor percentage itself (scale percent, fullAt 1.0, capped at 100)
+ * - long_haul    — international seats ÷ total seats (BTS T-100 (latest 12 months));
+ *                  its sub-score is that share ÷ 50% × 100, capped at 100 (scale percent, fullAt 0.5)
  * - growth       — enplanement 5-year CAGR, CY2019 -> CY2024, % per year (FAA data); missing if no CAGR
  *
  * All four are computed, so an airport present in both datasets reports coverage = 1.0.
@@ -15,7 +16,7 @@
 import { enplanementsDataset } from "../data/enplanements/dataset.ts";
 import type { AirportRecord } from "../data/enplanements/types.ts";
 import { getT100 } from "../data/t100/dataset.ts";
-import { buildScorer, type KpiDef, type ScoredItem } from "./engine.ts";
+import { buildScorer, percentScore, type KpiDef, type ScoredItem } from "./engine.ts";
 
 /**
  * The growth KPI in its one unit: percent per year (5-year CAGR). Airports without a CAGR get null
@@ -53,7 +54,7 @@ export const INVESTMENT_KPIS: readonly KpiDef<AirportRecord>[] = [
     label: "Unmet demand (load factor)",
     weight: 0.3,
     direction: "higher",
-    scale: "percent",
+    scale: { kind: "percent", fullAt: 1.0 },
     note: "Load factor = passengers ÷ seats (BTS T-100 (latest 12 months)). A capacity-pressure proxy for spill: turned-away demand becomes material above ~80-85% load factor; true spill needs booking data. Sub-score = the load factor as a percentage (81.7% scores 81.7), capped at 100.",
     extract: (a) => getT100(a.airportCode)?.loadFactor ?? null,
     evidence: (a) => {
@@ -73,16 +74,17 @@ export const INVESTMENT_KPIS: readonly KpiDef<AirportRecord>[] = [
     label: "Long-haul share",
     weight: 0.2,
     direction: "higher",
-    note: "International seats ÷ total seats (BTS T-100 (latest 12 months)). International/long-haul traffic earns higher weight-based fees and needs costly FIS facilities (a gateway moat).",
+    scale: { kind: "percent", fullAt: 0.5 },
+    note: "International seats ÷ total seats (BTS T-100 (latest 12 months)). International/long-haul traffic earns higher weight-based fees and needs costly FIS facilities (a gateway moat). Sub-score = the international share ÷ 50% × 100, capped at 100 (50% international = 100; 40% scores 80).",
     extract: (a) => getT100(a.airportCode)?.internationalShare ?? null,
     evidence: (a) => {
       const t = getT100(a.airportCode);
       return {
-        formula: "international seats ÷ total seats (BTS T-100 (latest 12 months))",
+        formula: "international seats ÷ total seats (BTS T-100 (latest 12 months)). Sub-score = share ÷ 50% × 100, capped at 100",
         inputs: { internationalSeats: t?.internationalSeats ?? null, seats: t?.seats ?? null, internationalShare: t?.internationalShare ?? null },
         value: t?.internationalShare ?? null,
         explanation: t
-          ? `${t.internationalShare}% of seats were international over the latest 12 months — high-margin traffic (weight-based fees, FIS/customs moat).`
+          ? `${t.internationalShare}% of seats were international over the latest 12 months; scored against a 50% benchmark (50% international = 100) → ${percentScore(t.internationalShare / 100, "higher", 0.5)}.${t.internationalShare > 50 ? " The sub-score is capped at 100 (above 50% international)." : ""} High-margin traffic (weight-based fees, FIS/customs moat).`
           : "No BTS T-100 record for this airport.",
       };
     },
