@@ -36,14 +36,12 @@ function exitDetail(exit: ChildExit, stderr: string, stray: string): string {
  * The child starts when the request arrives and is gone when the request ends (finished, failed,
  * aborted or server shutdown). History is sent in full each turn, so nothing is kept between turns.
  *
- * Errors before the first model output (binary missing, not logged in, too many running) are thrown
+ * Errors before the first model output (binary missing, not logged in) are thrown
  * as HttpError; the chat route pulls the first event before opening the stream, so they become normal
  * 4xx/5xx responses. Later failures are yielded as an `error` event.
  */
 export class ClaudeHeadlessAgent implements Agent {
   private readonly running = new Set<ChildProcess>();
-  /** Slots taken by runs in progress (taken before any await, so the limit can't be raced). */
-  private activeRuns = 0;
   private readonly killGraceMs: number;
 
   constructor(private readonly options: ClaudeHeadlessOptions) {
@@ -55,23 +53,7 @@ export class ClaudeHeadlessAgent implements Agent {
     return this.running.size;
   }
 
-  async *run(input: AgentRunInput): AsyncGenerator<AgentEvent> {
-    const { maxConcurrent } = this.options.config;
-    if (this.activeRuns >= maxConcurrent) {
-      throw new HttpError(
-        "too_many_requests",
-        `Claude is already answering ${this.activeRuns} request(s), the most allowed at once. Wait for one to finish and try again.`,
-      );
-    }
-    this.activeRuns++;
-    try {
-      yield* this.runChild(input);
-    } finally {
-      this.activeRuns--;
-    }
-  }
-
-  private async *runChild({ request, model, signal }: AgentRunInput): AsyncGenerator<AgentEvent> {
+  async *run({ request, model, signal }: AgentRunInput): AsyncGenerator<AgentEvent> {
     const { config } = this.options;
     const bin = findClaudeBinary(config);
     if (!bin) throw new HttpError("model_unavailable", "The claude binary was not found. Install Claude Code or set CLAUDE_BIN.");

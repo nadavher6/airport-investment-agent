@@ -7,7 +7,7 @@ export const API_ROUTES = {
   health: "/api/health",
   models: "/api/models",
   chat: "/api/chat",
-  /** Replace `:provider` with a ModelProvider. Add `?deep=1` to also prove the login works (one tiny LLM call). */
+  /** Replace `:provider` with a ModelProvider. */
   providerHealth: "/api/providers/:provider/health",
 } as const;
 
@@ -20,14 +20,14 @@ export interface HealthResponse {
   readonly uptimeSeconds: number;
 }
 
-// GET /api/providers/:provider/health[?deep=1]
+// GET /api/providers/:provider/health
 /** ok: usable. unavailable: not installed/configured (e.g. no `claude` binary). error: installed but failing. */
 export type ProviderHealthStatus = "ok" | "unavailable" | "error";
 
 export interface ProviderHealthResponse {
   readonly provider: ModelProvider;
   readonly status: ProviderHealthStatus;
-  /** Plain-English explanation, e.g. "Claude Code 2.1.3 is installed" or "Not logged in". */
+  /** Plain-English explanation, e.g. "Claude Code 2.1.3 is installed". */
   readonly detail: string;
   readonly checkedAt: IsoDateString;
   /** The provider's version string when known (claude --version). */

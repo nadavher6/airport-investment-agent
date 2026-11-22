@@ -11,7 +11,7 @@ export function testConfig(providers: ModelProvider[] = [], claude: Partial<Clau
     port: 0,
     version: "test",
     configuredProviders: new Set(providers),
-    claude: { bin: undefined, searchPath: "", model: undefined, maxConcurrent: 2, ...claude },
+    claude: { bin: undefined, searchPath: "", model: undefined, ...claude },
   };
 }
 

@@ -1,21 +1,11 @@
 import type { ChatTurn } from "@airport/shared";
 
-export const SYSTEM_PROMPT = [
-  "You are Runway, an airport investment analyst. You help investors find US airports where modernization",
-  "or expansion would be most profitable, looking at passenger and flight capacity, congestion and unmet demand.",
-  "Answer in clear, concise Markdown. Say plainly when you are not sure or when a number is an estimate.",
-  "You have no tools and no live data in this session: never claim to have looked anything up.",
-].join(" ");
-
 /**
- * Flags shared by every `claude -p` call we make (chat turns and the deep health check).
+ * Arguments for one streamed chat turn. The prompt itself goes to stdin (see formatPrompt).
  * Safety: no built-in tools (no Bash, file edits or web), no MCP servers, no user/project settings,
  * nothing saved to disk. The caller also runs the child in an empty temp directory.
- *
- * Seam for our own tools (follow-up issue): add `--mcp-config <file>` here pointing at a local MCP server
- * that exposes get_enplanements etc. `--strict-mcp-config` keeps every other MCP server out.
  */
-export function baseClaudeArgs(model: string | undefined): string[] {
+export function chatClaudeArgs(model: string | undefined): string[] {
   return [
     "-p",
     "--no-session-persistence",
@@ -24,20 +14,11 @@ export function baseClaudeArgs(model: string | undefined): string[] {
     "",
     "--tools",
     "",
-    ...(model ? ["--model", model] : []),
-  ];
-}
-
-/** Arguments for one streamed chat turn. The prompt itself goes to stdin (see formatPrompt). */
-export function chatClaudeArgs(model: string | undefined): string[] {
-  return [
-    ...baseClaudeArgs(model),
     "--output-format",
     "stream-json",
     "--verbose",
     "--include-partial-messages",
-    "--system-prompt",
-    SYSTEM_PROMPT,
+    ...(model ? ["--model", model] : []),
   ];
 }
 

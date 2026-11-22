@@ -133,19 +133,6 @@ describe("ClaudeHeadlessAgent", () => {
     await iterator.return?.(undefined);
   });
 
-  it("refuses a run beyond the concurrency limit before starting a process", async () => {
-    const { agent } = setup({ lines: [streamLine("Hello")], hang: true }, { maxConcurrent: 1 });
-    const first = run(agent)[Symbol.asyncIterator]();
-    await startStreaming(first);
-
-    const second = run(agent)[Symbol.asyncIterator]();
-    const error = await second.next().catch((err: unknown) => err);
-    expect(error).toBeInstanceOf(HttpError);
-    expect(error).toMatchObject({ code: "too_many_requests", status: 429 });
-    expect(agent.runningCount).toBe(1);
-    await first.return?.(undefined);
-  });
-
   it("throws a pre-stream HttpError when claude fails before any output (not logged in)", async () => {
     const { agent } = setup({
       lines: [

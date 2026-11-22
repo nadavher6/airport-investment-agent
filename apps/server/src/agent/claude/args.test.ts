@@ -17,11 +17,10 @@ describe("chatClaudeArgs", () => {
     expect(args).not.toContain("--dangerously-skip-permissions");
   });
 
-  it("asks for streamed partial messages as stream-json, with the analyst system prompt", () => {
+  it("asks for streamed partial messages as stream-json", () => {
     expect(valueOf(args, "--output-format")).toBe("stream-json");
     expect(args).toContain("--verbose");
     expect(args).toContain("--include-partial-messages");
-    expect(valueOf(args, "--system-prompt")).toMatch(/airport investment analyst/);
   });
 
   it("passes --model only when one is configured", () => {

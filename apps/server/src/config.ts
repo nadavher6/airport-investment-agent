@@ -9,8 +9,6 @@ export interface ClaudeConfig {
   readonly searchPath: string;
   /** CLAUDE_MODEL: passed as `--model` when set (e.g. "sonnet"). */
   readonly model: string | undefined;
-  /** CLAUDE_MAX_CONCURRENT: most `claude` children running at once. Default 2. */
-  readonly maxConcurrent: number;
 }
 
 export interface ServerConfig {
@@ -38,13 +36,6 @@ function parsePort(raw: string | undefined, fallback: number): number {
   return port;
 }
 
-function parsePositiveInt(name: string, raw: string | undefined, fallback: number): number {
-  if (raw === undefined || raw.trim() === "") return fallback;
-  const value = Number(raw);
-  if (!Number.isInteger(value) || value <= 0) throw new Error(`Invalid ${name}: ${raw}`);
-  return value;
-}
-
 const optional = (raw: string | undefined): string | undefined => (raw?.trim() ? raw.trim() : undefined);
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): ServerConfig {
@@ -60,7 +51,6 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ServerConfig {
       bin: optional(env.CLAUDE_BIN),
       searchPath: env.PATH ?? "",
       model: optional(env.CLAUDE_MODEL),
-      maxConcurrent: parsePositiveInt("CLAUDE_MAX_CONCURRENT", env.CLAUDE_MAX_CONCURRENT, 2),
     },
   };
 }
