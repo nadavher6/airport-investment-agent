@@ -169,7 +169,7 @@ describe("useChat", () => {
     expect(result.current.lastError?.message).toBe("Couldn't reach the agent. Is the server running?");
   });
 
-  it("sends the same conversationId on every turn of a chat and a new one after reset (#48)", async () => {
+  it("sends the same conversationId on every turn of a chat and a new one after reset (#50)", async () => {
     const stream = vi.spyOn(api, "streamChat").mockImplementation(() => replay(fullRun));
     const { result } = renderHook(() => useChat(MODEL_ID));
 
@@ -185,7 +185,7 @@ describe("useChat", () => {
     expect(ids[2]).not.toBe(ids[0]);
   });
 
-  it("gives two separate chats (two hook instances) different conversationIds (#48)", async () => {
+  it("gives two separate chats (two hook instances) different conversationIds (#50)", async () => {
     const stream = vi.spyOn(api, "streamChat").mockImplementation(() => replay(fullRun));
     const a = renderHook(() => useChat(MODEL_ID));
     const b = renderHook(() => useChat(MODEL_ID));

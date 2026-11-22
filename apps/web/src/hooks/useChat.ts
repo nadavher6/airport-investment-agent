@@ -4,7 +4,7 @@ import { api, ApiClientError } from "../api/client";
 import { toChatTurns } from "../lib/messages";
 import { chatReducer, initialChatState } from "../state/chatReducer";
 
-/** A fresh id for one chat (#48): the server keys its memory by it. */
+/** A fresh id for one chat (#50): the server keys its memory by it. */
 const newConversationId = (): ConversationId => asConversationId(crypto.randomUUID());
 
 export function useChat(modelId: ModelId | null) {

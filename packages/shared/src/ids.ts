@@ -8,7 +8,7 @@ export type Brand<T, B extends string> = T & { readonly [brand]: B };
 export type MessageId = Brand<string, "MessageId">;
 export type ToolCallId = Brand<string, "ToolCallId">;
 export type ModelId = Brand<string, "ModelId">;
-/** One chat in the web app (#48): minted by the client per conversation, used only to key server-side memory. */
+/** One chat in the web app (#50): minted by the client per conversation, used only to key server-side memory. */
 export type ConversationId = Brand<string, "ConversationId">;
 
 /** The only sanctioned way to mint IDs: at trust boundaries (server, or parsed input). */

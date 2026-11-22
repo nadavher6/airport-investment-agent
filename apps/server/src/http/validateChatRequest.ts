@@ -38,7 +38,7 @@ function parseTurn(value: unknown, index: number): ChatTurn {
   return { role, content };
 }
 
-/** The optional conversationId (#48): absent, or a bounded string of letters, digits, "-" and "_". */
+/** The optional conversationId (#50): absent, or a bounded string of letters, digits, "-" and "_". */
 function parseConversationId(value: unknown): ConversationId | undefined {
   if (value === undefined) return undefined;
   if (typeof value !== "string" || value.length === 0 || value.length > MAX_CONVERSATION_ID_LENGTH || !CONVERSATION_ID_PATTERN.test(value)) {

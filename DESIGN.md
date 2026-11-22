@@ -79,7 +79,16 @@ of both saturating at 100); a **single** airport is scored *absolute* vs. all US
      second one ends the turn with a plain sentence.
    - **Step cap:** at most 6 tool runs, then one call that must answer in prose; if it still does not, a plain
      "limit reached" sentence. The answer is never empty.
-   - **Memory** is not wired in yet (#50: it needs a conversation id in the contract).
+   - **Memory (#50)** is keyed ONLY by the optional `conversationId` in `ChatRequest` (the web app mints one per
+     chat with `crypto.randomUUID()`); never by message content, so two chats that start with the same text never
+     share data. With no id there is no memory at all (no reads, no writes). Per chat it keeps the tool results by
+     airport code (`get_enplanements`, `get_airport_by_code`, the per-airport `score_airports` entries), a focus
+     stack and the last ranked list (`agent/memory/conversationMemory.ts`). Each turn, `resolveFocus` +
+     `selectFocusedRecords` pick at most 4 records (the codes named or referred to, then the recent focus) and
+     they go into the loop's system prompt as "Airport data in focus". A `get_enplanements` or `score_airports`
+     call with the same airport codes as an earlier one in the chat returns the cached output without running
+     the tool (no re-fetch). **Bounds:** at most 200 chats (least recently used evicted), 1 hour TTL since the
+     chat's last turn, 50 airport records and 20 cached outputs per chat. It is in-process: a restart forgets it.
 
 This replaced #42's fixed candidates -> resolve -> score pipeline: the owner chose one model-driven loop, with
 the 5-airport cap and the scoring rule as the guardrails.

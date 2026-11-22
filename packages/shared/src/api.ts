@@ -44,7 +44,7 @@ export interface ChatRequest {
   /** The full conversation so far, oldest first. The last turn must be the user's. */
   readonly messages: readonly ChatTurn[];
   /**
-   * Optional id of this chat (#48), minted by the client once per conversation and sent with every turn of it;
+   * Optional id of this chat (#50), minted by the client once per conversation and sent with every turn of it;
    * a new chat gets a new id. The server keys its tool-result memory by it. With no id there is no memory.
    */
   readonly conversationId?: ConversationId;
