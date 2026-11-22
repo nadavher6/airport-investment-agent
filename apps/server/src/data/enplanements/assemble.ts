@@ -42,16 +42,30 @@ function valueIn(series: readonly SeriesPoint[], year: number): number | null {
   return series.find((point) => point.year === year)?.enplanements ?? null;
 }
 
-function trendOf(series: readonly SeriesPoint[], latestEnplanements: number): Trend {
+/** The dataset-wide endpoints of the trend windows, derived from `meta.years`. */
+interface TrendYears {
+  /** First year of the dataset: start of the long window. */
+  readonly first: number;
+  /** Last year of the dataset: end of both windows. */
+  readonly last: number;
+}
+
+/** The pre-COVID baseline of `recoveryVs2019`; fixed by the field's definition. */
+const RECOVERY_BASE_YEAR = 2019;
+const SHORT_WINDOW_YEARS = 5;
+
+function trendOf(series: readonly SeriesPoint[], latestEnplanements: number, years: TrendYears): Trend {
+  const { first, last } = years;
+  const end = valueIn(series, last);
   return {
-    cagr5yr: cagrPct(valueIn(series, 2019), valueIn(series, 2024), 5),
-    // Named "10yr" for the 2015-2024 window, but that is 9 compounding periods.
-    cagr10yr: cagrPct(valueIn(series, 2015), valueIn(series, 2024), 9),
-    recoveryVs2019: ratio(latestEnplanements, valueIn(series, 2019)),
+    cagr5yr: cagrPct(valueIn(series, last - SHORT_WINDOW_YEARS), end, SHORT_WINDOW_YEARS),
+    // Named "10yr" for a 10-year file window (e.g. 2015-2024), but that is last - first = 9 compounding periods.
+    cagr10yr: cagrPct(valueIn(series, first), end, last - first),
+    recoveryVs2019: ratio(latestEnplanements, valueIn(series, RECOVERY_BASE_YEAR)),
   };
 }
 
-function airportRecord(rowsByYear: readonly { year: number; row: YearRow }[]): AirportRecord {
+function airportRecord(rowsByYear: readonly { year: number; row: YearRow }[], years: TrendYears): AirportRecord {
   const last = rowsByYear[rowsByYear.length - 1];
   if (!last) throw new Error("airportRecord needs at least one row");
   const { row: latestRow, year: latestYear } = last;
@@ -77,7 +91,7 @@ function airportRecord(rowsByYear: readonly { year: number; row: YearRow }[]): A
     hubType: latestRow.hubType,
     series,
     latest,
-    trend: trendOf(series, latestRow.enplanements),
+    trend: trendOf(series, latestRow.enplanements, years),
   };
 }
 
@@ -100,10 +114,15 @@ export function assembleDataset(tables: readonly YearTable[], builtAt: string): 
     }
   }
 
+  const first = years[0];
+  const last = years[years.length - 1];
+  if (first === undefined || last === undefined) throw new Error("assembleDataset needs at least one year");
+  const trendYears: TrendYears = { first, last };
+
   const codes = [...byCode.keys()].sort();
   const airports: Record<string, AirportRecord> = {};
   for (const code of codes) {
-    airports[code] = airportRecord(byCode.get(code) ?? []);
+    airports[code] = airportRecord(byCode.get(code) ?? [], trendYears);
   }
 
   return {

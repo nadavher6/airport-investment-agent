@@ -81,6 +81,16 @@ describe("helpers", () => {
     expect(["L", "M", "S", "N", "None", "-", " ", null].map(toHubType)).toEqual(["L", "M", "S", "N", null, null, null, null]);
   });
 
+  it("toHubType throws on an unknown value instead of passing it through as null", () => {
+    expect(() => toHubType("X")).toThrow(/unknown Hub value "X"/);
+    expect(() => toHubType("Large")).toThrow(/unknown Hub value/);
+  });
+
+  it("parseYearSheet fails the build on an unknown Hub value of a primary airport", () => {
+    const rows = CY2020_ROWS.map((r) => (r[3] === "ATL" ? r.map((cell, i) => (i === 7 ? "X" : cell)) : r));
+    expect(() => parseYearSheet(rows, 2020)).toThrow(/CY2020: ATL: unknown Hub value "X"/);
+  });
+
   it("findColumns reports the header it saw when a column is missing", () => {
     expect(() => findColumns(["Locid"], 2020)).toThrow(/no "rank" column/);
   });

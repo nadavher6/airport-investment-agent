@@ -81,10 +81,20 @@ function toServiceLevel(value: unknown): ServiceLevel | null {
   return level === "P" || level === "CS" ? level : null;
 }
 
-/** `L`/`M`/`S`/`N` -> itself; `None`, `-`, blank or anything else -> null. */
+/** `L`/`M`/`S`/`N` -> itself; `None`, `-` or blank -> null; anything else throws (bad data fails the build). */
 export function toHubType(value: unknown): HubType | null {
   const hub = text(value).toUpperCase();
-  return hub === "L" || hub === "M" || hub === "S" || hub === "N" ? hub : null;
+  if (hub === "L" || hub === "M" || hub === "S" || hub === "N") return hub;
+  if (hub === "" || hub === "NONE" || hub === "-") return null;
+  throw new Error(`unknown Hub value "${text(value)}" (expected L, M, S, N, None, - or blank)`);
+}
+
+function parseHub(value: unknown, year: number, airportCode: string): HubType | null {
+  try {
+    return toHubType(value);
+  } catch (error) {
+    throw new Error(`CY${year}: ${airportCode}: ${error instanceof Error ? error.message : String(error)}`);
+  }
 }
 
 /**
@@ -116,7 +126,7 @@ export function parseYearSheet(rows: SheetRows, year: number): YearTable {
       city: text(row[col.city]),
       state: text(row[col.state]).toUpperCase(),
       serviceLevel,
-      hubType: serviceLevel === "P" ? toHubType(row[col.hub]) : null,
+      hubType: serviceLevel === "P" ? parseHub(row[col.hub], year, airportCode) : null,
       rank: toCount(row[col.rank]),
       enplanements,
       priorYearEnplanements: toCount(row[col.prior]),

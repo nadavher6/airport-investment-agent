@@ -67,6 +67,22 @@ describe("assembleDataset", () => {
     expect(aaa?.trend.recoveryVs2019).toBe(1.1);
   });
 
+  it("derives the trend windows from meta.years, not from fixed years", () => {
+    const shifted = assembleDataset(
+      [
+        { year: 2016, rows: [row("AAA", 1000, 900)] },
+        { year: 2019, rows: [row("AAA", 1100, 1050)] },
+        { year: 2020, rows: [row("AAA", 800, 1100)] },
+        { year: 2025, rows: [row("AAA", 1210, 1100)] },
+      ],
+      "2026-01-02",
+    );
+    const trend = shifted.airports["AAA"]?.trend;
+    expect(trend?.cagr5yr).toBeCloseTo(((1210 / 800) ** (1 / 5) - 1) * 100, 3);
+    expect(trend?.cagr10yr).toBeCloseTo(((1210 / 1000) ** (1 / 9) - 1) * 100, 3);
+    expect(trend?.recoveryVs2019).toBe(1.1);
+  });
+
   it("uses null when an endpoint or the prior figure is missing", () => {
     expect(dataset.airports["CCC"]?.latest.yoyChangePct).toBeNull();
     expect(dataset.airports["CCC"]?.trend).toEqual({ cagr5yr: null, cagr10yr: null, recoveryVs2019: null });
