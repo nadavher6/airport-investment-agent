@@ -265,4 +265,10 @@ describe("unavailable Gemini model", () => {
     expect(err).toMatchObject({ code: "unavailable", message: `Gemini model ${GEMINI_MODEL} is not available for this key.` });
     expect((err as Error).message).not.toContain(KEY);
   });
+
+  it("a 503 high-demand answer says Gemini is busy and to try again (fake fetch)", async () => {
+    const body = JSON.stringify({ error: { code: 503, status: "UNAVAILABLE", message: "This model is currently experiencing high demand." } });
+    const err = await collect(client(fakeFetch(503, body)).stream(req())).catch((e: unknown) => e);
+    expect(err).toMatchObject({ code: "unavailable", message: "Gemini is busy right now, please try again." });
+  });
 });

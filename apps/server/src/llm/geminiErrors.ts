@@ -36,6 +36,7 @@ export function geminiErrorFromResponse(status: number, body: string, model?: st
   if (status === 404 && model) return new LlmError("unavailable", `Gemini model ${model} is not available for this key.`);
   if (status === 429) return new LlmError("rate_limit", GEMINI_QUOTA_MESSAGE);
   if (status >= 400 && status < 500) return new LlmError("bad_request", `Gemini rejected the request (HTTP ${status}).`);
+  if (status === 503) return new LlmError("unavailable", "Gemini is busy right now, please try again.");
   return new LlmError("unavailable", `Gemini is not responding properly right now (HTTP ${status}).`);
 }
 
