@@ -1,4 +1,5 @@
 import { asModelId, type ModelId, type ModelInfo } from "@airport/shared";
+import { findClaudeBinary } from "../llm/claude/binary.ts";
 import type { ServerConfig } from "../config.ts";
 
 type ModelDefinition = Omit<ModelInfo, "available">;
@@ -25,19 +26,33 @@ const MODEL_DEFINITIONS: readonly ModelDefinition[] = [
     description: "Open-weight reasoning model via OpenRouter's free pool.",
     capabilities: { thinking: true, toolUse: true },
   },
+  {
+    id: asModelId("claude-headless"),
+    label: "Claude (headless session)",
+    provider: "claude-headless",
+    description: "Your local Claude Code login, run headless with its built-in tools turned off.",
+    capabilities: { thinking: true, toolUse: true },
+  },
 ];
 
 export const DEFAULT_MODEL_ID: ModelId = MODEL_DEFINITIONS[0]!.id;
 
 /**
- * The model list the UI shows. Until real providers are wired up, every model
- * is marked available so the mock agent can be exercised from any of them.
+ * The model list the UI shows. claude-headless is available when the `claude` binary is found.
+ * The API-key models are still served by the mock agent, so with no keys set they are all marked
+ * available and the mock can be exercised from any of them.
  */
 export function listModels(config: ServerConfig): ModelInfo[] {
   const anyConfigured = config.configuredProviders.size > 0;
+  const claudeFound = findClaudeBinary(config.claude) !== undefined;
   return MODEL_DEFINITIONS.map((model) => ({
     ...model,
-    available: anyConfigured ? config.configuredProviders.has(model.provider) : true,
+    available:
+      model.provider === "claude-headless"
+        ? claudeFound
+        : anyConfigured
+          ? config.configuredProviders.has(model.provider)
+          : true,
   }));
 }
 

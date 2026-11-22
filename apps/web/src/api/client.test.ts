@@ -35,6 +35,13 @@ describe("api client", () => {
     expect(fetchMock).toHaveBeenCalledWith(API_ROUTES.health, {});
   });
 
+  it("GETs a provider's health from the route constant with the provider filled in", async () => {
+    const body = { provider: "claude-headless", status: "ok", detail: "Claude Code 2.1.0 is installed.", checkedAt: "t" };
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(json(body));
+    await expect(api.providerHealth("claude-headless")).resolves.toEqual(body);
+    expect(fetchMock).toHaveBeenCalledWith("/api/providers/claude-headless/health", {});
+  });
+
   it("turns an ApiErrorBody into an ApiClientError with the server's code", async () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValue(json({ error: { code: "not_found", message: "Nope" } }, 404));
     const err = await caught(api.models());
