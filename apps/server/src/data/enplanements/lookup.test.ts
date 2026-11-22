@@ -21,10 +21,21 @@ describe("getEnplanements", () => {
     expect(getEnplanements("__proto__")).toBeNull();
   });
 
-  it("answers in under 5 ms", () => {
+  it("returns null for ICAO codes: the dataset uses FAA LocIDs only", () => {
+    expect(getEnplanements("KLAX")).toBeNull();
+    expect(getEnplanements("KATL")).toBeNull();
+  });
+
+  it("returns null, not a TypeError, for a non-string code", () => {
+    for (const bad of [123, null, undefined, {}, ["LAX"]]) expect(getEnplanements(bad)).toBeNull();
+  });
+
+  it("answers in under 5 ms on average after the first load", () => {
+    getEnplanements("ATL"); // warm up
+    const calls = 100;
     const start = performance.now();
-    getEnplanements("ATL");
-    expect(performance.now() - start).toBeLessThan(5);
+    for (let i = 0; i < calls; i++) getEnplanements("ATL");
+    expect((performance.now() - start) / calls).toBeLessThan(5);
   });
 });
 

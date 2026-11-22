@@ -19,24 +19,29 @@ export interface GetEnplanementsTool {
     readonly properties: { readonly airport_code: { readonly type: "string"; readonly description: string } };
     readonly required: readonly ["airport_code"];
   };
-  run(input: GetEnplanementsInput): EnplanementResult | NoEnplanementData;
+  /** Tool input is LLM output, so `airport_code` may be missing or not a string; that returns the not-found result. */
+  run(input: { readonly airport_code?: unknown }): EnplanementResult | NoEnplanementData;
 }
 
 export const getEnplanementsTool: GetEnplanementsTool = {
   name: "get_enplanements",
   description:
     "Official FAA passenger boarding (enplanement) data for a US airport: latest-year total, hub " +
-    "classification (Large/Medium/Small/Nonhub), national rank, year-over-year change, 5- and 10-year " +
-    "CAGR, and COVID recovery ratio. Covers CY2015-CY2024.",
+    "classification (Large/Medium/Small/Nonhub), national rank, year-over-year change, compound annual " +
+    "growth rates and COVID recovery ratio. Covers CY2015-CY2024. cagr5yr is the 2019->2024 rate " +
+    "(5 periods); cagr10yr is the 2015->2024 rate (9 periods, not 10, so it is not a true 10-year CAGR); " +
+    "both are in percent. recoveryVs2019 is the 2024/2019 ratio (1 = fully recovered). " +
+    "Airports are keyed by 3-letter FAA/IATA code only; 4-letter ICAO codes such as 'KLAX' are not found.",
   parameters: {
     type: "object",
     properties: {
-      airport_code: { type: "string", description: "3-letter IATA/FAA code, e.g. 'LAX', 'ATL', 'ORD'." },
+      airport_code: { type: "string", description: "3-letter FAA/IATA code, e.g. 'LAX', 'ATL', 'ORD' (not ICAO like 'KLAX')." },
     },
     required: ["airport_code"],
   },
-  run: ({ airport_code }) => {
-    const result = getEnplanements(airport_code);
-    return result ?? { airport_code: airport_code.trim().toUpperCase(), error: "no_enplanement_data" };
+  run: (input) => {
+    const code: unknown = input?.airport_code;
+    const result = getEnplanements(code);
+    return result ?? { airport_code: typeof code === "string" ? code.trim().toUpperCase() : "", error: "no_enplanement_data" };
   },
 };
