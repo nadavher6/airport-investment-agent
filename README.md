@@ -6,11 +6,11 @@ Built as a take-home assignment for Wonderful.
 
 ## Architecture
 
-npm-workspaces monorepo. The API contract lives in one types-only package that both sides import, so a change to the wire format is a compile error on both sides.
+npm-workspaces monorepo. The API contract lives in one shared package (types plus a few tiny runtime helpers) that both sides import, so a change to the wire format is a compile error on both sides.
 
 ```
 packages/
-  shared/            @airport/shared: API contract (types + route constants only)
+  shared/            @airport/shared: API contract (types + route constants + ID helpers)
     src/ids.ts       branded IDs: MessageId, ToolCallId, ModelId
     src/models.ts    ModelInfo, ModelCapabilities
     src/chat.ts      ChatMessage, ContentBlock (text | thinking | tool_use), ChatTurn
