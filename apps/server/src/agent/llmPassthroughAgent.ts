@@ -4,9 +4,16 @@ import { HttpError } from "../http/errors.ts";
 import { LlmError, type LlmClient } from "../llm/llmClient.ts";
 import { mainModel } from "../llm/models.ts";
 import type { Agent, AgentRunInput } from "./agent.ts";
-import { classifyMessage } from "./classifier/classifier.ts";
+import { classifyMessage, type ClassificationLabel } from "./classifier/classifier.ts";
 import { classificationToolEvents } from "./classifier/toolEvents.ts";
 import { CAPABILITIES_ANSWER } from "./responses/capabilities.ts";
+import { OFF_TOPIC_ANSWER } from "./responses/offTopic.ts";
+
+/** Labels answered with one fixed text and no main LLM call (#21). greeting and in_scope go to the LLM. */
+const STATIC_ANSWERS: Readonly<Partial<Record<ClassificationLabel, string>>> = {
+  capabilities: CAPABILITIES_ANSWER,
+  off_topic: OFF_TOPIC_ANSWER,
+};
 
 const API_CODE: Record<LlmError["code"], ApiErrorCode> = {
   unavailable: "model_unavailable",
@@ -35,15 +42,16 @@ export class LlmPassthroughAgent implements Agent {
     const messageId = asMessageId(randomUUID());
     const { messages } = input.request;
     // First agent step (#13): classify the latest user message. It never throws an LlmError (it falls back
-    // to in_scope), only an abort. Only `capabilities` has its own behaviour (fixed answer, no main LLM call); the other labels continue to the LLM.
+    // to in_scope), only an abort. `capabilities` and `off_topic` get a fixed answer (no main LLM call); the other labels continue to the LLM.
     const classification = await classifyMessage(client, messages, input.signal);
     const lastUserMessage = [...messages].reverse().find((m) => m.role === "user")?.content ?? "";
     const classified = classificationToolEvents(messageId, lastUserMessage, classification);
-    // #21: "what can you do?" gets one fixed answer and the main LLM is not called.
-    if (classification.label === "capabilities") {
+    // #21: capabilities and off_topic (which covers prompt injection) get one fixed answer; the main LLM is not called.
+    const staticAnswer = STATIC_ANSWERS[classification.label];
+    if (staticAnswer !== undefined) {
       yield { type: "message_start", messageId, modelId: input.model.id };
       yield* classified;
-      yield { type: "text_delta", messageId, delta: CAPABILITIES_ANSWER };
+      yield { type: "text_delta", messageId, delta: staticAnswer };
       yield { type: "message_end", messageId, stopReason: "end_turn" };
       return;
     }
