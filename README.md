@@ -86,6 +86,9 @@ Passenger volumes come from the FAA's official **Commercial Service Enplanements
 npm run data:download   # fetch the 10 workbooks into data/raw/ (gitignored)
 ```
 
+The script needs `bash` and `curl` (macOS or Linux; on Windows, use WSL or Git Bash). It checks each file's
+SHA-256, keeps files that already match, and exits non-zero if any year fails. `-- --force` downloads everything again.
+
 Where each file came from, its checksum, and format notes are in [`data/raw/SOURCES.md`](./data/raw/SOURCES.md).
 
 ## Tests

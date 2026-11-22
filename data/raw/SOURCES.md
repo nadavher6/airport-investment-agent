@@ -2,6 +2,8 @@
 
 The workbooks themselves are gitignored. This file records where each one came from, so the dataset can be
 reproduced and checked. Re-download with `npm run data:download` (`-- --force` to replace existing files).
+The script holds the same SHA-256 values and rejects any file that doesn't match, so if the FAA republishes a
+file, update the script and this table together.
 
 - **Publisher:** Federal Aviation Administration, Office of Airports
 - **Dataset:** Passenger Boarding (Enplanement) Data, *Commercial Service Enplanements*, final calendar-year files
