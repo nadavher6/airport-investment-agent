@@ -13,7 +13,8 @@
     "dev:web": "npm run dev -w @airport/web",
     "build": "npm run build -w @airport/web",
     "typecheck": "npm run typecheck --workspaces --if-present",
-    "test": "npm run test --workspaces --if-present"
+    "test": "npm run test --workspaces --if-present",
+    "test:coverage": "npm run test --workspaces --if-present -- --coverage"
   },
   "author": "nadavher6",
   "license": "MIT",
@@ -22,6 +23,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
+    "@vitest/coverage-v8": "^4.1.12",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",
     "vitest": "^4.1.12"
