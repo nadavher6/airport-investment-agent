@@ -23,5 +23,9 @@ export const CLASSIFIER_RECENT_TURNS = 6;
 /** Each earlier turn is cut to this many characters: the label needs context, not whole answers. */
 export const CLASSIFIER_TURN_CHARS = 800;
 
-/** The last message (the one being labelled) is cut to this many characters. */
-export const CLASSIFIER_LAST_MESSAGE_CHARS = 2000;
+/**
+ * The last message (the one being labelled) is kept as its first HEAD and last TAIL
+ * characters, so an instruction hidden at the end of a long paste is still seen.
+ */
+export const CLASSIFIER_LAST_MESSAGE_HEAD_CHARS = 1200;
+export const CLASSIFIER_LAST_MESSAGE_TAIL_CHARS = 800;

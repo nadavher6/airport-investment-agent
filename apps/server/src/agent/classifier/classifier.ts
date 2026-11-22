@@ -1,5 +1,11 @@
 import { type LlmClient, type LlmMessage } from "../../llm/llmClient.ts";
-import { CLASSIFIER_LAST_MESSAGE_CHARS, CLASSIFIER_PROMPT, CLASSIFIER_RECENT_TURNS, CLASSIFIER_TURN_CHARS } from "./prompt.ts";
+import {
+  CLASSIFIER_LAST_MESSAGE_HEAD_CHARS,
+  CLASSIFIER_LAST_MESSAGE_TAIL_CHARS,
+  CLASSIFIER_PROMPT,
+  CLASSIFIER_RECENT_TURNS,
+  CLASSIFIER_TURN_CHARS,
+} from "./prompt.ts";
 
 export const CLASSIFICATION_LABELS = ["greeting", "capabilities", "off_topic", "in_scope"] as const;
 export type ClassificationLabel = (typeof CLASSIFICATION_LABELS)[number];
@@ -42,11 +48,24 @@ export function parseClassification(raw: string): Classification | undefined {
 
 const truncate = (text: string, max: number): string => (text.length > max ? `${text.slice(0, max)}...` : text);
 
+/** Keeps the start and the end of a long message, with a marker for what was left out. */
+function truncateHeadTail(text: string, head: number, tail: number): string {
+  if (text.length <= head + tail) return text;
+  const omitted = text.length - head - tail;
+  return `${text.slice(0, head)}\n[... ${omitted} characters omitted ...]\n${text.slice(text.length - tail)}`;
+}
+
 /** Renders the last few turns as one transcript, so the model labels rather than answers it. */
 export function buildClassifierInput(messages: readonly LlmMessage[]): string {
   const recent = messages.slice(-CLASSIFIER_RECENT_TURNS);
   const transcript = recent
-    .map((m, i) => `[${m.role}]\n${truncate(m.content, i === recent.length - 1 ? CLASSIFIER_LAST_MESSAGE_CHARS : CLASSIFIER_TURN_CHARS)}`)
+    .map((m, i) => {
+      const isLast = i === recent.length - 1;
+      const text = isLast
+        ? truncateHeadTail(m.content, CLASSIFIER_LAST_MESSAGE_HEAD_CHARS, CLASSIFIER_LAST_MESSAGE_TAIL_CHARS)
+        : truncate(m.content, CLASSIFIER_TURN_CHARS);
+      return `[${m.role}]\n${text}`;
+    })
     .join("\n\n");
   return `Transcript (oldest first):\n\n${transcript}\n\nClassify the last user message. Reply with JSON only.`;
 }
