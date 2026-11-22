@@ -11,6 +11,8 @@ const candidatesSchema = z
     codes: z.array(z.string().trim().min(1).max(10)).max(25),
     cities: z.array(z.string().trim().min(1).max(80)).max(20),
     region: z.string().trim().min(1).max(80).nullable(),
+    /** #48: "score" (rank, compare, find candidates) goes to the scoring flow; "lookup" (or none) to the tool loop. */
+    intent: z.enum(["score", "lookup"]).optional(),
   })
   .strict();
 
@@ -23,6 +25,14 @@ export interface CandidateResult {
   /** True when no valid reply came back (or the call failed): the no-candidates path. */
   readonly fallback: boolean;
 }
+
+export type Intent = "score" | "lookup";
+
+/**
+ * The path for an in_scope turn (#48): "score" only when the candidate step said so; a missing intent or a failed
+ * step goes to the tool loop ("default to the loop when unsure").
+ */
+export const routeOf = (picked: CandidateResult): Intent => (picked.fallback ? "lookup" : (picked.candidates.intent ?? "lookup"));
 
 /** The no-candidates fallback: nothing to score. */
 export const NO_CANDIDATES: Candidates = { codes: [], cities: [], region: null };
@@ -55,7 +65,7 @@ export function buildCandidateInput(messages: readonly LlmMessage[]): string {
 export function buildCandidateRetryInput(input: string, previousAnswer: string): string {
   return (
     `${input}\n\nYour previous answer was:\n"""\n${truncate(previousAnswer, 500)}\n"""\n\n` +
-    'Your previous answer was not valid. Reply with JSON only, exactly {"codes": string[], "cities": string[], "region": string | null}.'
+    'Your previous answer was not valid. Reply with JSON only, exactly {"codes": string[], "cities": string[], "region": string | null, "intent": "score" | "lookup"}.'
   );
 }
 
@@ -115,7 +125,10 @@ export function candidateToolEvents(messageId: MessageId, message: string, picke
       type: "tool_result",
       messageId,
       toolCallId,
-      result: { ok: true, output: { codes: [...codes], cities: [...cities], region, attempts: picked.attempts, fallback: picked.fallback } },
+      result: {
+        ok: true,
+        output: { codes: [...codes], cities: [...cities], region, intent: routeOf(picked), attempts: picked.attempts, fallback: picked.fallback },
+      },
     },
   ];
 }
