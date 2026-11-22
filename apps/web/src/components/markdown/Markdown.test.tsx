@@ -95,4 +95,71 @@ describe("Markdown", () => {
       expect(() => render(<Markdown text={text} />)).not.toThrow();
     }
   });
+
+  it("draws a closed fence once, however many deltas follow it", () => {
+    const chart = vi.fn((body: string) => <div data-testid="chart">{body}</div>);
+    registerFence("chart", chart);
+    const head = 'intro\n\n```chart\n{"a":1}\n```\n\n';
+    const { rerender } = render(<Markdown text={head} />);
+    let text = head;
+    for (let i = 0; i < 50; i++) {
+      text += "word ";
+      rerender(<Markdown text={text} />);
+    }
+    expect(screen.getByTestId("chart")).toBeInTheDocument();
+    expect(chart).toHaveBeenCalledTimes(1);
+  });
+
+  it("draws a registered fence inside a blockquote and a list once closed", () => {
+    registerFence("chart", (body) => <div data-testid="chart">{body}</div>);
+    const open = render(<Markdown text={"> ```chart\n> {\"a\":"} />);
+    expect(screen.getByRole("status")).toBeInTheDocument();
+    open.unmount();
+    const quote = render(<Markdown text={'> ```chart\n> {"a":1}\n> ```'} />);
+    expect(screen.queryByRole("status")).toBeNull();
+    expect(screen.getByTestId("chart")).toBeInTheDocument();
+    quote.unmount();
+    render(<Markdown text={'- item\n\n  ```chart\n  {"b":2}\n  ```'} />);
+    expect(screen.queryByRole("status")).toBeNull();
+    expect(screen.getByTestId("chart")).toBeInTheDocument();
+  });
+
+  it("renders a dropped javascript: or data: link as plain text", () => {
+    const { container } = render(<Markdown text={"[x](javascript:alert(1)) and [y](data:text/html,hi)"} />);
+    expect(container.querySelector("a")).toBeNull();
+    expect(container.innerHTML).not.toMatch(/href=|target=/);
+    expect(container.textContent).toContain("x and y");
+  });
+
+  it("never renders an image: only the alt text", () => {
+    const { container } = render(<Markdown text={"![the alt](https://evil.example/p.png?d=1) ![d](data:image/png;base64,AAAA)"} />);
+    expect(container.querySelector("img")).toBeNull();
+    expect(container.innerHTML).not.toMatch(/evil\.example|data:image/);
+    expect(container.textContent).toContain("the alt");
+  });
+
+  it.each([
+    ["iframe", '<iframe src="https://evil.example"></iframe>'],
+    ["svg onload", '<svg onload="window.__pwned = 1"><circle/></svg>'],
+    ["raw javascript anchor", '<a href="javascript:window.__pwned = 1">go</a>'],
+    ["data link", "[x](data:text/html;base64,PHNjcmlwdD4=)"],
+    ["data image", "![x](data:text/html;base64,PHNjcmlwdD4=)"],
+  ])("is inert for %s", (_name, text) => {
+    const { container } = render(<Markdown text={text} />);
+    expect(container.querySelector("iframe, svg, script, img, [onload], [onerror]")).toBeNull();
+    expect(container.querySelector("a")).toBeNull();
+    expect((window as unknown as { __pwned?: number }).__pwned).toBeUndefined();
+  });
+
+  it("keeps drawing the good fence when another fence's renderer throws", () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    registerFence("table", () => {
+      throw new Error("boom");
+    });
+    registerFence("kpi", (body) => <div data-testid="kpi">{body}</div>);
+    const { container } = render(<Markdown text={"```table\n{bad\n```\n\n```kpi\n{\"ok\":1}\n```"} />);
+    expect(screen.getByTestId("kpi")).toHaveTextContent('{"ok":1}');
+    expect(container.querySelector("pre code")?.textContent).toBe("{bad");
+    expect(screen.getByText(/Could not draw this table/)).toBeInTheDocument();
+  });
 });
