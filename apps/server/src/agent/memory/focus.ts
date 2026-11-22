@@ -16,7 +16,6 @@ const MAX_FOCUS_STACK = 8;
 const ORDINALS: Record<string, number> = {
   first: 0,
   "1st": 0,
-  top: 0,
   second: 1,
   "2nd": 1,
   third: 2,
@@ -29,12 +28,25 @@ const ORDINALS: Record<string, number> = {
 };
 
 const ADDITIVE = /\b(add|also|include|as well|along with|plus)\b/i;
-const PRONOUN_PLURAL = /\b(them|those|these|both|all|the (?:airports|ones|hubs))\b/i;
-const PRONOUN_SINGULAR = /\b(it|that|this|the (?:airport|one|hub|asset))\b/i;
+/**
+ * An ordinal counts only as a reference to a list item: "the second one", "the last airport",
+ * "#2". "last year", "first quarter" and "top airports" are not references.
+ */
+const ORDINAL_REF = /\b(first|1st|second|2nd|third|3rd|fourth|4th|fifth|5th|last)\s+(?:one|airport|hub|option|pick|entry)\b/i;
+const HASH_REF = /(?:^|[\s(])#\s?(\d{1,2})\b/;
+/** Plural references to a list: "them", "those airports", "both of them", a trailing "both". */
+const PRONOUN_PLURAL =
+  /\b(?:them|(?:those|these|the same) (?:ones|airports|hubs)|both (?:of them|airports|hubs)|both(?=\s*(?:[?.!,]|$)))/i;
+/** Singular references that name the referent: "that airport", "this one", "the same hub". */
+const PRONOUN_SINGULAR = /\b(?:that|this|the same) (?:one|airport|hub)\b/i;
+/**
+ * Bare "it" / "its": often a dummy subject ("is it possible..."), so it only reuses the top of the
+ * focus stack when there is one and never flags ambiguity on its own.
+ */
+const PRONOUN_IT = /\b(?:it|its)\b/i;
 
 const unique = (codes: readonly string[]): string[] => [...new Set(codes)];
 
-const escapeRegExp = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 /** Longest place name scanned, in words ("salt lake city", "dallas fort worth"). */
 const MAX_PLACE_WORDS = 4;
@@ -103,11 +115,12 @@ export function extractExplicitCodes(message: string): string[] {
   return unique(hits.flatMap((h) => h.codes));
 }
 
+/** The list position an ordinal reference points to (`-1` = last), or undefined if there is none. */
 function findOrdinal(message: string): number | undefined {
-  const lower = message.toLowerCase();
-  for (const [word, index] of Object.entries(ORDINALS)) {
-    if (new RegExp(`\\b${escapeRegExp(word)}\\b`).test(lower)) return index;
-  }
+  const word = ORDINAL_REF.exec(message)?.[1]?.toLowerCase();
+  if (word !== undefined) return ORDINALS[word];
+  const hash = HASH_REF.exec(message)?.[1];
+  if (hash !== undefined && Number(hash) >= 1) return Number(hash) - 1;
   return undefined;
 }
 
@@ -124,8 +137,10 @@ export interface FocusResolution {
 
 /**
  * Resolve which airports an in_scope message targets.
- * Precedence: explicit codes/cities > ordinal ("the second one") > plural pronoun
- * ("both/them") > singular pronoun ("it/that airport"). No reference -> no codes.
+ * Precedence: explicit codes/cities > ordinal ("the second one", "#2") > plural reference
+ * ("them", "those airports") > singular reference ("that airport") > bare "it" (focus top only).
+ * Ordinals and pronouns resolve only as references to the last list / focus stack.
+ * No reference -> no codes.
  */
 export function resolveFocus(message: string, state: MemoryState): FocusResolution {
   const explicit = extractExplicitCodes(message);
@@ -150,6 +165,8 @@ export function resolveFocus(message: string, state: MemoryState): FocusResoluti
     } else if (PRONOUN_SINGULAR.test(message)) {
       if (state.focusStack[0]) codes = [state.focusStack[0]];
       else ambiguous = true;
+    } else if (PRONOUN_IT.test(message) && state.focusStack[0]) {
+      codes = [state.focusStack[0]];
     }
     // else: a general question with no entity or reference -> codes stays [].
   }

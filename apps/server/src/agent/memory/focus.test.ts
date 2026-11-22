@@ -124,10 +124,46 @@ describe("resolveFocus", () => {
     expect(r.codes).toEqual(["LAX", "SFO"]);
   });
 
-  it("flags ambiguity when a pronoun has nothing to resolve to", () => {
-    const r = resolveFocus("why is it higher?", state());
+  it("flags ambiguity when a reference has nothing to resolve to", () => {
+    expect(resolveFocus("why is that airport higher?", state()).ambiguous).toBe(true);
+    expect(resolveFocus("and the second one?", state()).ambiguous).toBe(true);
+    expect(resolveFocus("compare them", state()).ambiguous).toBe(true);
+  });
+
+  it("resolves '#2' and 'the last airport' as list references", () => {
+    const s = state({ lastPresentedList: ["LAX", "DEN", "SFO"] });
+    expect(resolveFocus("tell me more about #2", s).codes).toEqual(["DEN"]);
+    expect(resolveFocus("what about the last airport?", s).codes).toEqual(["SFO"]);
+  });
+
+  it("does not treat 'last year' or 'top airports' as ordinal references", () => {
+    const s = state({ lastPresentedList: ["LAX", "DEN"] });
+    for (const msg of ["Is it the last year of data?", "show the top airports by congestion", "top congestion", "how did traffic grow in the first quarter?"]) {
+      const r = resolveFocus(msg, s);
+      expect(r.codes, msg).toEqual([]);
+      expect(r.ambiguous, msg).toBe(false);
+    }
+  });
+
+  it("does not treat 'all', 'these', 'that' or 'both X and Y' as list references", () => {
+    const s = state({ lastPresentedList: ["LAX", "DEN"] });
+    for (const msg of ["show me all airports with growth", "these numbers look high", "what does that mean?", "weigh both congestion and capacity"]) {
+      const r = resolveFocus(msg, s);
+      expect(r.codes, msg).toEqual([]);
+      expect(r.ambiguous, msg).toBe(false);
+    }
+  });
+
+  it("resolves plural references that name a list: 'those airports', 'both of them'", () => {
+    const s = state({ lastPresentedList: ["LAX", "DEN"] });
+    expect(resolveFocus("rank those airports by growth", s).codes).toEqual(["LAX", "DEN"]);
+    expect(resolveFocus("are both of them congested?", s).codes).toEqual(["LAX", "DEN"]);
+  });
+
+  it("bare 'it' with nothing in focus is not flagged ambiguous (dummy subject)", () => {
+    const r = resolveFocus("Is it possible to rank airports by delay?", state());
     expect(r.codes).toEqual([]);
-    expect(r.ambiguous).toBe(true);
+    expect(r.ambiguous).toBe(false);
   });
 
   it("returns no codes for a general question with no entity or reference", () => {
