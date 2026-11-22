@@ -49,6 +49,91 @@ describe("defineTool (validation guardrail)", () => {
   });
 });
 
+describe("defineTool (tools never throw)", () => {
+  const SECRET = "boom sk-secret-key at /srv/data.json";
+  const throwing = defineTool({
+    name: "throws_tool",
+    description: "Throws synchronously.",
+    inputSchema: z.object({}).strict(),
+    exampleInput: {},
+    run: () => {
+      throw new Error(SECRET);
+    },
+  });
+  const rejecting = defineTool({
+    name: "rejects_tool",
+    description: "Rejects.",
+    inputSchema: z.object({}).strict(),
+    exampleInput: {},
+    run: () => Promise.reject(new Error(SECRET)),
+  });
+
+  it("a run that throws becomes an internal ToolError with a plain message", async () => {
+    const result = await throwing.run({}, ctx);
+    expect(result).toEqual({ ok: false, error: { code: "internal", message: "throws_tool failed unexpectedly." } });
+  });
+
+  it("a run that rejects becomes an internal ToolError and never leaks the original error", async () => {
+    const result = await rejecting.run({}, ctx);
+    expect(result).toEqual({ ok: false, error: { code: "internal", message: "rejects_tool failed unexpectedly." } });
+    expect(JSON.stringify(result)).not.toContain("secret");
+    expect(JSON.stringify(result)).not.toContain("at /");
+  });
+
+  it("a schema whose transform throws becomes an internal ToolError", async () => {
+    const badSchema = defineTool({
+      name: "bad_schema",
+      description: "Schema throws.",
+      inputSchema: z.object({ n: z.number().transform((): number => { throw new Error(SECRET); }) }),
+      exampleInput: { n: 1 },
+      run: () => Promise.resolve(ok(null)),
+    });
+    expect(await badSchema.run({ n: 1 }, ctx)).toEqual({
+      ok: false,
+      error: { code: "internal", message: "bad_schema failed unexpectedly." },
+    });
+  });
+
+  it("an abort before the run returns a clean result and never reaches run", async () => {
+    const controller = new AbortController();
+    controller.abort();
+    let called = false;
+    const tracked = defineTool({
+      name: "tracked",
+      description: "Tracks calls.",
+      inputSchema: z.object({}).strict(),
+      exampleInput: {},
+      run: () => {
+        called = true;
+        return Promise.resolve(ok(null));
+      },
+    });
+    const result = await tracked.run({}, { signal: controller.signal });
+    expect(result).toEqual({ ok: false, error: { code: "internal", message: "tracked was stopped before it finished." } });
+    expect(called).toBe(false);
+  });
+
+  it("an abort during the run (run rejects with AbortError) returns a clean result", async () => {
+    const controller = new AbortController();
+    const slow = defineTool({
+      name: "slow_tool",
+      description: "Waits for abort.",
+      inputSchema: z.object({}).strict(),
+      exampleInput: {},
+      run: (_input, runCtx) =>
+        new Promise((_resolve, reject) => {
+          runCtx.signal.addEventListener("abort", () => reject(new DOMException("aborted", "AbortError")));
+        }),
+    });
+    const pending = slow.run({}, { signal: controller.signal });
+    controller.abort();
+    expect(await pending).toEqual({
+      ok: false,
+      error: { code: "internal", message: "slow_tool was stopped before it finished." },
+    });
+  });
+});
+
 describe("renderToolsForPrompt", () => {
   const fakeA = defineTool({
     name: "a_tool",

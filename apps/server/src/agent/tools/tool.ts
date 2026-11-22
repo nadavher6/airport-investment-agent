@@ -77,7 +77,10 @@ export interface RegisteredTool {
   readonly description: string;
   readonly inputSchema: ZodType;
   readonly exampleInput: JsonValue;
-  /** Validates `rawInput` against `inputSchema`; on failure returns `invalid_input`. */
+  /**
+   * Validates `rawInput` against `inputSchema` (failure: `invalid_input`), then runs the tool.
+   * Never rejects: a throw, a rejection or an abort becomes an `internal` error.
+   */
   run(rawInput: JsonObject, ctx: ToolContext): Promise<ToolRunResult<JsonValue>>;
 }
 
@@ -105,6 +108,9 @@ function firstIssueMessage(toolName: string, error: ZodError): string {
   return `Invalid input for ${toolName}: ${field} — ${issue?.message ?? "failed validation"}.`;
 }
 
+/** The plain sentence returned when the run was stopped (Stop button or client disconnect). */
+const abortedMessage = (toolName: string): string => `${toolName} was stopped before it finished.`;
+
 /**
  * Turn an authored `Tool` into a `RegisteredTool`: validation (the guardrail) is applied to
  * the model's raw arguments before the tool's own `run` is reached, so `run` only ever sees
@@ -117,10 +123,18 @@ export function defineTool<Input, Output>(tool: Tool<Input, Output>): Registered
     inputSchema: tool.inputSchema,
     exampleInput: tool.exampleInput as JsonValue,
     async run(rawInput, ctx) {
-      const parsed = tool.inputSchema.safeParse(rawInput);
-      if (!parsed.success) return fail("invalid_input", firstIssueMessage(tool.name, parsed.error));
-      const result = await tool.run(parsed.data, ctx);
-      return result.ok ? { ok: true, output: result.output as JsonValue } : result;
+      // Tools never throw: a schema that throws, a run() that throws or rejects, and an abort
+      // all become a ToolError, so one bad tool cannot crash the turn. The original error is
+      // never put in the message (no stack, no secrets).
+      try {
+        if (ctx.signal.aborted) return fail("internal", abortedMessage(tool.name));
+        const parsed = tool.inputSchema.safeParse(rawInput);
+        if (!parsed.success) return fail("invalid_input", firstIssueMessage(tool.name, parsed.error));
+        const result = await tool.run(parsed.data, ctx);
+        return result.ok ? { ok: true, output: result.output as JsonValue } : result;
+      } catch {
+        return fail("internal", ctx.signal.aborted ? abortedMessage(tool.name) : `${tool.name} failed unexpectedly.`);
+      }
     },
   };
 }
