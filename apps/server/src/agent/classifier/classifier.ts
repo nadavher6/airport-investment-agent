@@ -112,10 +112,11 @@ export async function classifyMessage(
   for (const attempts of [1, 2] as const) {
     let text = "";
     try {
+      const content = previousAnswer === undefined ? input : buildRetryInput(input, previousAnswer);
       const request = {
         system: CLASSIFIER_PROMPT,
         model: MODELS[client.provider].classifier,
-        messages: [{ role: "user", content: previousAnswer === undefined ? input : buildRetryInput(input, previousAnswer) }] as const,
+        messages: [{ role: "user", content }] as const,
         signal,
       };
       for await (const event of client.stream(request)) {

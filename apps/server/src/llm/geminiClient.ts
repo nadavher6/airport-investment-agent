@@ -1,10 +1,9 @@
 import { geminiErrorFromResponse, geminiNetworkError, GEMINI_QUOTA_MESSAGE } from "./geminiErrors.ts";
 import { readGeminiSse, type GeminiChunk } from "./geminiSse.ts";
+import { MODELS } from "./models.ts";
 import { LlmError, type LlmClient, type LlmMessage, type LlmRequest, type LlmStreamEvent } from "./llmClient.ts";
 
 export const GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta";
-/** The catalog's existing Gemini model. */
-export const GEMINI_MODEL = "gemini-3.5-flash";
 
 export type FetchLike = (input: string, init: RequestInit) => Promise<Response>;
 
@@ -134,9 +133,11 @@ export class GeminiClient implements LlmClient {
   /** Opens the HTTP stream. A failure here happens before any event is yielded. */
   private async send(request: LlmRequest): Promise<ReadableStream<Uint8Array>> {
     if (!this.apiKey) throw new LlmError("unavailable", "GEMINI_API_KEY is not set in .env");
+    // Fallback for a request without a model; the id lives only in MODELS.
+    const model = request.model ?? MODELS.gemini.main;
     let response: Response;
     try {
-      response = await this.fetchFn(`${this.baseUrl}/models/${request.model ?? GEMINI_MODEL}:streamGenerateContent?alt=sse`, {
+      response = await this.fetchFn(`${this.baseUrl}/models/${model}:streamGenerateContent?alt=sse`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "x-goog-api-key": this.apiKey },
         body: JSON.stringify(requestBody(request)),
@@ -146,7 +147,7 @@ export class GeminiClient implements LlmClient {
       if (request.signal.aborted) throw err;
       throw geminiNetworkError();
     }
-    if (!response.ok) throw geminiErrorFromResponse(response.status, await response.text().catch(() => ""), GEMINI_MODEL);
+    if (!response.ok) throw geminiErrorFromResponse(response.status, await response.text().catch(() => ""), model);
     if (!response.body) throw new LlmError("internal", "Gemini sent an empty response.");
     return response.body;
   }

@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { collect } from "../test/helpers.ts";
-import { GEMINI_MODEL, GeminiClient, toGeminiContents, type FetchLike } from "./geminiClient.ts";
+import { GeminiClient, toGeminiContents, type FetchLike } from "./geminiClient.ts";
 import { describeLlmClientContract } from "./llmClientContract.ts";
+import { MODELS } from "./models.ts";
 import { LlmError, type LlmRequest, type LlmStreamEvent } from "./llmClient.ts";
 
 // A fake key: these tests never call the real Gemini API.
@@ -79,7 +80,7 @@ describe("GeminiClient.stream", () => {
     await collect(client(fakeFetch(200, sse([part("ok")]), calls)).stream(req({ model: "gemini-flash-lite-latest" })));
     await collect(client(fakeFetch(200, sse([part("ok")]), calls)).stream(req()));
     expect(calls[0]?.url).toContain("/models/gemini-flash-lite-latest:streamGenerateContent");
-    expect(calls[1]?.url).toContain(`/models/${GEMINI_MODEL}:streamGenerateContent`);
+    expect(calls[1]?.url).toContain(`/models/${MODELS.gemini.main}:streamGenerateContent`);
   });
 
   it("reports max_tokens as the stop reason", async () => {
@@ -267,11 +268,16 @@ describe("toGeminiContents", () => {
 
 describe("unavailable Gemini model", () => {
   it("a 404 NOT_FOUND names the model and says it is not available, without the key (fake fetch)", async () => {
-    const body = JSON.stringify({ error: { code: 404, status: "NOT_FOUND", message: `models/${GEMINI_MODEL} is no longer available to new users.` } });
+    const body = JSON.stringify({ error: { code: 404, status: "NOT_FOUND", message: `models/${MODELS.gemini.main} is no longer available to new users.` } });
     const err = await collect(client(fakeFetch(404, body)).stream(req())).catch((e: unknown) => e);
     expect(err).toBeInstanceOf(LlmError);
-    expect(err).toMatchObject({ code: "unavailable", message: `Gemini model ${GEMINI_MODEL} is not available for this key.` });
+    expect(err).toMatchObject({ code: "unavailable", message: `Gemini model ${MODELS.gemini.main} is not available for this key.` });
     expect((err as Error).message).not.toContain(KEY);
+  });
+
+  it("a 404 names the REQUEST's model, not the default (fake fetch)", async () => {
+    const err = await collect(client(fakeFetch(404, "{}")).stream({ ...req(), model: "gemini-flash-lite-latest" })).catch((e: unknown) => e);
+    expect(err).toMatchObject({ code: "unavailable", message: "Gemini model gemini-flash-lite-latest is not available for this key." });
   });
 
   it("a 503 high-demand answer says Gemini is busy and to try again (fake fetch)", async () => {

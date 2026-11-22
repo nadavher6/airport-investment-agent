@@ -47,7 +47,8 @@ export class LlmPassthroughAgent implements Agent {
       return [{ type: "thinking_end", messageId, durationMs }];
     };
     try {
-      for await (const event of client.stream({ messages, signal: input.signal, model: mainModel(client.provider, this.claudeMainModel) })) {
+      const model = mainModel(client.provider, this.claudeMainModel);
+      for await (const event of client.stream({ messages, signal: input.signal, model })) {
         // The classify step is held until the LLM's first event, so a failure to start is still an HttpError.
         if (!started) {
           yield { type: "message_start", messageId, modelId: input.model.id };
