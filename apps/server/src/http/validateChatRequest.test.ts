@@ -83,4 +83,17 @@ describe("validateChatRequest", () => {
     const messages = Array.from({ length: 101 }, () => ({ role: "user", content: "x" }));
     expect(rejectionOf({ modelId: "m", messages })).toMatch(/at most 100 turns/);
   });
+
+  it("keeps a valid conversationId and leaves it out when absent (#48)", () => {
+    expect(validateChatRequest({ ...valid, conversationId: "3f1c2a7e-9b1d-4c1e-8f00-1234abcd5678" }).conversationId).toBe(
+      "3f1c2a7e-9b1d-4c1e-8f00-1234abcd5678",
+    );
+    expect("conversationId" in validateChatRequest(valid)).toBe(false);
+  });
+
+  it("rejects a conversationId that is not a bounded id string (#48)", () => {
+    for (const conversationId of [42, "", "x".repeat(65), "a b", "../etc", { id: "x" }, null]) {
+      expect(rejectionOf({ ...valid, conversationId })).toMatch(/conversationId must be 1-64 characters/);
+    }
+  });
 });
