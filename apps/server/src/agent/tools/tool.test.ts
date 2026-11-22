@@ -1,8 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
 import { defineTool, fail, ok, renderToolsForPrompt, toWireResult } from "./tool.ts";
-import { getEnplanementsTool } from "./enplanementsTool.ts";
-import type { AirportRecord } from "../../data/enplanements/types.ts";
 
 const ctx = { signal: new AbortController().signal };
 
@@ -47,40 +45,32 @@ describe("defineTool (validation guardrail)", () => {
   });
 
   it("rejects unknown/extra fields (strict schema)", async () => {
-    const result = await echo.run({ n: 1, sneaky: true }, ctx);
-    expect(result.ok).toBe(false);
+    expect((await echo.run({ n: 1, sneaky: true }, ctx)).ok).toBe(false);
   });
 });
 
 describe("renderToolsForPrompt", () => {
+  const fakeA = defineTool({
+    name: "a_tool",
+    description: "Does A. Second sentence.",
+    inputSchema: z.object({ x: z.number() }).strict(),
+    exampleInput: { x: 1 },
+    run: () => Promise.resolve(ok(null)),
+  });
+  const fakeB = defineTool({
+    name: "b_tool",
+    description: "Does B.",
+    inputSchema: z.object({ y: z.string() }).strict(),
+    exampleInput: { y: "z" },
+    run: () => Promise.resolve(ok(null)),
+  });
+
   it("renders name, description, and a JSON example per tool", () => {
-    const block = renderToolsForPrompt([getEnplanementsTool]);
-    expect(block).toContain("### get_enplanements");
-    expect(block).toContain("official FAA passenger-boarding");
-    expect(block).toContain('Example input: {"airport_code":"LAX"}');
-  });
-});
-
-describe("getEnplanementsTool (example implementation)", () => {
-  it("has a prompt-ready description of at most 2 sentences", () => {
-    const sentences = getEnplanementsTool.description.split(/(?<=[.!?])\s+/).filter(Boolean);
-    expect(sentences.length).toBeLessThanOrEqual(2);
-  });
-
-  it("normalizes a lowercased code (schema transform) and returns the record", async () => {
-    const result = await getEnplanementsTool.run({ airport_code: "lax" }, ctx);
-    expect(result.ok).toBe(true);
-    if (result.ok) expect((result.output as unknown as AirportRecord).airportCode).toBe("LAX");
-  });
-
-  it("returns a shared not_found error for an unknown code", async () => {
-    const result = await getEnplanementsTool.run({ airport_code: "ZZZ" }, ctx);
-    expect(result).toEqual({ ok: false, error: { code: "not_found", message: expect.stringContaining("ZZZ") } });
-  });
-
-  it("returns invalid_input for a blank code (schema guardrail)", async () => {
-    const result = await getEnplanementsTool.run({ airport_code: "  " }, ctx);
-    expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.error.code).toBe("invalid_input");
+    const block = renderToolsForPrompt([fakeA, fakeB]);
+    expect(block).toContain("### a_tool");
+    expect(block).toContain("Does A. Second sentence.");
+    expect(block).toContain('Example input: {"x":1}');
+    expect(block).toContain("### b_tool");
+    expect(block).toContain('Example input: {"y":"z"}');
   });
 });

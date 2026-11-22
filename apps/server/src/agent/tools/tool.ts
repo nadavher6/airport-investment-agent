@@ -57,7 +57,7 @@ export interface ToolContext {
 export interface Tool<Input, Output> {
   /** Stable snake_case id, used in the tool_call event and the prompt. */
   readonly name: string;
-  /** Up to 2 sentences. Injected verbatim into the agent system prompt. */
+  /** Concise (prefer ≤2 sentences; more is fine when usage rules matter). Injected verbatim into the prompt. */
   readonly description: string;
   /** Guardrail: the model's arguments are parsed with this before `run` is called. */
   readonly inputSchema: ZodType<Input>;
