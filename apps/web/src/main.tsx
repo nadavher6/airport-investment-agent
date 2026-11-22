@@ -3,6 +3,9 @@ import { createRoot } from "react-dom/client";
 import { App } from "./App";
 import "./styles/tokens.css";
 import "./styles/base.css";
+import { registerVisuals } from "./visuals/registerVisuals";
+
+registerVisuals();
 
 const root = document.getElementById("root");
 if (!root) throw new Error("#root element missing from index.html");
