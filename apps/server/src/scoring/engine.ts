@@ -9,7 +9,6 @@ export type Direction = "higher" | "lower";
 
 /**
  * How a KPI's raw value becomes a 0-100 sub-score:
- * - "minmax" (default): winsorize, then min-max against the reference bounds (relative to the population);
  * - `{ kind: "minmax" }` (default): winsorize, then min-max against the reference bounds (relative to the population);
  * - `{ kind: "percent", fullAt }`: the raw value is a percentage (0-100 points, as T-100 stores it) and `fullAt` is
  *   the share, as a FRACTION, that scores 100. Sub-score = share / fullAt * 100, capped at 100 (fullAt 1.0: 87% -> 87;
@@ -116,6 +115,21 @@ export function percentScore(share: number, direction: Direction, fullAt: number
   return Math.round((direction === "higher" ? clamped : 100 - clamped) * 10) / 10;
 }
 
+/** A finite raw value to its 0-100 sub-score by the KPI's scale (an exhaustive switch: a new kind fails to compile). */
+function subScore<A>(k: KpiDef<A>, raw: number, bounds: ReadonlyMap<string, Bounds>): number | null {
+  const scale: Scale = k.scale ?? { kind: "minmax" };
+  switch (scale.kind) {
+    case "percent":
+      return percentScore(raw / 100, k.direction, scale.fullAt);
+    case "minmax":
+      return normalize(raw, bounds.get(k.key) as Bounds, k.direction);
+    default: {
+      const unreachable: never = scale;
+      throw new Error(`Unknown scale: ${JSON.stringify(unreachable)}`);
+    }
+  }
+}
+
 /**
  * Build a scorer from a reference population: KPI bounds are computed once from `reference`,
  * so any item (even a single one) is scored on the same fixed, comparable scale.
@@ -168,12 +182,7 @@ export function buildScorer<A>(
       const raw = k.extract(item);
       const noteField = k.note !== undefined ? { note: k.note } : {};
       const evidenceField = k.evidence ? { evidence: k.evidence(item) } : {};
-      const scored =
-        raw === null || !Number.isFinite(raw)
-          ? null
-          : k.scale?.kind === "percent"
-            ? percentScore(raw / 100, k.direction, k.scale.fullAt)
-            : normalize(raw, bounds.get(k.key) as Bounds, k.direction);
+      const scored = raw === null || !Number.isFinite(raw) ? null : subScore(k, raw, bounds);
       if (raw === null || scored === null) {
         missing.push(k.key);
         return { key: k.key, label: k.label, weight: k.weight, available: false, raw: null, normalized: null, contribution: null, ...noteField, ...evidenceField };

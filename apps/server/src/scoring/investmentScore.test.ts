@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { findAirport } from "../data/enplanements/dataset.ts";
 import { enplanementsDataset } from "../data/enplanements/dataset.ts";
 import type { AirportRecord } from "../data/enplanements/types.ts";
+import { buildScorer } from "./engine.ts";
 import { INVESTMENT_KPIS, growthPctPerYear, rankAirports, rankAirportsRelative, scoreAirport } from "./investmentScore.ts";
 
 import { getT100 } from "../data/t100/dataset.ts";
@@ -173,6 +174,13 @@ describe("long-haul as a percentage out of 50% (#57)", () => {
     const k = lh("LAX", rankAirports);
     expect(k.evidence!.explanation).toContain("scored against a 50% benchmark (50% international = 100) → 61.6");
     expect(k.contribution).toBe(12.3); // 61.6 x 0.2
+  });
+
+  it("long_haul KPI: 0% scores 0 and exactly 50% scores 100 (its own scale, no cap note at 50)", () => {
+    const def = INVESTMENT_KPIS.find((k) => k.key === "long_haul")!;
+    const only = buildScorer([{ share: 0 }, { share: 50 }], [{ key: def.key, label: def.label, weight: 1, direction: def.direction, ...(def.scale ? { scale: def.scale } : {}), extract: (r: { share: number }) => r.share }]);
+    expect(only.score({ share: 0 }).kpis[0]!.normalized).toBe(0);
+    expect(only.score({ share: 50 }).kpis[0]!.normalized).toBe(100);
   });
 
   it("notes the cap above 50% (JFK)", () => {
