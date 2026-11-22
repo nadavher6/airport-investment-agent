@@ -4,7 +4,7 @@ import { LlmError, type LlmClient, type LlmMessage, type LlmRequest, type LlmStr
 
 export const GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta";
 /** The catalog's existing Gemini model. */
-export const GEMINI_MODEL = "gemini-3.8-flash";
+export const GEMINI_MODEL = "gemini-3.5-flash";
 
 export type FetchLike = (input: string, init: RequestInit) => Promise<Response>;
 
@@ -146,7 +146,7 @@ export class GeminiClient implements LlmClient {
       if (request.signal.aborted) throw err;
       throw geminiNetworkError();
     }
-    if (!response.ok) throw geminiErrorFromResponse(response.status, await response.text().catch(() => ""));
+    if (!response.ok) throw geminiErrorFromResponse(response.status, await response.text().catch(() => ""), GEMINI_MODEL);
     if (!response.body) throw new LlmError("internal", "Gemini sent an empty response.");
     return response.body;
   }

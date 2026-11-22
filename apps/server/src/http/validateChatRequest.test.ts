@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { HttpError } from "./errors.ts";
 import { validateChatRequest } from "./validateChatRequest.ts";
 
-const valid = { modelId: "gemini-3.8-flash", messages: [{ role: "user", content: "Hello" }] };
+const valid = { modelId: "gemini-3.5-flash", messages: [{ role: "user", content: "Hello" }] };
 
 function rejectionOf(body: unknown): string {
   try {

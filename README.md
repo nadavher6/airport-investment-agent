@@ -48,7 +48,7 @@ In dev the browser only talks to Vite (`:5173`), which proxies `/api/*` to the s
 plain-English `detail`. For `gemini` it lists one model with `GEMINI_API_KEY` (5 s timeout): `ok`, `unavailable` (no
 key in `.env`) or `error` (for example "Gemini: invalid API key"). The key is never returned or logged.
 
-There are two providers: **Gemini** (`gemini-3.8-flash`, the default, available when `GEMINI_API_KEY` is set) and
+There are two providers: **Gemini** (`gemini-3.5-flash`, the default, available when `GEMINI_API_KEY` is set) and
 **Claude headless** (available when the `claude` binary is found).
 
 Errors are always `{ "error": { "code", "message" } }` (`ApiErrorBody`) with a matching HTTP status.

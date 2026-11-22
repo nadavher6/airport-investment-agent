@@ -6,7 +6,7 @@ import { createApp } from "../app.ts";
 import { GeminiClient, type FetchLike } from "../llm/geminiClient.ts";
 import { offlineClients, parseSse, testConfig, TEST_GEMINI_KEY } from "../test/helpers.ts";
 
-const body = { modelId: "gemini-3.8-flash", messages: [{ role: "user", content: "What makes an airport a good expansion candidate?" }] };
+const body = { modelId: "gemini-3.5-flash", messages: [{ role: "user", content: "What makes an airport a good expansion candidate?" }] };
 
 const sse = (texts: string[]): string =>
   texts.map((text, i) => `data: ${JSON.stringify({ candidates: [{ content: { role: "model", parts: [{ text }] }, ...(i === texts.length - 1 ? { finishReason: "STOP" } : {}) }] })}\r\n\r\n`).join("");
