@@ -1,7 +1,7 @@
 // score_airports, on the shared Tool contract (Zod guardrail + shared error).
 import { z } from "zod";
 import { findAirport } from "../../data/enplanements/dataset.ts";
-import { rankAirports } from "../../scoring/investmentScore.ts";
+import { rankAirports, rankAirportsRelative } from "../../scoring/investmentScore.ts";
 import { defineTool, fail, ok } from "./tool.ts";
 
 const inputSchema = z
@@ -14,10 +14,12 @@ export const scoreAirportsTool = defineTool<ScoreAirportsInput, unknown>({
   name: "score_airports",
   description:
     "Rank US airports by the deterministic Investment Attractiveness Score (0-100): a weighted blend of " +
-    "congestion, unmet demand, long-haul share and growth. v0 computes growth (enplanement CAGR) and an " +
-    "unmet-demand proxy (demand magnitude) from FAA data; congestion and long-haul are pending BTS T-100 " +
-    "data, so each result reports `coverage` (0.50 in v0) and `missing`, plus a per-KPI breakdown so the " +
-    "ranking can be explained. Unknown codes are returned in `notFound`, not scored.",
+    "congestion (operations), unmet demand (load factor), long-haul share (international seats) and growth " +
+    "(enplanement CAGR), from FAA + BTS T-100 data. With 2+ codes it ranks them RELATIVE to each other " +
+    "(score 100 = best of the compared set); with 1 code it scores ABSOLUTELY vs all US airports. Each " +
+    "result gives the final score, a per-category subScore + contribution, and evidence (formula, inputs, " +
+    "explanation) so the ranking can be explained. `coverage`/`missing` flag any category without data; " +
+    "unknown codes are returned in `notFound`.",
   inputSchema,
   exampleInput: { airport_codes: ["LAX", "SFO", "DEN"] },
   run: (input) => {
@@ -27,7 +29,10 @@ export const scoreAirportsTool = defineTool<ScoreAirportsInput, unknown>({
     if (found.length === 0) {
       return Promise.resolve(fail("not_found", `None of the airport codes were found: ${codes.join(", ")}.`));
     }
-    const ranking = rankAirports(found).map((s) => ({
+    // 2+ airports: rank relative to each other (differentiates). 1 airport: absolute vs all US airports.
+    const mode = found.length >= 2 ? "relative" : "absolute";
+    const scored = mode === "relative" ? rankAirportsRelative(found) : rankAirports(found);
+    const ranking = scored.map((s) => ({
       airportCode: s.item.airportCode,
       name: s.item.name,
       score: s.score, // final 0-100
@@ -47,6 +52,6 @@ export const scoreAirportsTool = defineTool<ScoreAirportsInput, unknown>({
         ]),
       ),
     }));
-    return Promise.resolve(ok({ ranking, notFound }));
+    return Promise.resolve(ok({ mode, ranking, notFound }));
   },
 });

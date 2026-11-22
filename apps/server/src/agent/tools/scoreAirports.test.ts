@@ -21,7 +21,7 @@ interface Ranked {
 async function rank(codes: string[]) {
   const r = await scoreAirportsTool.run({ airport_codes: codes }, ctx);
   if (!r.ok) throw new Error("expected ok");
-  return r.output as unknown as { ranking: Ranked[]; notFound: string[] };
+  return r.output as unknown as { mode: string; ranking: Ranked[]; notFound: string[] };
 }
 
 describe("score_airports tool", () => {
@@ -30,38 +30,37 @@ describe("score_airports tool", () => {
     expect(scoreAirportsTool.exampleInput).toEqual({ airport_codes: ["LAX", "SFO", "DEN"] });
   });
 
-  it("returns final score, per-category sub-scores, and evidence for a code", async () => {
-    const { ranking } = await rank(["LAX"]);
+  it("returns final score, all four sub-scores, and evidence for one code (absolute mode)", async () => {
+    const { mode, ranking } = await rank(["LAX"]);
+    expect(mode).toBe("absolute");
     const lax = ranking[0]!;
     expect(lax.airportCode).toBe("LAX");
     expect(lax.score).toBeGreaterThan(0);
-    expect(lax.coverage).toBe(0.5);
+    expect(lax.coverage).toBe(1);
 
-    // every category carries a sub-score slot and evidence (formula + explanation)
     for (const cat of Object.values(lax.breakdown)) {
       expect(cat.evidence.formula.length).toBeGreaterThan(0);
       expect(cat.evidence.explanation.length).toBeGreaterThan(0);
+      expect(cat.subScore).not.toBeNull(); // all four computed now
     }
-    // computed categories have a numeric sub-score; pending ones are null
-    expect(lax.breakdown.unmet_demand!.subScore).not.toBeNull();
-    expect(lax.breakdown.growth!.subScore).not.toBeNull();
-    expect(lax.breakdown.congestion!.subScore).toBeNull();
-    expect(lax.breakdown.long_haul!.subScore).toBeNull();
 
-    // contributions of available categories sum to the final score
+    // contributions sum to the final score
     const sum = Object.values(lax.breakdown).reduce((s, c) => s + (c.contribution ?? 0), 0);
     expect(Math.round(sum * 10) / 10).toBe(lax.score);
   });
 
-  it("evidence carries the real inputs (growth CAGR, unmet-demand enplanements)", async () => {
+  it("evidence carries the real T-100 inputs", async () => {
     const { ranking } = await rank(["DEN"]);
     const den = ranking[0]!;
     expect(den.breakdown.growth!.evidence.inputs).toHaveProperty("cagr5yr");
-    expect(den.breakdown.unmet_demand!.evidence.inputs).toHaveProperty("enplanements");
+    expect(den.breakdown.unmet_demand!.evidence.inputs).toHaveProperty("loadFactor");
+    expect(den.breakdown.long_haul!.evidence.inputs).toHaveProperty("internationalShare");
+    expect(den.breakdown.congestion!.evidence.inputs).toHaveProperty("departures");
   });
 
-  it("ranks multiple codes high-to-low and reports unknown codes in notFound", async () => {
-    const { ranking, notFound } = await rank(["LAX", "DEN", "ZZZ"]);
+  it("ranks multiple codes relative to each other, high-to-low, with notFound", async () => {
+    const { mode, ranking, notFound } = await rank(["LAX", "DEN", "ZZZ"]);
+    expect(mode).toBe("relative");
     expect(notFound).toEqual(["ZZZ"]);
     expect(ranking.map((r) => r.airportCode)).toHaveLength(2);
     expect(ranking[0]!.score).toBeGreaterThanOrEqual(ranking[1]!.score);

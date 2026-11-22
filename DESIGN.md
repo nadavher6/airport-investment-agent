@@ -16,17 +16,20 @@ Score = 0.30·Congestion + 0.30·UnmetDemand + 0.20·LongHaul + 0.20·Growth   (
 ```
 
 - **KPIs & weights (budget allocation, Need 0.60 / Quality 0.40):**
-  - *Congestion* 0.30 — operations ÷ capacity (FAA ASV; thresholds 0.60/0.80/0.95 from FAA Order 5090.x). Where capacity helps.
-  - *Unmet demand* 0.30 — Boeing/Belobaba spill: `DemandFactor = LoadFactor + SpillFactor`; proxied by load factor × growth. The profit the capacity captures.
-  - *Long-haul share* 0.20 — international/widebody seats ÷ total (BTS T-100). Revenue quality (weight-based fees, FIS "gateway moat").
-  - *Growth* 0.20 — enplanement CAGR (FY2019→FY2024) + recovery-vs-2019. Durability of demand.
+  - *Congestion* 0.30 — annual departures/operations (BTS T-100 2024), a traffic-volume proxy for capacity pressure (a true utilization ratio ops ÷ FAA ASV needs runway-capacity data not freely tabulated).
+  - *Unmet demand* 0.30 — load factor = passengers ÷ seats (BTS T-100 2024). Boeing/Belobaba spill: turned-away demand becomes material above ~80–85% load. The profit the capacity captures.
+  - *Long-haul share* 0.20 — international seats ÷ total seats (BTS T-100 2024; international = total − domestic). Revenue quality (weight-based fees, FIS "gateway moat").
+  - *Growth* 0.20 — enplanement CAGR (FY2019→FY2024), fallback recovery-vs-2019 (FAA data). Durability of demand.
 - **Normalization:** `100 × (x − min)/(max − min)`, winsorized at 5th/95th percentile, bounds fixed to the full US dataset so scores are stable and comparable.
 - **Aggregation:** weighted linear sum. *Fully compensatory* — a high KPI offsets a low one; geometric mean is the partial-compensability alternative (reported in sensitivity).
 - **Coverage/honesty:** the engine renormalizes weights over the KPIs it can actually compute and reports a `coverage` fraction + which KPIs are `missing`.
 
-**v0 (shipped) vs v1:** v0 computes **Growth** (real) and **Unmet demand** (degraded proxy =
-demand magnitude) from the FAA enplanement dataset → `coverage = 0.50`. **Congestion** and
-**Long-haul** need a BTS T-100 tool (operations, load factor, international share) = **v1**.
+**All four KPIs are computed** from FAA enplanements + BTS T-100 2024 (`data/t100.json`, built by
+`apps/server/src/data/t100/build.ts` via the free data.bts.gov Socrata API). An airport in both
+datasets reports `coverage = 1.0`; one missing from a source gets `null` for that KPI and the engine
+renormalizes over the rest. **Two ranking modes:** comparing **2+ airports** scores them *relative* to
+each other (so the comparison differentiates — a big gateway beats a domestic hub on long-haul instead
+of both saturating at 100); a **single** airport is scored *absolute* vs. all US airports.
 
 ## 2. Key tradeoffs
 
@@ -45,13 +48,14 @@ demand magnitude) from the FAA enplanement dataset → `coverage = 0.50`. **Cong
 
 ## 4. Assumptions & limitations
 
-- **Scoring proxies & gaps (v0):** *Congestion* and *Long-haul* are **not yet computed** (need BTS T-100
-  operations/load-factor/international data); each airport's score reports `coverage = 0.50` and lists them as
-  `missing`. *Unmet demand* is a **degraded proxy** (latest-year enplanement magnitude), not true spill, which
-  needs proprietary booking data; the real v1 uses load factor. *Congestion*'s capacity denominator (FAA ASV) is
-  **approximated** (no national ASV table). Weights are a documented judgment (Need 0.60 / Quality 0.40), to be
-  sensitivity-tested, not optimized. Min-max is outlier-sensitive → winsorized at 5/95; the big hubs saturate the
-  demand proxy at 100 (a known v0 limitation the T-100 KPIs will relieve).
+- **Scoring proxies & gaps:** *Congestion* uses **annual departures (operations)** as a traffic-volume proxy —
+  a true utilization ratio (operations ÷ FAA ASV) needs runway-capacity data that isn't freely tabulated, so
+  busier airfields score higher. *Unmet demand* uses **load factor** as a spill proxy; true spill needs
+  proprietary booking data. *Long-haul* counts international seats only (nonstop T-100, no connecting itineraries).
+  Weights are a documented judgment (Need 0.60 / Quality 0.40), to be sensitivity-tested, not optimized. Min-max is
+  outlier-sensitive and the count KPIs are right-skewed → **absolute** scoring saturates big hubs at the caps; the
+  **relative** mode (bounds from the compared set) is used for 2+ airports so comparisons differentiate.
+- **BTS T-100** (`data/t100.json`, 2024, 1,290 airports): one-nonstop-segment data; `international = total − domestic`.
 - **Enplanements** (`data/enplanements.json`, FAA CY2015–CY2024): each year's figure is taken from that year's own
   FAA file, even where the FAA later revised it (4 cases). Growth is a CAGR: `cagr5yr` is 2019→2024 and `cagr10yr`
   is 2015→2024, which is 9 periods. Missing years stay `null`, never estimated. CY2020 hub types reflect COVID

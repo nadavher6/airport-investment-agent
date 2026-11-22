@@ -181,6 +181,11 @@ InvestmentScore (0–100) =
 
 ## 5. What we can compute **today** vs. what needs new data/tools
 
+> **Status update:** all four KPIs are now implemented. The BTS T-100 tool below was built
+> (`data/t100.json`, 2024, via the data.bts.gov Socrata API), so congestion (operations),
+> unmet demand (load factor), and long-haul (international share) are computed for real, not
+> pending. The table below is the original v0 gap analysis, kept for context.
+
 | KPI | Needs | In the repo now? |
 |---|---|---|
 | **Growth** | enplanement CAGR, recovery | ✅ **Yes** — `enplanements` dataset (`trend.*`) |
