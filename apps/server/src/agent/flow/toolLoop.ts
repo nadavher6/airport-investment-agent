@@ -31,7 +31,7 @@ export interface ToolLoopInput {
   readonly signal: AbortSignal;
   /** The only tools the model may run. Fixed by the server: nothing in the user's text can add one. */
   readonly tools: readonly RegisteredTool[];
-  /** Called with every successful tool output (memory, #25). */
+  /** Called with every successful tool output (a hook for the memory follow-up; unused by the agent for now). */
   readonly onToolResult?: (name: string, output: JsonValue) => void;
 }
 

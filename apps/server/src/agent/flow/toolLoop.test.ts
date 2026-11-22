@@ -22,7 +22,7 @@ function scripted(replies: Reply[]) {
       requests.push({ ...request, messages: [...request.messages] });
       const reply = replies[Math.min(requests.length - 1, replies.length - 1)]!;
       if (typeof reply === "function") reply();
-      if (typeof reply === "string") {
+      else if (typeof reply === "string") {
         yield { type: "text_delta", text: reply };
         yield { type: "done", stopReason: "end_turn" };
       } else yield* reply;

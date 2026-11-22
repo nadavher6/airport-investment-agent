@@ -1,21 +1,17 @@
 import { randomUUID } from "node:crypto";
-import { asMessageId, type AgentEvent, type ApiErrorCode, type ConversationId, type JsonValue, type MessageId, type ModelProvider } from "@airport/shared";
+import { asMessageId, type AgentEvent, type ApiErrorCode, type MessageId, type ModelProvider } from "@airport/shared";
 import { HttpError } from "../http/errors.ts";
 import { LlmError, type LlmClient } from "../llm/llmClient.ts";
 import { mainModel } from "../llm/models.ts";
 import type { Agent, AgentRunInput } from "./agent.ts";
 import { classifyMessage, type Classification, type ClassificationLabel } from "./classifier/classifier.ts";
 import { classificationToolEvents } from "./classifier/toolEvents.ts";
-import { airportRecordsFrom, ConversationMemory } from "./conversationMemory.ts";
 import { answerSystemContext } from "./flow/answerContext.ts";
 import { candidateToolEvents, pickCandidates, routeOf, type Candidates } from "./flow/candidates.ts";
 import { registryLookupTools, resolveCandidates, type LookupTools } from "./flow/resolve.ts";
 import { defaultScoreAirportsTool, type ScoreAirportsTool } from "./flow/scoreAirports.ts";
 import { defaultLoopTools, MAX_TOOL_STEPS, runToolLoop, type ToolLoopOutcome } from "./flow/toolLoop.ts";
 import { runToolStep } from "./flow/toolStep.ts";
-import { assembleRequest, buildMemorySystemBlock, selectFocusedRecords } from "./memory/assemble.ts";
-import { resolveFocus } from "./memory/focus.ts";
-import type { MemoryState } from "./memory/types.ts";
 import { gradingSystemPrompt } from "./prompts/grading.ts";
 import { buildToolLoopPrompt } from "./prompts/toolLoop.ts";
 import type { RegisteredTool } from "./tools/tool.ts";
@@ -51,12 +47,7 @@ export interface AgentOptions {
   readonly lookups?: LookupTools;
   /** The tool loop's tools (#48). Default: the lookups and get_enplanements from the registry (no score_airports). */
   readonly loopTools?: readonly RegisteredTool[];
-  /** The per-conversation memory (#25/#48). Default: a bounded in-process store. */
-  readonly memory?: ConversationMemory;
 }
-
-/** The memory a turn without a conversationId sees: nothing. */
-const NO_MEMORY: MemoryState = { workingSet: new Map(), focusStack: [], lastPresentedList: [] };
 
 /** Most candidate codes passed on when the loop asks for scores (the candidate schema's own bound). */
 const MAX_CANDIDATE_CODES = 25;
@@ -71,8 +62,6 @@ const MAX_CANDIDATE_CODES = 25;
  *   - "lookup" (also when unsure): the tool loop (`flow/toolLoop.ts`) over the lookups and get_enplanements, at
  *     most 6 tool runs. score_airports is not a loop tool: a loop that asks for it goes to the scoring flow;
  * - `grading`: one main call with the grading skill in its system context, no tools (#43).
- * Memory (#25): with a `conversationId`, both paths cache their tool results and inject the focused ones into the
- * next turns' system context; with none, the turn has no memory.
  * The steps are held until the main LLM's first event, so an LlmError before it is still an HttpError (normal
  * 4xx/5xx); after it, an `error` event.
  */
@@ -81,7 +70,6 @@ export class LlmPassthroughAgent implements Agent {
   private readonly scoreAirports: ScoreAirportsTool;
   private readonly lookups: LookupTools;
   private readonly loopTools: readonly RegisteredTool[];
-  private readonly memory: ConversationMemory;
 
   constructor(
     private readonly clients: Readonly<Record<ModelProvider, LlmClient>>,
@@ -93,28 +81,24 @@ export class LlmPassthroughAgent implements Agent {
     this.scoreAirports = options.scoreAirports ?? defaultScoreAirportsTool();
     this.lookups = options.lookups ?? registryLookupTools();
     this.loopTools = options.loopTools ?? defaultLoopTools();
-    this.memory = options.memory ?? new ConversationMemory();
   }
 
   /**
    * The scoring flow's tool steps (#42): resolve the candidates, score at most 5. Returns the events to show, the
-   * answer's system context and the scored codes. Successful lookups and scores go to `remember` (#48).
+   * answer's system context.
    * An abort rethrows; a failed tool is a tool_result with ok: false.
    */
   private async scoreSteps(
     candidates: Candidates,
     messageId: MessageId,
     signal: AbortSignal,
-    remember: (name: string, output: JsonValue) => void,
-  ): Promise<{ events: AgentEvent[]; system: string; codes: readonly string[] }> {
+  ): Promise<{ events: AgentEvent[]; system: string }> {
     const resolution = await resolveCandidates(candidates, this.lookups, messageId, signal);
     const events: AgentEvent[] = resolution.steps.flatMap((step) => step.events);
-    for (const step of resolution.steps) if (step.result.ok) remember(step.events[0].name, step.result.output);
-    if (resolution.codes.length === 0) return { events, system: answerSystemContext({ resolution }), codes: [] };
+    if (resolution.codes.length === 0) return { events, system: answerSystemContext({ resolution }) };
     const scored = await runToolStep(this.scoreAirports, { airport_codes: [...resolution.codes] }, messageId, signal);
     events.push(...scored.events);
-    if (scored.result.ok) remember(this.scoreAirports.name, scored.result.output);
-    return { events, system: answerSystemContext({ resolution, score: scored.result }), codes: resolution.codes };
+    return { events, system: answerSystemContext({ resolution, score: scored.result }) };
   }
 
   async *run(input: AgentRunInput): AsyncGenerator<AgentEvent> {
@@ -144,19 +128,6 @@ export class LlmPassthroughAgent implements Agent {
       yield { type: "message_end", messageId, stopReason: "end_turn" };
       return;
     }
-    // Memory (#25/#48): only with a conversationId; never keyed by message content.
-    const conversationId: ConversationId | undefined = input.request.conversationId;
-    const memoryState = conversationId !== undefined ? this.memory.state(conversationId) : NO_MEMORY;
-    const focus = resolveFocus(lastUserMessage, memoryState);
-    const focusedRecords = selectFocusedRecords(memoryState.workingSet, focus.codes);
-    const touched: string[] = [...focus.codes];
-    let presented: readonly string[] | undefined;
-    const remember = (name: string, output: JsonValue): void => {
-      if (conversationId === undefined) return;
-      this.memory.record(conversationId, name, output);
-      touched.push(...airportRecordsFrom(name, output).map(([code]) => code));
-    };
-
     // #42 / #43 / #48: the label (and for in_scope the candidate intent) decides the steps and the main call's system context.
     let system: string | undefined;
     const prelude: AgentEvent[] = [...classified];
@@ -176,16 +147,14 @@ export class LlmPassthroughAgent implements Agent {
         prelude.push(...candidateToolEvents(messageId, lastUserMessage, picked));
         let candidates = picked.candidates;
         if (routeOf(picked) === "lookup") {
-          const assembled = assembleRequest({ systemPrompt: buildToolLoopPrompt(this.loopTools, MAX_TOOL_STEPS), history: messages, focusedRecords });
           const loop = runToolLoop({
             client,
             model,
-            system: assembled.system,
-            messages: assembled.messages,
+            system: buildToolLoopPrompt(this.loopTools, MAX_TOOL_STEPS),
+            messages,
             messageId,
             signal: input.signal,
             tools: this.loopTools,
-            onToolResult: remember,
           });
           const outcome: ToolLoopOutcome = yield* relay(loop, begin);
           if (outcome.kind === "answered") {
@@ -196,11 +165,10 @@ export class LlmPassthroughAgent implements Agent {
           // The loop asked for scores: the #42 flow scores them, capped at 5 like any scoring turn.
           candidates = { ...candidates, codes: [...new Set([...candidates.codes, ...outcome.codes])].slice(0, MAX_CANDIDATE_CODES) };
         }
-        const steps = await this.scoreSteps(candidates, messageId, input.signal, remember);
+        const steps = await this.scoreSteps(candidates, messageId, input.signal);
         if (started) yield* steps.events;
         else prelude.push(...steps.events);
-        presented = steps.codes;
-        system = buildMemorySystemBlock(steps.system, { focusedRecords });
+        system = steps.system;
       }
       let thinkingSince: number | undefined;
       const endThinking = (): AgentEvent[] => {
@@ -227,9 +195,6 @@ export class LlmPassthroughAgent implements Agent {
       if (!(err instanceof LlmError)) throw err;
       if (!started) throw new HttpError(API_CODE[err.code], err.message);
       yield { type: "error", error: { code: API_CODE[err.code], message: err.message } };
-    } finally {
-      // Commit the turn's focus on every path (answer, error, abort), so the turn counter never drifts.
-      if (conversationId !== undefined) this.memory.commitFocus(conversationId, [...new Set(touched)], presented);
     }
   }
 }
