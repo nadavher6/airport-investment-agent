@@ -109,9 +109,9 @@ describe("category view: 2 airports side by side", () => {
       "SNA · John Wayne/Orange County",
     ]);
     expect([...grid.querySelectorAll(".viz-compare__label")].map((l) => l.textContent)).toEqual(["Raw value", "Sub-score", "Evidence"]);
-    expect(within(grid).getByRole("group", { name: "Raw value, LAX · Los Angeles International" })).toHaveTextContent("86.8%");
+    expect(within(grid).getByRole("group", { name: "Raw value, LAX · Los Angeles International" })).toHaveTextContent("72.6%");
     expect(within(grid).getByRole("group", { name: "Raw value, SNA · John Wayne/Orange County" })).toHaveTextContent("47.3%");
-    expect(within(grid).getAllByRole("meter").map((m) => m.getAttribute("aria-valuenow"))).toEqual(["86.8", "47.3"]);
+    expect(within(grid).getAllByRole("meter").map((m) => m.getAttribute("aria-valuenow"))).toEqual(["72.6", "47.3"]);
   });
 });
 
@@ -120,7 +120,7 @@ describe("category view: 3-5 airports are a table", () => {
     render(<ToolUseBlockView block={block(CATEGORY_FOUR, "get_congestion", ["SNA", "2A3", "LAX", "ATL", "ZZZ"])} />);
     const rows = screen.getAllByTestId("category-row");
     expect(rows.map((r) => within(r).getByRole("button").textContent?.replace("▸", ""))).toEqual(["ATL", "LAX", "SNA", "2A3"]);
-    expect(rows[0]).toHaveTextContent("127.9%");
+    expect(rows[0]).toHaveTextContent("82.8%");
     expect(within(rows[3]!).getByTitle("Not computed")).toBeInTheDocument();
     expect(screen.getByText("Not found: ZZZ")).toBeInTheDocument();
     expect(screen.getByRole("table", { name: "Airports by Congestion: runway utilization sub-score" })).toBeInTheDocument();

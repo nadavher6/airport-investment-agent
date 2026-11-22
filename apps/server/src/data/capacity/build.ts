@@ -57,6 +57,7 @@ function main(args: readonly string[]): void {
   }
   console.log(`Wrote ${meta.airportCount} airports (${meta.mappedCount} mapped, NASR cycle ${meta.nasrCycle}) to ${paths.out}`);
   for (const [key, n] of [...counts.entries()].sort()) console.log(`  ${key}: ${n}`);
+  console.log(`ASV source: ${Object.entries(meta.capacitySources).map(([s, n]) => `${s} ${n}`).join(", ")}`);
 }
 
 if (process.argv[1] !== undefined && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

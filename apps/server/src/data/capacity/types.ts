@@ -24,6 +24,33 @@ export interface CapacityConfiguration {
   readonly runwaysUsed: number;
 }
 
+/** Where the ASV used for utilization comes from, best first. */
+export type CapacitySource =
+  /** FAA Airport Capacity Profiles 2014 (Core 30), hourly rates annualized by AC 150/5060-5 paragraph 3-6. */
+  | "faa-capacity-profile"
+  /** This project's extension of Figure 2-1 for layouts with 3+ independent parallel streams (not an FAA figure). */
+  | "figure-2-1-extended"
+  /** AC 150/5060-5 Figure 2-1, the matched configuration's midpoint. */
+  | "figure-2-1";
+
+/** The ASV used for an airport, its source and how it was derived. */
+export interface CapacityEstimate {
+  readonly source: CapacitySource;
+  /** Annual service volume used, operations per year. */
+  readonly asv: number;
+  /** One plain-English line: the source and the derivation. */
+  readonly basis: string;
+  /** faa-capacity-profile only: the profile's hourly rates and the annualization. */
+  readonly profile?: {
+    readonly visualPerHour: number;
+    readonly instrumentPerHour: number;
+    readonly weightedPerHour: number;
+    readonly demandFactor: number;
+  };
+  /** figure-2-1-extended only: the Figure 2-1 base and the streams added to it. */
+  readonly extension?: { readonly baseFigure21No: number; readonly addedPairs: number; readonly addedSingles: number };
+}
+
 export interface CapacityAirport {
   readonly code: string;
   /** Paved runways in NASR, by ID. Empty when the airport has none. */
@@ -36,6 +63,11 @@ export interface CapacityAirport {
   readonly crossing: boolean | null;
   /** The Figure 2-1 configuration and ASV, or null when the layout could not be mapped. */
   readonly configuration: CapacityConfiguration | null;
+  /**
+   * The ASV the congestion KPI uses: the FAA capacity profile for a Core 30 airport, else the extended Figure 2-1
+   * value when the layout goes beyond the figure, else the Figure 2-1 configuration. null when nothing applies.
+   */
+  readonly capacity: CapacityEstimate | null;
   /** Why configuration is null; absent when it is set. */
   readonly missingReason?: string;
 }
@@ -48,6 +80,8 @@ export interface CapacityMeta {
   /** No build date on purpose: two builds from the same NASR cycle give byte-identical files. */
   readonly airportCount: number;
   readonly mappedCount: number;
+  /** Airports per capacity source (Core 30 profile, extended Figure 2-1, Figure 2-1). */
+  readonly capacitySources: Readonly<Record<CapacitySource, number>>;
 }
 
 export interface CapacityDataset {

@@ -3,7 +3,12 @@ import {
   asvMidpoint,
   bestConfiguration,
   configurationOf,
+  extendLayout,
+  extendParallelGroup,
   FIGURE_2_1_ASV,
+  INDEPENDENT_PAIR_INCREMENT,
+  INDEPENDENT_SINGLE_INCREMENT,
+  independentStreams,
   parallelConfigurations,
   RUNWAYS_IN_CONFIGURATION,
   spacingBand,
@@ -82,5 +87,40 @@ describe("runway layout -> Figure 2-1 configuration (#54)", () => {
   it("an unmapped layout (no runway at all) is null, never guessed", () => {
     expect(bestConfiguration(layout([]))).toBeNull();
     expect(parallelConfigurations([])).toEqual([]);
+  });
+});
+
+describe("extension beyond Figure 2-1 (not an FAA figure)", () => {
+  it("derives its increments from the figure itself: config 8 − config 2 and config 4 − config 1", () => {
+    expect(INDEPENDENT_PAIR_INCREMENT).toBe(307_500);
+    expect(INDEPENDENT_SINGLE_INCREMENT).toBe(120_000);
+    // The rule's basis: in every mix-index band configuration 8 is within 1% of twice configuration 2.
+    const two = FIGURE_2_1_ASV.find((r) => r.no === 2)!.asvByMixIndex;
+    FIGURE_2_1_ASV.find((r) => r.no === 8)!.asvByMixIndex.forEach((v, i) => {
+      expect(Math.abs(v - 2 * two[i]!) / v).toBeLessThan(0.01);
+    });
+  });
+
+  it("splits a parallel group into independent streams at gaps of 4,300 ft or more", () => {
+    expect(independentStreams([0, 1_000, 6_000, 12_000])).toEqual([2, 1, 1]);
+    expect(independentStreams([0, 4_210, 5_262, 9_671, 10_674])).toEqual([3, 2]); // ATL: 4,210 ft is under the far line
+    expect(independentStreams([0, 4_300])).toEqual([1, 1]);
+    expect(independentStreams([])).toEqual([]);
+  });
+
+  it("adds a stream's increment to the Figure 2-1 configuration of the two strongest streams", () => {
+    expect(extendParallelGroup([0, 1_000, 6_000, 12_000])).toEqual({ baseFigure21No: 7, addedPairs: 0, addedSingles: 1, asv: 670_000 });
+    expect(extendParallelGroup([0, 1_000, 6_000, 7_000, 13_000, 14_000])).toEqual({
+      baseFigure21No: 8,
+      addedPairs: 1,
+      addedSingles: 0,
+      asv: 922_500,
+    });
+    expect(extendParallelGroup([0, 5_000, 10_000])).toEqual({ baseFigure21No: 4, addedPairs: 0, addedSingles: 1, asv: 457_500 });
+    // Two streams with an intermediate pair: configuration 7, which the figure only draws with a close pair.
+    expect(extendParallelGroup([0, 3_000, 8_000])?.asv).toBe(550_000);
+    expect(extendParallelGroup([0, 1_000])).toBeNull(); // one stream: nothing to extend
+    expect(extendLayout([[0, 1_000], [0, 5_000, 10_000]])?.asv).toBe(457_500);
+    expect(extendLayout([[0], [0, 900]])).toBeNull();
   });
 });

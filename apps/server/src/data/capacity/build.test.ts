@@ -27,25 +27,69 @@ const rwyRows = [
   rwy("GRV", "02/20", "GRAVEL"), // only unpaved runways: used
   rwy("NOC", "01/19", "CONC"), // two runways, one without coordinates -> missing
   rwy("NOC", "10/28", "CONC"),
-  rwy("SEA", "NE/SW", "WATER"), // water lane only -> missing
+  rwy("WTR", "NE/SW", "WATER"), // water lane only -> missing
   rwy("ZZZ", "09/27", "CONC"), // not one of the airports asked for
+  rwy("TRI", "09A/27A", "CONC"), // close pair + two far singles: 3 independent streams, beyond Figure 2-1
+  rwy("TRI", "09B/27B", "CONC"),
+  rwy("TRI", "09C/27C", "CONC"),
+  rwy("TRI", "09D/27D", "CONC"),
+  rwy("INT", "09L/27R", "CONC"), // intermediate pair + a far single: not drawn in Figure 2-1
+  rwy("INT", "09C/27C", "CONC"),
+  rwy("INT", "09R/27L", "CONC"),
 ];
-const endRows = [...ends("PAR", "09L/27R", 1_000), ...ends("PAR", "09R/27L", 0), ...ends("NOC", "01/19", 0)];
+const endRows = [
+  ...ends("PAR", "09L/27R", 1_000),
+  ...ends("PAR", "09R/27L", 0),
+  ...ends("NOC", "01/19", 0),
+  ...ends("TRI", "09A/27A", 0),
+  ...ends("TRI", "09B/27B", 1_000),
+  ...ends("TRI", "09C/27C", 6_000),
+  ...ends("TRI", "09D/27D", 12_000),
+  ...ends("INT", "09L/27R", 0),
+  ...ends("INT", "09C/27C", 3_000),
+  ...ends("INT", "09R/27L", 8_000),
+];
 
 const dir = mkdtempSync(join(tmpdir(), "capacity-build-"));
 afterAll(() => rmSync(dir, { recursive: true, force: true }));
 const paths = { rwy: join(dir, "APT_RWY.csv"), ends: join(dir, "APT_RWY_END.csv"), codes: join(dir, "codes.json"), out: join(dir, "capacity.json") };
 writeFileSync(paths.rwy, [RWY_HEADER, ...rwyRows].join("\n"));
 writeFileSync(paths.ends, [END_HEADER, ...endRows].join("\n"));
-writeFileSync(paths.codes, JSON.stringify({ airports: { PAR: {}, ONE: {}, GRV: {}, NOC: {}, SEA: {}, MIA: {} } }));
+writeFileSync(
+  paths.codes,
+  JSON.stringify({ airports: { PAR: {}, ONE: {}, GRV: {}, NOC: {}, WTR: {}, MIA: {}, TRI: {}, INT: {}, LGA: {} } }),
+);
 
 describe("the capacity build on a fixture (#54)", () => {
   const dataset = buildCapacity(paths);
   const first = readFileSync(paths.out, "utf8");
 
   it("writes the asked-for airports sorted by code, with the NASR cycle", () => {
-    expect(Object.keys(dataset.airports)).toEqual(["GRV", "MIA", "NOC", "ONE", "PAR", "SEA"]);
-    expect(dataset.meta).toMatchObject({ nasrCycle: "2026-10-29", airportCount: 6, mappedCount: 3 });
+    expect(Object.keys(dataset.airports)).toEqual(["GRV", "INT", "LGA", "MIA", "NOC", "ONE", "PAR", "TRI", "WTR"]);
+    expect(dataset.meta).toMatchObject({ nasrCycle: "2026-10-29", airportCount: 9, mappedCount: 5 });
+    expect(dataset.meta.capacitySources).toEqual({ "faa-capacity-profile": 2, "figure-2-1-extended": 2, "figure-2-1": 3 });
+  });
+
+  it("Core 30 airports take the FAA capacity profile, with or without NASR runways in the input", () => {
+    // LGA and MIA have no runway rows in the fixture: the published capacity does not depend on the layout.
+    expect(dataset.airports.LGA!.capacity).toMatchObject({ source: "faa-capacity-profile", asv: 359_200 });
+    expect(dataset.airports.MIA!.capacity).toMatchObject({ source: "faa-capacity-profile", asv: 599_100 });
+    expect(dataset.airports.PAR!.capacity).toMatchObject({ source: "figure-2-1", asv: 307_500 });
+  });
+
+  it("layouts beyond Figure 2-1 take the extended value, marked as an extension", () => {
+    const tri = dataset.airports.TRI!;
+    expect(tri.configuration).toMatchObject({ figure21No: 7, asv: 550_000 });
+    expect(tri.capacity).toMatchObject({
+      source: "figure-2-1-extended",
+      asv: 670_000,
+      extension: { baseFigure21No: 7, addedPairs: 0, addedSingles: 1 },
+    });
+    expect(tri.capacity!.basis).toContain("not an FAA figure");
+    const int = dataset.airports.INT!;
+    expect(int.configuration).toMatchObject({ figure21No: 4, asv: 337_500 });
+    expect(int.capacity).toMatchObject({ source: "figure-2-1-extended", asv: 550_000 });
+    expect(int.capacity!.basis).toContain("intermediate pair counted as a close pair");
   });
 
   it("running it twice gives byte-identical output", () => {
@@ -65,8 +109,10 @@ describe("the capacity build on a fixture (#54)", () => {
 
   it("an airport it cannot map is missing, with the reason, never guessed", () => {
     expect(dataset.airports.NOC).toMatchObject({ configuration: null, missingReason: NO_COORDINATES });
-    expect(dataset.airports.SEA).toMatchObject({ configuration: null, missingReason: NO_RUNWAY, runways: [] });
+    expect(dataset.airports.WTR).toMatchObject({ configuration: null, missingReason: NO_RUNWAY, runways: [] });
     expect(dataset.airports.MIA).toMatchObject({ configuration: null, missingReason: NO_RUNWAY });
+    expect(dataset.airports.NOC!.capacity).toBeNull();
+    expect(dataset.airports.WTR!.capacity).toBeNull();
   });
 });
 
@@ -99,5 +145,13 @@ describe("the committed data/capacity.json (#54)", () => {
     expect(getCapacity("ATL")!.parallelSpacingsFt).toEqual([[4210, 1052, 4409, 1003]]);
     expect(getCapacity("ISN")).toMatchObject({ configuration: null }); // closed in 2019: not in NASR
     expect(getCapacity(42)).toBeNull();
+  });
+
+  it("ASV source: all 30 Core airports use the FAA capacity profile; others Figure 2-1 or its extension", () => {
+    expect(capacityDataset.meta.capacitySources["faa-capacity-profile"]).toBe(30);
+    expect(getCapacity("ATL")!.capacity).toMatchObject({ source: "faa-capacity-profile", asv: 949_800 });
+    expect(getCapacity("DEN")!.capacity).toMatchObject({ source: "faa-capacity-profile", asv: 1_211_100 });
+    expect(getCapacity("SNA")!.capacity).toMatchObject({ source: "figure-2-1", asv: 217_500 });
+    expect(getCapacity("CVG")!.capacity).toMatchObject({ source: "figure-2-1-extended", asv: 550_000 });
   });
 });

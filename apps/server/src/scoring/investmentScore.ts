@@ -3,7 +3,8 @@
  *
  * Full model = Need 0.60 (congestion + unmet demand) / Quality 0.40 (long-haul + growth):
  * - congestion   — runway utilization = operations (BTS T-100 (latest 12 months) departures × 2) ÷ ASV
- *                  (FAA AC 150/5060-5 Figure 2-1, from the FAA NASR runway layout), in percent; sub-score = the
+ *                  (FAA Airport Capacity Profiles 2014 for the Core 30, else FAA AC 150/5060-5 Figure 2-1 from the
+ *                  FAA NASR runway layout, extended for parallel layouts it does not draw), in percent; sub-score = the
  *                  percentage itself (scale percent, fullAt 1.0, capped at 100)
  * - unmet_demand — load factor = passengers ÷ seats (BTS T-100 (latest 12 months)), proxy for spilled demand;
  *                  its sub-score is the load factor percentage itself (scale percent, fullAt 1.0, capped at 100)
@@ -68,7 +69,7 @@ export interface RunwayUtilization {
 /** The congestion KPI's inputs for one airport, or null when the T-100 record or the ASV is missing. */
 export function runwayUtilization(code: string): RunwayUtilization | null {
   const departures = getT100(code)?.departures ?? null;
-  const asv = getCapacity(code)?.configuration?.asv ?? null;
+  const asv = getCapacity(code)?.capacity?.asv ?? null;
   const operations = departures === null ? null : departures * 2;
   const ratio = utilizationRatio(operations, asv);
   if (ratio === null || operations === null || asv === null) return null;
@@ -87,22 +88,27 @@ export function triggerPhrase(pct: number): string {
 /** The congestion evidence sentence, with the real numbers, or why it is missing. */
 function utilizationSentence(departures: number | null, c: CapacityAirport | null, u: RunwayUtilization | null): string {
   if (departures === null) return "No BTS T-100 record for this airport, so its annual operations are unknown and congestion is missing.";
-  const cfg = c?.configuration ?? null;
-  if (cfg === null || u === null) {
+  const est = c?.capacity ?? null;
+  if (est === null || u === null) {
     return `No runway capacity estimate: ${c?.missingReason ?? "the airport is not in the FAA runway data"}, so congestion is missing.`;
   }
+  const cfg = c?.configuration ?? null;
   const cap = u.utilizationPct > 100 ? " The sub-score is capped at 100." : "";
   const more =
-    c !== null && c.layoutRunways > cfg.runwaysUsed
-      ? ` The airport has ${c.layoutRunways} runways but the closest Figure 2-1 configuration has ${cfg.runwaysUsed}, so the ASV is likely understated and the utilization overstated.`
+    est.source === "figure-2-1" && c !== null && cfg !== null && c.layoutRunways > cfg.runwaysUsed
+      ? ` The airport has ${c.layoutRunways} runways but the closest Figure 2-1 configuration has ${cfg.runwaysUsed}, so the ASV may be understated and the utilization overstated.`
       : "";
   return (
-    `${fmt(u.operations)} operations a year (${fmt(departures)} T-100 departures × 2) against an estimated ` +
-    `${fmt(cfg.asv)} (FAA AC 150/5060-5 Figure 2-1 configuration ${cfg.figure21No}, ${cfg.label}): ` +
+    `${fmt(u.operations)} operations a year (${fmt(departures)} T-100 departures × 2) against an estimated annual ` +
+    `capacity of ${fmt(est.asv)} (${est.basis}): ` +
     `at ${u.utilizationPct}% of its estimated capacity, ${triggerPhrase(u.utilizationPct)}.${cap}${more} ` +
     "Operations are a lower bound: T-100 has no general-aviation or military flights, so the real utilization is higher."
   );
 }
+
+/** Where the ASV comes from, in the order it is chosen (data/capacity.json, DESIGN.md §1 "Runway capacity (ASV)"). */
+export const ASV_SOURCES =
+  "ASV = for the FAA's 30 Core airports, the FAA Airport Capacity Profiles 2014 hourly rates annualized by FAA AC 150/5060-5 (ASV = weighted hourly capacity × D × H); for other airports, the AC 150/5060-5 Figure 2-1 midpoint for the runway configuration (FAA NASR runways), extended by the figure's own increments for parallel layouts the figure does not draw";
 
 /** Ties in the ranking are ordered by airport code, ascending. */
 const byAirportCode = (a: AirportRecord): string => a.airportCode;
@@ -114,7 +120,7 @@ export const INVESTMENT_KPIS: readonly KpiDef<AirportRecord>[] = [
     weight: 0.3,
     direction: "higher",
     scale: CONGESTION_SCALE,
-    note: "Runway utilization = annual operations ÷ Annual Service Volume (ASV), in percent (100% = at capacity). Operations = BTS T-100 (latest 12 months) departures × 2 (arrivals ≈ departures); ASV = FAA AC 150/5060-5 Figure 2-1 midpoint for the airport's runway configuration (FAA NASR runways, data/capacity.json). Sub-score = the utilization percentage (86.8% scores 86.8), capped at 100. T-100 has no general-aviation or military flights, so this is a lower bound; the ASV is a long-range planning estimate. FAA rule of thumb: plan more capacity at 60%, build at 80%.",
+    note: `Runway utilization = annual operations ÷ Annual Service Volume (ASV), in percent (100% = at capacity). Operations = BTS T-100 (latest 12 months) departures × 2 (arrivals ≈ departures); ${ASV_SOURCES} (data/capacity.json). Sub-score = the utilization percentage (86.8% scores 86.8), capped at 100. T-100 has no general-aviation or military flights, so this is a lower bound; the ASV is a long-range planning estimate. FAA rule of thumb: plan more capacity at 60%, build at 80%.`,
     extract: (a) => runwayUtilization(a.airportCode)?.utilizationPct ?? null,
     evidence: (a) => {
       const t = getT100(a.airportCode);
@@ -122,12 +128,12 @@ export const INVESTMENT_KPIS: readonly KpiDef<AirportRecord>[] = [
       const u = runwayUtilization(a.airportCode);
       const cfg = c?.configuration ?? null;
       return {
-        formula:
-          "runway utilization = annual operations ÷ ASV, in percent (100% = at capacity); operations = BTS T-100 (latest 12 months) departures × 2; ASV = FAA AC 150/5060-5 Figure 2-1 midpoint for the runway configuration. Sub-score = utilization as a percentage, capped at 100",
+        formula: `runway utilization = annual operations ÷ ASV, in percent (100% = at capacity); operations = BTS T-100 (latest 12 months) departures × 2; ${ASV_SOURCES}. Sub-score = utilization as a percentage, capped at 100`,
         inputs: {
           departures: t?.departures ?? null,
           operations: u?.operations ?? null,
-          asv: cfg?.asv ?? null,
+          asv: c?.capacity?.asv ?? null,
+          asvSource: c?.capacity?.source ?? null,
           utilization: u?.ratio ?? null,
           utilizationPct: u?.utilizationPct ?? null,
           runwayConfiguration: cfg ? `Figure 2-1 no. ${cfg.figure21No}: ${cfg.label}` : null,

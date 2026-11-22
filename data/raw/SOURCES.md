@@ -260,6 +260,30 @@ So any cut-off between 9.5° and 17° gives the same groups.
   `FIGURE_2_1_ASV` (`apps/server/src/data/capacity/asv.ts`); `asv.test.ts` pins three rows.
 - **ASV used:** the midpoint of each row's lowest and highest value, because the mix index needs fleet-mix data that
   is not freely tabulated.
+- **Also used for the Core 30 annualization (below):** paragraph 2-3.a (IFR weather roughly 10% of the time),
+  **Table 2-1** (demand ratios D and H by mix index: 81–120 → D 320, H 12; 121–180 → D 350, H 14; read from the PDF's
+  text layer, p. 5) and paragraph **3-6** (ASV = Cw × D × H). Same file and checksum as above.
+- **Extension (not an FAA figure):** for parallel layouts Figure 2-1 does not draw, increments read off the same
+  figure (configuration 8 − 2 = 307,500 per extra independent pair; configuration 4 − 1 = 120,000 per extra
+  independent runway). Rule and reasoning: DESIGN.md §1 "Runway capacity (ASV)" (c).
+
+**Core 30 capacity: FAA *Airport Capacity Profiles* (2014)**
+- **Publisher:** FAA Office of Airports (Airport Planning and Programming, APP-400), prepared by MITRE CAASD; report
+  date May 2014 (cover July 2014). Index page: https://www.faa.gov/airports/planning_capacity/profiles
+- **URL:** https://www.faa.gov/sites/faa.gov/files/airports/planning_capacity/profiles/Airport-Capacity-Profiles-2014.pdf,
+  11,089,544 bytes, SHA-256 `246e026b9532a09542a174478e115d7578a9e7f57412efbf57b88c9e615f6cdb`, downloaded
+  **2026-11-22** with `curl` into a fresh empty directory. Free and public: no key, no login. **Not committed.**
+- **Used:** **Table 1 "Capacity Rate Ranges for Current Operations at the Core Airports"** (report p. 9, PDF p. 12):
+  aircraft operations (arrivals + departures) per hour in visual, marginal and instrument weather for the 30 Core
+  airports, each a range from the ATC Facility Reported ("called") rate to the model-estimated rate; some cells give
+  arrival-priority and departure-priority configurations. Transcribed cell by cell into
+  `CORE30_CAPACITY_PROFILES_2014` (`apps/server/src/data/capacity/profiles.ts`, which cites the table); the cells were
+  matched to their columns by their x/y positions in the PDF's text layer; `profiles.test.ts` pins four rows.
+- **Derived and committed:** only the per-airport ASV (`capacity` in `data/capacity.json`, source
+  `faa-capacity-profile`), computed at build time as (90% visual + 10% instrument, range midpoints) × 4,370 (AC Table
+  2-1, mix index 81–180 midpoint). Method and assumptions: DESIGN.md §1 "Runway capacity (ASV)" (a) and §4.
+- **Not used:** the marginal column (no per-airport weather split in Table 1), ATL's Low Instrument row, and the
+  newer single-airport profiles FAA posted later (e.g. ATL, DFW, ORD 2018), so that all 30 come from one table.
 
 **Operations** are not in `data/capacity.json`: they are T-100 departures × 2 from `data/t100.json` (above), computed
 when scoring, as issue #54 specifies. The issue allows FAA OPSNET/ATADS tower counts (which include general
