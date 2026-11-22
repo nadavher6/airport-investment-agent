@@ -5,6 +5,7 @@ import { LlmError, type LlmClient, type LlmRequest, type LlmStreamEvent } from "
 import { collect } from "../test/helpers.ts";
 import { CLASSIFIER_PROMPT } from "./classifier/prompt.ts";
 import { LlmPassthroughAgent } from "./llmPassthroughAgent.ts";
+import { CAPABILITIES_ANSWER } from "./responses/capabilities.ts";
 
 const modelOf = (provider: ModelProvider): ModelInfo => ({
   id: asModelId(`${provider}-model`),
@@ -113,6 +114,34 @@ describe("LlmPassthroughAgent", () => {
     expect(events.at(-1)).toEqual({ type: "error", error: { code: "internal", message: "Claude crashed." } });
   });
 
+
+  it("answers a capabilities message with the fixed text and never calls the main LLM (#21)", async () => {
+    const { client, seen, classified } = fakeClient(
+      [{ type: "text_delta", text: "Generic LLM answer." }, { type: "done", stopReason: "end_turn" }],
+      new LlmError("internal", "the main LLM must not be called"),
+      '{"label":"capabilities","reason":"Asks what the assistant can do."}',
+    );
+    const events = await runWith(client);
+    expect(events.map((e) => e.type)).toEqual(["message_start", "tool_call", "tool_result", "text_delta", "message_end"]);
+    expect(events[2]).toMatchObject({ type: "tool_result", result: { ok: true, output: { label: "capabilities" } } });
+    const text = events.flatMap((e) => (e.type === "text_delta" ? [e.delta] : [])).join("");
+    expect(text).toBe(CAPABILITIES_ANSWER);
+    expect(events.at(-1)).toMatchObject({ type: "message_end", stopReason: "end_turn" });
+    expect(new Set(events.map((e) => ("messageId" in e ? e.messageId : undefined))).size).toBe(1);
+    expect(classified).toHaveLength(1);
+    expect(seen).toHaveLength(0);
+  });
+
+  it.each(["greeting", "off_topic", "in_scope"])("still calls the main LLM for the %s label (#21)", async (label) => {
+    const { client, seen } = fakeClient(
+      [{ type: "text_delta", text: "From the LLM." }, { type: "done", stopReason: "end_turn" }],
+      undefined,
+      `{"label":"${label}","reason":"x"}`,
+    );
+    const events = await runWith(client);
+    expect(seen).toHaveLength(1);
+    expect(events.filter((e) => e.type === "text_delta")).toEqual([expect.objectContaining({ delta: "From the LLM." })]);
+  });
 
   it("runs the classifier first and shows it as classify_message, then streams the answer as before (#13)", async () => {
     const { client, seen, classified } = fakeClient(

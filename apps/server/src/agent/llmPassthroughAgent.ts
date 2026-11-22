@@ -6,6 +6,7 @@ import { mainModel } from "../llm/models.ts";
 import type { Agent, AgentRunInput } from "./agent.ts";
 import { classifyMessage } from "./classifier/classifier.ts";
 import { classificationToolEvents } from "./classifier/toolEvents.ts";
+import { CAPABILITIES_ANSWER } from "./responses/capabilities.ts";
 
 const API_CODE: Record<LlmError["code"], ApiErrorCode> = {
   unavailable: "model_unavailable",
@@ -34,10 +35,18 @@ export class LlmPassthroughAgent implements Agent {
     const messageId = asMessageId(randomUUID());
     const { messages } = input.request;
     // First agent step (#13): classify the latest user message. It never throws an LlmError (it falls back
-    // to in_scope), only an abort. No per-label behaviour yet: the message continues to the LLM as before.
+    // to in_scope), only an abort. Only `capabilities` has its own behaviour (fixed answer, no main LLM call); the other labels continue to the LLM.
     const classification = await classifyMessage(client, messages, input.signal);
     const lastUserMessage = [...messages].reverse().find((m) => m.role === "user")?.content ?? "";
     const classified = classificationToolEvents(messageId, lastUserMessage, classification);
+    // #21: "what can you do?" gets one fixed answer and the main LLM is not called.
+    if (classification.label === "capabilities") {
+      yield { type: "message_start", messageId, modelId: input.model.id };
+      yield* classified;
+      yield { type: "text_delta", messageId, delta: CAPABILITIES_ANSWER };
+      yield { type: "message_end", messageId, stopReason: "end_turn" };
+      return;
+    }
     let started = false;
     let thinkingSince: number | undefined;
     const endThinking = (): AgentEvent[] => {
