@@ -29,3 +29,7 @@ _How do we decide an airport is a strong investment candidate?_
 ## 4. Assumptions & limitations
 
 - _TODO: list data gaps, proxy metrics, and what "unmet demand" is estimated from._
+- **Enplanements** (`data/enplanements.json`, FAA CY2015–CY2024): each year's figure is taken from that year's own
+  FAA file, even where the FAA later revised it (4 cases). Growth is a CAGR: `cagr5yr` is 2019→2024 and `cagr10yr`
+  is 2015→2024, which is 9 periods. Missing years stay `null`, never estimated. CY2020 hub types reflect COVID
+  traffic. Full rules: `data/raw/SOURCES.md`.
