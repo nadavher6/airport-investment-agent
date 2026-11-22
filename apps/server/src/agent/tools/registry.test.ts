@@ -3,9 +3,15 @@ import { ALL_TOOLS, toolsByName } from "./registry.ts";
 import { renderToolsForPrompt } from "./tool.ts";
 
 describe("tool registry", () => {
-  it("holds the four tools with unique names", () => {
+  it("holds the registered tools with unique names", () => {
     const names = ALL_TOOLS.map((t) => t.name);
-    expect(names).toEqual(["get_airport_by_code", "find_airports_by_city", "find_airports_by_region", "get_enplanements"]);
+    expect(names).toEqual([
+      "get_airport_by_code",
+      "find_airports_by_city",
+      "find_airports_by_region",
+      "get_enplanements",
+      "score_airports",
+    ]);
     expect(new Set(names).size).toBe(names.length);
   });
 
