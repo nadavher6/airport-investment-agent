@@ -1,4 +1,5 @@
-import { z } from "zod";
+// zod/mini: the same validator with a tree-shakable API (wired-in JS +12 kB gzip instead of +30 kB).
+import { z } from "zod/mini";
 
 /**
  * The visual specs the model writes inside ```chart / ```table / ```kpi fences.
@@ -24,73 +25,72 @@ export const FENCE_LANGS: readonly FenceLang[] = ["chart", "table", "kpi"];
 
 /** z.number() already rejects NaN and ±Infinity in zod 4; the message says so. */
 const finite = z.number({ error: "must be a finite number" });
-const text = (max: number) => z.string().trim().min(1).max(max);
-const title = text(LIMITS.title).optional();
-const unit = text(LIMITS.unit).optional();
+const text = (max: number) => z.string().check(z.trim(), z.minLength(1), z.maxLength(max));
+const list = <T extends z.core.SomeType>(item: T, max: number, min = 1) =>
+  z.array(item).check(z.minLength(min), z.maxLength(max));
+const title = z.optional(text(LIMITS.title));
+const unit = z.optional(text(LIMITS.unit));
 
 const xValue = z.union([finite, text(LIMITS.label)]);
 const point = z.tuple([xValue, finite]);
 
 const lineSeries = z.object({
   name: text(LIMITS.label),
-  points: z.array(point).min(1).max(LIMITS.points),
+  points: list(point, LIMITS.points),
 });
 
 export const lineSpec = z.object({
   type: z.literal("line"),
   title,
   /** The x-axis name, e.g. "year". */
-  x: text(LIMITS.label).optional(),
+  x: z.optional(text(LIMITS.label)),
   unit,
-  series: z.array(lineSeries).min(1).max(LIMITS.series),
+  series: list(lineSeries, LIMITS.series),
 });
 
 export const barSpec = z.object({
   type: z.literal("bar"),
   title,
   unit,
-  items: z
-    .array(z.object({ label: text(LIMITS.label), value: finite }))
-    .min(1)
-    .max(LIMITS.items),
-  sort: z.enum(["desc", "asc", "none"]).optional(),
+  items: list(z.object({ label: text(LIMITS.label), value: finite }), LIMITS.items),
+  sort: z.optional(z.enum(["desc", "asc", "none"])),
 });
 
-const cell = z.union([finite, z.string().max(LIMITS.cell), z.null()]);
+const cell = z.union([finite, z.string().check(z.maxLength(LIMITS.cell)), z.null()]);
 
 export const tableSpec = z
   .object({
     type: z.literal("table"),
     title,
-    columns: z.array(text(LIMITS.label)).min(1).max(LIMITS.columns),
-    rows: z.array(z.array(cell).max(LIMITS.columns)).max(LIMITS.rows),
+    columns: list(text(LIMITS.label), LIMITS.columns),
+    rows: list(list(cell, LIMITS.columns, 0), LIMITS.rows, 0),
   })
-  .superRefine((spec, ctx) => {
-    spec.rows.forEach((row, i) => {
-      if (row.length !== spec.columns.length) {
-        ctx.addIssue({
-          code: "custom",
-          path: ["rows", i],
-          message: `has ${row.length} cells but there are ${spec.columns.length} columns`,
-        });
-      }
-    });
-  });
+  .check(
+    z.superRefine((spec, ctx) => {
+      spec.rows.forEach((row, i) => {
+        if (row.length !== spec.columns.length) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["rows", i],
+            message: `has ${row.length} cells but there are ${spec.columns.length} columns`,
+          });
+        }
+      });
+    }),
+  );
 
 export const kpiSpec = z.object({
   type: z.literal("kpi"),
   title,
-  items: z
-    .array(
-      z.object({
-        label: text(LIMITS.label),
-        value: z.union([finite, text(LIMITS.label)]),
-        unit,
-        delta: text(LIMITS.label).optional(),
-      }),
-    )
-    .min(1)
-    .max(LIMITS.kpiItems),
+  items: list(
+    z.object({
+      label: text(LIMITS.label),
+      value: z.union([finite, text(LIMITS.label)]),
+      unit,
+      delta: z.optional(text(LIMITS.label)),
+    }),
+    LIMITS.kpiItems,
+  ),
 });
 
 export const visualSpec = z.discriminatedUnion("type", [lineSpec, barSpec, tableSpec, kpiSpec]);
@@ -110,7 +110,7 @@ export type ParseResult =
 const isRecord = (v: unknown): v is Record<string, unknown> =>
   typeof v === "object" && v !== null && !Array.isArray(v);
 
-function describe(error: z.ZodError): string {
+function describe(error: z.core.$ZodError): string {
   const first = error.issues[0];
   if (!first) return "the spec is not valid";
   const where = first.path.length > 0 ? first.path.join(".") : "spec";
@@ -125,7 +125,7 @@ export function validateSpec(lang: FenceLang, value: unknown): ParseResult {
   if (lang === "chart" && input.type !== "line" && input.type !== "bar") {
     return { ok: false, reason: 'a chart needs "type": "line" or "bar"', json: value };
   }
-  const result = visualSpec.safeParse(input);
+  const result = z.safeParse(visualSpec, input);
   return result.success ? { ok: true, spec: result.data } : { ok: false, reason: describe(result.error), json: value };
 }
 
