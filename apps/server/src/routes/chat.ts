@@ -1,3 +1,4 @@
+import { once } from "node:events";
 import { Router } from "express";
 import { API_ROUTES } from "@airport/shared";
 import type { Agent } from "../agent/agent.ts";
@@ -25,8 +26,12 @@ export function chatRouter(config: ServerConfig, agent: Agent): Router {
 
     openEventStream(res);
     try {
-      for await (const event of agent.run({ request, model, signal: controller.signal })) {
-        writeEvent(res, event);
+      const { signal } = controller;
+      for await (const event of agent.run({ request, model, signal })) {
+        // Don't rely on the agent honouring the signal. Breaking also calls return() on the generator.
+        if (signal.aborted) break;
+        // Backpressure. Passing the signal makes the wait reject (AbortError) if the client leaves.
+        if (!writeEvent(res, event)) await once(res, "drain", { signal });
       }
     } catch (err) {
       if (!controller.signal.aborted) {
