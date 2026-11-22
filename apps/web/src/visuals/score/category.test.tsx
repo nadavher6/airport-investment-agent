@@ -40,7 +40,7 @@ describe("category spec (#61)", () => {
 
   it("sorts by sub-score, missing last, without changing the input", () => {
     const r = checked(CATEGORY_FOUR);
-    expect(sortBySubScore(r.airports).map((a) => a.airportCode)).toEqual(["LAX", "ATL", "SNA", "2A3"]);
+    expect(sortBySubScore(r.airports).map((a) => a.airportCode)).toEqual(["ATL", "LAX", "SNA", "2A3"]);
     expect(r.airports.map((a) => a.airportCode)).toEqual(["SNA", "2A3", "LAX", "ATL"]);
   });
 });
@@ -66,9 +66,9 @@ describe("category view: 1 airport is a card", () => {
     missing.airports = missing.airports.filter((a) => a.airportCode === "2A3");
     render(<ToolUseBlockView block={block(missing)} />);
     const card = screen.getByRole("article", { name: /: 2A3$/ });
-    expect(within(card).getByText(/^Not computed — needs annual departures/)).toBeInTheDocument();
+    expect(within(card).getByText(/^Not computed — needs runway utilization/)).toBeInTheDocument();
     expect(within(card).queryByRole("meter")).toBeNull();
-    expect(within(card).getByText("No BTS T-100 record for this airport.")).toBeInTheDocument();
+    expect(within(card).getByText("No BTS T-100 record for this airport, so its annual operations are unknown and congestion is missing.")).toBeInTheDocument();
   });
 });
 
@@ -86,7 +86,7 @@ describe("category view: the raw value carries its unit", () => {
     ["get_unmet_demand", "unmet_demand", "Unmet demand (load factor)", "%", 81.9, "81.9%"],
     ["get_long_haul_share", "long_haul", "Long-haul share", "%", 30.8, "30.8%"],
     ["get_growth", "growth", "Growth / durability", "% per year", 6.2, "6.2% per year"],
-    ["get_congestion", "congestion", "Congestion / capacity pressure", "departures/yr", 266820, "266,820 departures/yr"],
+    ["get_congestion", "congestion", "Congestion: runway utilization", "%", 86.8, "86.8%"],
   ] as const)("%s shows %s raw as %s", (tool, category, label, unit, raw, shown) => {
     render(<ToolUseBlockView block={block(withUnit(category, label, unit, raw), tool)} />);
     expect(screen.getByLabelText(`Raw value, ${shown}`)).toHaveClass("viz-kpi__tile");
@@ -103,15 +103,15 @@ describe("category view: the raw value carries its unit", () => {
 describe("category view: 2 airports side by side", () => {
   it("uses #39's compare grid with raw value, sub-score and evidence rows", () => {
     render(<ToolUseBlockView block={block(CATEGORY_TWO, "get_congestion", ["LAX", "SNA"])} />);
-    const grid = screen.getByRole("group", { name: "Comparison: Congestion / capacity pressure" });
+    const grid = screen.getByRole("group", { name: "Comparison: Congestion: runway utilization" });
     expect([...grid.querySelectorAll(".viz-compare__head")].map((h) => h.textContent)).toEqual([
       "LAX · Los Angeles International",
       "SNA · John Wayne/Orange County",
     ]);
     expect([...grid.querySelectorAll(".viz-compare__label")].map((l) => l.textContent)).toEqual(["Raw value", "Sub-score", "Evidence"]);
-    expect(within(grid).getByRole("group", { name: "Raw value, LAX · Los Angeles International" })).toHaveTextContent("266,820 departures/yr");
-    expect(within(grid).getByRole("group", { name: "Raw value, SNA · John Wayne/Orange County" })).toHaveTextContent("51,447 departures/yr");
-    expect(within(grid).getAllByRole("meter").map((m) => m.getAttribute("aria-valuenow"))).toEqual(["100", "50.3"]);
+    expect(within(grid).getByRole("group", { name: "Raw value, LAX · Los Angeles International" })).toHaveTextContent("86.8%");
+    expect(within(grid).getByRole("group", { name: "Raw value, SNA · John Wayne/Orange County" })).toHaveTextContent("47.3%");
+    expect(within(grid).getAllByRole("meter").map((m) => m.getAttribute("aria-valuenow"))).toEqual(["86.8", "47.3"]);
   });
 });
 
@@ -119,11 +119,11 @@ describe("category view: 3-5 airports are a table", () => {
   it("sorts rows by sub-score (missing last), shows raw values, and lists notFound", () => {
     render(<ToolUseBlockView block={block(CATEGORY_FOUR, "get_congestion", ["SNA", "2A3", "LAX", "ATL", "ZZZ"])} />);
     const rows = screen.getAllByTestId("category-row");
-    expect(rows.map((r) => within(r).getByRole("button").textContent?.replace("▸", ""))).toEqual(["LAX", "ATL", "SNA", "2A3"]);
-    expect(rows[0]).toHaveTextContent("266,820 departures/yr");
+    expect(rows.map((r) => within(r).getByRole("button").textContent?.replace("▸", ""))).toEqual(["ATL", "LAX", "SNA", "2A3"]);
+    expect(rows[0]).toHaveTextContent("127.9%");
     expect(within(rows[3]!).getByTitle("Not computed")).toBeInTheDocument();
     expect(screen.getByText("Not found: ZZZ")).toBeInTheDocument();
-    expect(screen.getByRole("table", { name: "Airports by Congestion / capacity pressure sub-score" })).toBeInTheDocument();
+    expect(screen.getByRole("table", { name: "Airports by Congestion: runway utilization sub-score" })).toBeInTheDocument();
   });
 
   it("a row opens its evidence", async () => {
@@ -133,7 +133,7 @@ describe("category view: 3-5 airports are a table", () => {
     expect(detail).not.toBeVisible();
     await userEvent.click(toggle);
     expect(toggle).toHaveAttribute("aria-expanded", "true");
-    expect(within(detail).getByText(/51,447 departures/)).toBeVisible();
+    expect(within(detail).getByText(/51,447 T-100 departures/)).toBeVisible();
   });
 
   it("more than 5 airports shows the top 5 and a +N more note", () => {

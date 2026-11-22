@@ -125,6 +125,19 @@ describe("scale: percent", () => {
     expect(percentScore(0.817, "lower", 1)).toBe(18.3);
   });
 
+  it("runway utilization (#54): a raw value in percent points, fullAt 1.0: 86.8% -> 86.8, 205% -> 100", () => {
+    expect(percentScore(0.868, "higher", 1.0)).toBe(86.8);
+    expect(percentScore(2.05, "higher", 1.0)).toBe(100);
+    expect(percentScore(0.5, "higher", 0)).toBeNull(); // a fullAt that is not positive is unusable
+    // Through the engine, which divides the raw percent by 100: a 100x unit slip would give 100 or 0.9.
+    const u: KpiDef<{ readonly util: number }>[] = [
+      { key: "util", label: "Util", weight: 1, direction: "higher", scale: { kind: "percent", fullAt: 1.0 }, extract: (r) => r.util },
+    ];
+    const s = buildScorer([{ util: 86.8 }, { util: 205 }], u);
+    expect(s.score({ util: 86.8 }).kpis[0]!.normalized).toBe(86.8);
+    expect(s.score({ util: 205 }).kpis[0]!.normalized).toBe(100);
+  });
+
   it("percentScore treats NaN, +Infinity and -Infinity as missing (null)", () => {
     for (const bad of [Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY]) {
       expect(percentScore(bad, "higher", 1)).toBeNull();
