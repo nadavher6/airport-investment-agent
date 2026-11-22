@@ -9,6 +9,14 @@ export interface T100Airport {
   readonly seats: number;
   readonly domesticSeats: number;
   readonly internationalSeats: number;
+  /** Departures to US destinations (T-100 domestic_departures), or null when BTS gave none. */
+  readonly domesticDepartures: number | null;
+  /** departures − domesticDepartures: flights to a foreign airport. null when unknown or negative (data error). */
+  readonly internationalDepartures: number | null;
+  /** Passengers on domestic segments (T-100 domestic_passengers), or null. */
+  readonly domesticPassengers: number | null;
+  /** passengers − domesticPassengers. null when unknown or negative (data error). */
+  readonly internationalPassengers: number | null;
   /** passengers / seats, percent. */
   readonly loadFactor: number;
   /** internationalSeats / seats, percent. */

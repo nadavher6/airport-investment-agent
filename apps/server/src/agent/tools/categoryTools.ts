@@ -178,7 +178,11 @@ export const getUnmetDemandTool = categoryTool(
 export const getLongHaulShareTool = categoryTool(
   "get_long_haul_share",
   "long_haul",
-  "The long-haul category (international share = international seats ÷ total seats).",
+  "The long-haul category (international share = international seats ÷ total seats). Per airport the evidence inputs " +
+    "ALSO give the number of international flights (`internationalDepartures` = T-100 departures − domestic departures, " +
+    "out of `departures`) and `internationalPassengers`; null = not in the data, never 0. They are shown, not scored: " +
+    "the sub-score stays on the seat share. T-100 international = a segment to a foreign airport, so it does not " +
+    "separate long-haul from short-haul international.",
 );
 
 export const getGrowthTool = categoryTool(

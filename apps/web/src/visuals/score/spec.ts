@@ -101,3 +101,34 @@ export function missingText(cat: Category): string {
   const need = cat.evidence?.formula.trim();
   return `Not computed — needs ${need ? need : "data that is not available"}`;
 }
+
+/** The long-haul KPI's international counts (#74), read from its evidence inputs; null = not in the data. */
+export interface InternationalFlights {
+  readonly flights: number | null;
+  readonly departures: number | null;
+  readonly passengers: number | null;
+}
+
+/**
+ * The international flights and passengers of a long-haul evidence, or null when the evidence is not a
+ * long-haul one (no `internationalDepartures` input: another category, or an older tool output).
+ * A number-or-null for each field; anything else reads as missing.
+ */
+export function internationalFlights(ev: Evidence | null | undefined): InternationalFlights | null {
+  if (!ev || !("internationalDepartures" in ev.inputs)) return null;
+  const n = (v: unknown): number | null => (typeof v === "number" && Number.isFinite(v) ? v : null);
+  return {
+    flights: n(ev.inputs.internationalDepartures),
+    departures: n(ev.inputs.departures),
+    passengers: n(ev.inputs.internationalPassengers),
+  };
+}
+
+const fullNumber = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
+
+/** "61,715 of 266,820 departures"; "—" when the count is missing (never 0). */
+export const formatIntlFlights = (f: InternationalFlights): string =>
+  f.flights === null ? "—" : f.departures === null ? fullNumber.format(f.flights) : `${fullNumber.format(f.flights)} of ${fullNumber.format(f.departures)} departures`;
+
+/** "11,307,246"; "—" when missing. */
+export const formatIntlPassengers = (f: InternationalFlights): string => (f.passengers === null ? "—" : fullNumber.format(f.passengers));

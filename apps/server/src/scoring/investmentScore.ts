@@ -23,6 +23,7 @@ import type { AirportRecord } from "../data/enplanements/types.ts";
 import { getCapacity } from "../data/capacity/dataset.ts";
 import type { CapacityAirport } from "../data/capacity/types.ts";
 import { getT100 } from "../data/t100/dataset.ts";
+import type { T100Airport } from "../data/t100/types.ts";
 import { buildScorer, linearScore, percentScore, type KpiDef, type Scale, type ScoredItem } from "./engine.ts";
 
 /**
@@ -86,6 +87,20 @@ export function runwayUtilization(code: string): RunwayUtilization | null {
 }
 
 const fmt = (n: number): string => n.toLocaleString("en-US");
+
+/**
+ * The long-haul evidence's international flights and passengers (#74): the counts only, never scored.
+ * Missing (null) when the T-100 domestic figure is missing or larger than the total; never 0 or estimated.
+ */
+export function internationalFlightsSentence(t: T100Airport): string {
+  const { internationalDepartures: flights, departures, internationalPassengers: pax } = t;
+  if (flights === null) {
+    return "International flights: not available (the T-100 data has no usable domestic-departures figure for this airport). Not scored.";
+  }
+  const share = departures > 0 ? ` (${Math.round((flights / departures) * 1000) / 10}%)` : "";
+  const paxText = pax === null ? "international passengers not available" : `${fmt(pax)} international passengers`;
+  return `International flights: ${fmt(flights)} of ${fmt(departures)} departures${share}; ${paxText}. T-100 "international" = the segment goes to a foreign airport (it does not separate long-haul from short-haul international). Shown for context, not scored.`;
+}
 
 /** Where a utilization sits against the FAA's 60% / 80% triggers, in words. */
 export function triggerPhrase(pct: number): string {
@@ -179,16 +194,23 @@ export const INVESTMENT_KPIS: readonly KpiDef<AirportRecord>[] = [
     weight: 0.2,
     direction: "higher",
     scale: { kind: "percent", fullAt: 0.5 },
-    note: "International seats ÷ total seats (BTS T-100 (latest 12 months)). International/long-haul traffic earns higher weight-based fees and needs costly FIS facilities (a gateway moat). Sub-score = the international share ÷ 50% × 100, capped at 100 (50% international = 100; 40% scores 80).",
+    note: "International seats ÷ total seats (BTS T-100 (latest 12 months)). International/long-haul traffic earns higher weight-based fees and needs costly FIS facilities (a gateway moat). Sub-score = the international share ÷ 50% × 100, capped at 100 (50% international = 100; 40% scores 80). Also reported, not scored: international flights (T-100 departures − domestic departures) and international passengers. T-100 'international' means the segment goes to a foreign airport, so it does not separate long-haul from short-haul international (Toronto vs. Tokyo).",
     extract: (a) => getT100(a.airportCode)?.internationalShare ?? null,
     evidence: (a) => {
       const t = getT100(a.airportCode);
       return {
         formula: "international seats ÷ total seats (BTS T-100 (latest 12 months)). Sub-score = share ÷ 50% × 100, capped at 100",
-        inputs: { internationalSeats: t?.internationalSeats ?? null, seats: t?.seats ?? null, internationalShare: t?.internationalShare ?? null },
+        inputs: {
+          internationalSeats: t?.internationalSeats ?? null,
+          seats: t?.seats ?? null,
+          internationalShare: t?.internationalShare ?? null,
+          internationalDepartures: t?.internationalDepartures ?? null,
+          departures: t?.departures ?? null,
+          internationalPassengers: t?.internationalPassengers ?? null,
+        },
         value: t?.internationalShare ?? null,
         explanation: t
-          ? `${t.internationalShare}% of seats were international over the latest 12 months; scored against a 50% benchmark (50% international = 100) → ${percentScore(t.internationalShare / 100, "higher", 0.5)}.${t.internationalShare > 50 ? " The sub-score is capped at 100 (above 50% international)." : ""} High-margin traffic (weight-based fees, FIS/customs moat).`
+          ? `${t.internationalShare}% of seats were international over the latest 12 months; scored against a 50% benchmark (50% international = 100) → ${percentScore(t.internationalShare / 100, "higher", 0.5)}.${t.internationalShare > 50 ? " The sub-score is capped at 100 (above 50% international)." : ""} High-margin traffic (weight-based fees, FIS/customs moat). ${internationalFlightsSentence(t)}`
           : "No BTS T-100 record for this airport.",
       };
     },

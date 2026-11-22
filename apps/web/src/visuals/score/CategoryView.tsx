@@ -3,8 +3,8 @@ import "./score.css";
 import { Fragment, useId, useState } from "react";
 import { CompareGrid, type GridRow } from "../compare/Compare";
 import { KpiTiles } from "../KpiTiles";
-import { ScoreBar } from "./parts";
-import { MAX_SHOWN, SCALE_TEXT, formatScore, formatShare, missingText } from "./spec";
+import { InternationalFlightsLine, ScoreBar } from "./parts";
+import { MAX_SHOWN, SCALE_TEXT, formatIntlFlights, formatScore, formatShare, internationalFlights, missingText } from "./spec";
 import { GrowthView } from "./GrowthView";
 import {
   asCategory,
@@ -36,6 +36,7 @@ function Evidence({ airport }: { airport: CategoryAirport }) {
   return (
     <div className="score-cat__evidence">
       {ev.explanation ? <p className="score-cat__explanation">{ev.explanation}</p> : null}
+      <InternationalFlightsLine evidence={ev} />
       {isScored(airport) && ev.formula ? <code className="score-cat__formula">{ev.formula}</code> : null}
     </div>
   );
@@ -73,6 +74,9 @@ function CategoryCompare({ result, airports }: { result: CategoryResult; airport
   const rows: GridRow[] = [
     { label: "Raw value", cells: airports.map((a, i) => <span key={i} className="score-cell__value">{formatRaw(a.raw, result.unit)}</span>) },
     { label: "Sub-score", cells: airports.map((a, i) => <SubScore key={i} result={result} airport={a} />) },
+    ...(hasIntlColumn(result)
+      ? [{ label: "International flights", cells: airports.map((a, i) => <span key={i} className="score-cell__value" data-testid="intl-flights-cell">{intlFlightsText(a)}</span>) }]
+      : []),
     { label: "Evidence", cells: airports.map((a, i) => <Evidence key={i} airport={a} />) },
   ];
   return (
@@ -81,6 +85,15 @@ function CategoryCompare({ result, airports }: { result: CategoryResult; airport
     </div>
   );
 }
+
+/** The long-haul category gets an "Int'l flights" column (#74). */
+const hasIntlColumn = (result: CategoryResult): boolean => result.category === "long_haul";
+
+/** The number of international flights of one airport as a table cell: "61,715 of 266,820 departures", or "—". */
+const intlFlightsText = (airport: CategoryAirport): string => {
+  const f = internationalFlights(airport.evidence);
+  return f === null ? "—" : formatIntlFlights(f);
+};
 
 function Row({ result, airport, rank }: { result: CategoryResult; airport: CategoryAirport; rank: number }) {
   const [open, setOpen] = useState(false);
@@ -118,9 +131,14 @@ function Row({ result, airport, rank }: { result: CategoryResult; airport: Categ
             </span>
           )}
         </td>
+        {hasIntlColumn(result) ? (
+          <td className="viz-num" data-testid="intl-flights-cell">
+            {intlFlightsText(airport)}
+          </td>
+        ) : null}
       </tr>
       <tr id={detailId} className="score-table__detail" hidden={!open}>
-        <td colSpan={5}>
+        <td colSpan={hasIntlColumn(result) ? 6 : 5}>
           {isScored(airport) ? null : <SubScore result={result} airport={airport} />}
           <Evidence airport={airport} />
         </td>
@@ -131,7 +149,7 @@ function Row({ result, airport, rank }: { result: CategoryResult; airport: Categ
 
 /** 3-5 airports: a table sorted by sub-score (missing last); a row opens its evidence. */
 function CategoryTable({ result, airports }: { result: CategoryResult; airports: readonly CategoryAirport[] }) {
-  const heads = ["Rank", "Code", "Name", "Raw value", "Sub-score"];
+  const heads = ["Rank", "Code", "Name", "Raw value", "Sub-score", ...(hasIntlColumn(result) ? ["Int'l flights"] : [])];
   const numeric = (i: number) => i === 0 || i >= 3;
   return (
     <figure className="viz viz--table score-table">

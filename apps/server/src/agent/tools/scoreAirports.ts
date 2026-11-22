@@ -27,7 +27,7 @@ export const scoreAirportsTool = defineTool<ScoreAirportsInput, unknown>({
     "(international seats) and growth (enplanement CAGR), from FAA + BTS T-100 data. Every sub-score is a FIXED scale on the airport's own numbers, so an " +
     "airport gets the same scores alone or in any set of codes: congestion is the runway utilization % itself (72.6% = 72.6) and unmet demand the load factor % itself, both capped at 100; long-haul is the international seat share out of 50% (50% international = 100, 40% = 80, capped at 100); growth is 50 + 5 × the 5-year CAGR in %/yr, clamped (−10%/yr = 0, 0%/yr = 50, +10%/yr = 100). Each " +
     "result gives the final score, a per-category subScore + contribution, and evidence (formula, inputs, " +
-    "explanation) so the ranking can be explained. `coverage`/`missing` flag any category without data; " +
+    "explanation) so the ranking can be explained; the long-haul evidence also gives the number of international flights (`internationalDepartures` of `departures`) and `internationalPassengers`, shown but not scored. `coverage`/`missing` flag any category without data; " +
     "unknown codes are returned in `notFound`. Codes are case-insensitive and deduplicated; at most " +
     `${MAX_AIRPORT_CODES} per call. Equal scores are ordered by airport code.`,
   inputSchema,
