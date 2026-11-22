@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { collect } from "../test/helpers.ts";
 import { GeminiClient, toGeminiContents, type FetchLike } from "./geminiClient.ts";
+import { describeLlmClientContract } from "./llmClientContract.ts";
 import { LlmError, type LlmRequest, type LlmStreamEvent } from "./llmClient.ts";
 
 // A fake key: these tests never call the real Gemini API.
@@ -37,6 +38,25 @@ function req(extra: Partial<LlmRequest> = {}): LlmRequest {
 }
 
 const client = (fetch: FetchLike, apiKey: string | undefined = KEY) => new GeminiClient({ apiKey, fetch });
+
+/** Answers the stream call with one chunk, then keeps the body open until the request is aborted. */
+const hangingFetch: FetchLike = async (_url, init) =>
+  new Response(
+    new ReadableStream<Uint8Array>({
+      start(c) {
+        c.enqueue(new TextEncoder().encode(sse([part("first ")])));
+        init.signal?.addEventListener("abort", () => c.error(init.signal?.reason));
+      },
+    }),
+    { status: 200 },
+  );
+
+describeLlmClientContract("GeminiClient (fake fetch)", {
+  answering: () => client(fakeFetch(200, sse([part("Good candidates are congested.", { finishReason: "STOP" })]))),
+  authFailing: () => client(fakeFetch(403, "{}")),
+  unavailable: () => new GeminiClient({ apiKey: undefined, fetch: fakeFetch(200, "") }),
+  hanging: () => client(hangingFetch),
+});
 
 describe("GeminiClient.stream", () => {
   it("maps thought summaries and text to LlmStreamEvents in order, then done", async () => {
