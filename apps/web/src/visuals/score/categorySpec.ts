@@ -33,6 +33,8 @@ export const categoryResult = z.object({
   weight: finite.check(z.gte(0), z.lte(1)),
   mode: z.enum(["relative", "absolute"]),
   scale: z.optional(z.enum(["percent", "minmax"])),
+  // The unit of every airport's raw value ("%", "% per year", "departures/yr"); absent in older outputs.
+  unit: z.optional(z.string()),
   note: z.optional(nullable(z.string())),
   // The tool returns an error, not an empty list, when no code is found: the generic card shows anything else.
   airports: z.array(airport).check(z.minLength(1)),
@@ -65,8 +67,14 @@ export function sortBySubScore(airports: readonly CategoryAirport[]): CategoryAi
   return [...airports].sort((a, b) => key(b) - key(a));
 }
 
-/** The raw value as the full number (up to 2 decimals): 266820 -> "266,820", 0.868 -> "0.87"; missing -> "—". */
-export const formatRaw = (raw: number | null): string => (raw === null ? "—" : formatFull(raw));
+/** The raw value as the full number (up to 2 decimals) with its unit: 30.8 + "%" -> "30.8%", 266820 + "departures/yr" -> "266,820 departures/yr"; missing -> "—". */
+export const formatRaw = (raw: number | null, unit?: string): string => {
+  if (raw === null) return "—";
+  const n = formatFull(raw);
+  if (unit === undefined || unit === "") return n;
+  // "30.8%", "6.2% per year" stay attached to the number; word units get a space: "266,820 departures/yr".
+  return unit.startsWith("%") ? `${n}${unit}` : `${n} ${unit}`;
+};
 
 /** One airport as a score-view `Category`, so the shared CategoryDetail can draw it (no contribution here). */
 export const asCategory = (result: CategoryResult, a: CategoryAirport): Category => ({

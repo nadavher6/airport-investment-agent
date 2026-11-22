@@ -1,6 +1,6 @@
 /**
  * Fixtures in the per-category tool output shape (#61), copied from the real tools
- * (`apps/server/src/agent/tools/categoryTools.ts`) run on main dde1b37: get_unmet_demand([LAX]),
+ * (`apps/server/src/agent/tools/categoryTools.ts`) run on main dde1b37 (with the `unit` field added by the tool since): get_unmet_demand([LAX]),
  * get_congestion([LAX, SNA]) and get_congestion([SNA, 2A3, LAX, ATL, ZZZ]) (2A3 has no T-100 record, so its
  * congestion is missing; ZZZ is not found). Plain JSON, as the tool_result carries it.
  */
@@ -12,6 +12,7 @@ export const CATEGORY_ONE = {
   "weight": 0.3,
   "mode": "absolute",
   "scale": "percent",
+  "unit": "%",
   "note": "Load factor = passengers ÷ seats (BTS T-100 (latest 12 months)). A capacity-pressure proxy for spill: turned-away demand becomes material above ~80-85% load factor; true spill needs booking data. Sub-score = the load factor as a percentage (81.7% scores 81.7), capped at 100.",
   "airports": [
     {
@@ -41,6 +42,7 @@ export const CATEGORY_TWO = {
   "weight": 0.3,
   "mode": "absolute",
   "scale": "minmax",
+  "unit": "departures/yr",
   "note": "Annual departures (operations) from BTS T-100 (latest 12 months) — a traffic-volume proxy; a true utilization ratio (operations ÷ FAA ASV) needs runway-capacity data not freely tabulated.",
   "airports": [
     {
@@ -83,6 +85,7 @@ export const CATEGORY_FOUR = {
   "weight": 0.3,
   "mode": "absolute",
   "scale": "minmax",
+  "unit": "departures/yr",
   "note": "Annual departures (operations) from BTS T-100 (latest 12 months) — a traffic-volume proxy; a true utilization ratio (operations ÷ FAA ASV) needs runway-capacity data not freely tabulated.",
   "airports": [
     {

@@ -51,7 +51,7 @@ describe("category view: 1 airport is a card", () => {
     render(<ToolUseBlockView block={block(CATEGORY_ONE, "get_unmet_demand")} />);
     const card = screen.getByRole("article", { name: "Unmet demand (load factor): LAX" });
     expect(screen.getByText(/Unmet demand \(load factor\) · 30% of the final score · Scored against all US airports/)).toBeInTheDocument();
-    expect(within(card).getByLabelText("Raw value, 81.9")).toHaveClass("viz-kpi__tile");
+    expect(within(card).getByLabelText("Raw value, 81.9%")).toHaveClass("viz-kpi__tile");
     expect(within(card).getByLabelText("Sub-score, 81.9, / 100")).toHaveClass("viz-kpi__tile");
     expect(within(card).getByRole("meter")).toHaveAttribute("aria-valuenow", "81.9");
     expect(within(card).getByText(lax.evidence!.explanation)).toBeInTheDocument();
@@ -72,6 +72,34 @@ describe("category view: 1 airport is a card", () => {
   });
 });
 
+describe("category view: the raw value carries its unit", () => {
+  const withUnit = (category: string, label: string, unit: string, raw: number): JsonValue => {
+    const o = structuredClone(CATEGORY_ONE) as Record<string, unknown>;
+    o.category = category;
+    o.label = label;
+    o.unit = unit;
+    (o.airports as Array<Record<string, unknown>>)[0]!.raw = raw;
+    return o as JsonValue;
+  };
+
+  it.each([
+    ["get_unmet_demand", "unmet_demand", "Unmet demand (load factor)", "%", 81.9, "81.9%"],
+    ["get_long_haul_share", "long_haul", "Long-haul share", "%", 30.8, "30.8%"],
+    ["get_growth", "growth", "Growth / durability", "% per year", 6.2, "6.2% per year"],
+    ["get_congestion", "congestion", "Congestion / capacity pressure", "departures/yr", 266820, "266,820 departures/yr"],
+  ] as const)("%s shows %s raw as %s", (tool, category, label, unit, raw, shown) => {
+    render(<ToolUseBlockView block={block(withUnit(category, label, unit, raw), tool)} />);
+    expect(screen.getByLabelText(`Raw value, ${shown}`)).toHaveClass("viz-kpi__tile");
+  });
+
+  it("an output without a unit still shows the plain number", () => {
+    const o = structuredClone(CATEGORY_ONE) as Record<string, unknown>;
+    delete o.unit;
+    render(<ToolUseBlockView block={block(o as JsonValue, "get_unmet_demand")} />);
+    expect(screen.getByLabelText("Raw value, 81.9")).toBeInTheDocument();
+  });
+});
+
 describe("category view: 2 airports side by side", () => {
   it("uses #39's compare grid with raw value, sub-score and evidence rows", () => {
     render(<ToolUseBlockView block={block(CATEGORY_TWO, "get_congestion", ["LAX", "SNA"])} />);
@@ -81,8 +109,8 @@ describe("category view: 2 airports side by side", () => {
       "SNA · John Wayne/Orange County",
     ]);
     expect([...grid.querySelectorAll(".viz-compare__label")].map((l) => l.textContent)).toEqual(["Raw value", "Sub-score", "Evidence"]);
-    expect(within(grid).getByRole("group", { name: "Raw value, LAX · Los Angeles International" })).toHaveTextContent("266,820");
-    expect(within(grid).getByRole("group", { name: "Raw value, SNA · John Wayne/Orange County" })).toHaveTextContent("51,447");
+    expect(within(grid).getByRole("group", { name: "Raw value, LAX · Los Angeles International" })).toHaveTextContent("266,820 departures/yr");
+    expect(within(grid).getByRole("group", { name: "Raw value, SNA · John Wayne/Orange County" })).toHaveTextContent("51,447 departures/yr");
     expect(within(grid).getAllByRole("meter").map((m) => m.getAttribute("aria-valuenow"))).toEqual(["100", "50.3"]);
   });
 });
@@ -92,7 +120,7 @@ describe("category view: 3-5 airports are a table", () => {
     render(<ToolUseBlockView block={block(CATEGORY_FOUR, "get_congestion", ["SNA", "2A3", "LAX", "ATL", "ZZZ"])} />);
     const rows = screen.getAllByTestId("category-row");
     expect(rows.map((r) => within(r).getByRole("button").textContent?.replace("▸", ""))).toEqual(["LAX", "ATL", "SNA", "2A3"]);
-    expect(rows[0]).toHaveTextContent("266,820");
+    expect(rows[0]).toHaveTextContent("266,820 departures/yr");
     expect(within(rows[3]!).getByTitle("Not computed")).toBeInTheDocument();
     expect(screen.getByText("Not found: ZZZ")).toBeInTheDocument();
     expect(screen.getByRole("table", { name: "Airports by Congestion / capacity pressure sub-score" })).toBeInTheDocument();

@@ -52,7 +52,7 @@ function CategoryCard({ result, airport }: { result: CategoryResult; airport: Ca
           spec={{
             type: "kpi",
             items: [
-              { label: "Raw value", value: formatRaw(airport.raw) },
+              { label: "Raw value", value: formatRaw(airport.raw, result.unit) },
               { label: "Sub-score", value: formatScore(airport.subScore), unit: "/ 100" },
             ],
           }}
@@ -69,7 +69,7 @@ function CategoryCard({ result, airport }: { result: CategoryResult; airport: Ca
 /** 2 airports: #39's compare grid, one row each for the raw value, the sub-score and the evidence. */
 function CategoryCompare({ result, airports }: { result: CategoryResult; airports: readonly [CategoryAirport, CategoryAirport] }) {
   const rows: GridRow[] = [
-    { label: "Raw value", cells: airports.map((a, i) => <span key={i} className="score-cell__value">{formatRaw(a.raw)}</span>) },
+    { label: "Raw value", cells: airports.map((a, i) => <span key={i} className="score-cell__value">{formatRaw(a.raw, result.unit)}</span>) },
     { label: "Sub-score", cells: airports.map((a, i) => <SubScore key={i} result={result} airport={a} />) },
     { label: "Evidence", cells: airports.map((a, i) => <Evidence key={i} airport={a} />) },
   ];
@@ -103,7 +103,7 @@ function Row({ result, airport, rank }: { result: CategoryResult; airport: Categ
           </button>
         </td>
         <td>{airport.name}</td>
-        <td className="viz-num">{formatRaw(airport.raw)}</td>
+        <td className="viz-num">{formatRaw(airport.raw, result.unit)}</td>
         <td className="viz-num">
           {isScored(airport) ? (
             <span className="score-cell">
