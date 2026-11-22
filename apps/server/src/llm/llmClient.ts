@@ -14,6 +14,8 @@ export interface LlmRequest {
   readonly messages: readonly LlmMessage[];
   /** Optional; the owner supplies it later. Passed through if given. */
   readonly system?: string;
+  /** Model for this call. Unset: the client's own default (see MODELS in models.ts). */
+  readonly model?: string;
   /** Abort = cancel the call / kill the process. */
   readonly signal: AbortSignal;
 }

@@ -31,22 +31,27 @@ describe("POST /api/chat with gemini", () => {
     const events = parseSse(res.text);
     expect(events.map((e) => e.type)).toEqual(["message_start", "tool_call", "tool_result", "text_delta", "text_delta", "message_end"]);
     expect(events.flatMap((e) => (e.type === "text_delta" ? [e.delta] : [])).join("")).toBe("Good candidates are congested.");
-    // One call for the classify step (#13), one for the answer.
-    const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:streamGenerateContent?alt=sse";
-    expect(urls).toEqual([url, url]);
+    // The fake replies plain text, so the classify step (#13, fast model) retries once (#19), then the answer (main model) (#17).
+    const url = (model: string) => `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse`;
+    expect(urls).toEqual([url("gemini-flash-lite-latest"), url("gemini-flash-lite-latest"), url("gemini-3.5-flash")]);
   });
 
+  // #22: the classifier call fails first, is tried 3 times (real 0.5 s + 1 s backoff here), and the turn ends with
+  // the classifier's plain-English error; the main model is never called.
   it("returns 503 JSON before the stream when Gemini rejects the key, without echoing it", async () => {
-    const { app } = wiredApp(400, JSON.stringify({ error: { status: "INVALID_ARGUMENT", details: [{ reason: "API_KEY_INVALID" }] } }));
+    const { app, urls } = wiredApp(400, JSON.stringify({ error: { status: "INVALID_ARGUMENT", details: [{ reason: "API_KEY_INVALID" }] } }));
     const res = await request(app).post(API_ROUTES.chat).send(body).expect(503);
     expect(res.headers["content-type"]).toMatch(/json/);
-    expect(res.body.error).toEqual({ code: "model_unavailable", message: expect.stringMatching(/Gemini rejected the API key/) });
+    expect(res.body.error).toEqual({ code: "model_unavailable", message: "The classifier is unavailable right now. Please try again." });
     expect(res.text).not.toContain(TEST_GEMINI_KEY);
+    expect(urls).toHaveLength(3);
   });
 
   it("returns 503 JSON before the stream on a 429 quota error", async () => {
-    const res = await request(wiredApp(429, "{}").app).post(API_ROUTES.chat).send(body).expect(503);
-    expect(res.body.error.message).toMatch(/quota/i);
+    const { app, urls } = wiredApp(429, "{}");
+    const res = await request(app).post(API_ROUTES.chat).send(body).expect(503);
+    expect(res.body.error.message).toBe("The classifier is unavailable right now. Please try again.");
+    expect(urls).toHaveLength(3);
   });
 
   it("returns 503 without calling Gemini when GEMINI_API_KEY is not set", async () => {

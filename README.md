@@ -65,8 +65,8 @@ The optional first `classify_message` pair (LLM-backed models only) is the one p
 
 For an LLM-backed model, the first step of every turn is a message classifier: it labels the latest user
 message `greeting`, `capabilities`, `off_topic` or `in_scope` (the fallback) and is shown as a
-`classify_message` `tool_call`/`tool_result` pair with the output `{ label, reason }`, right after
-`message_start` and before any thinking. The label does not change what happens next yet.
+`classify_message` `tool_call`/`tool_result` pair with the output `{ label, reason, attempts }`, right after
+`message_start` and before any thinking. `attempts` is 2 when the first answer was not a valid label and the classifier was asked once more. `capabilities` and `off_topic` change what happens next: the agent streams one fixed answer (`apps/server/src/agent/responses/capabilities.ts`, `offTopic.ts`) as a single `text_delta` and does not call the main model (off_topic covers prompt injection); the other labels continue to the model as before. If the classifier's LLM call itself fails (an API or transport error, not a bad label), it is tried up to 3 times in total with a 0.5 s then 1 s backoff (an abort stops it at once); after the 3rd failure the turn ends with a pre-stream `503 model_unavailable` error ("The classifier is unavailable right now. Please try again.") and the main model is not called. There is no silent `in_scope` fallback for a failed call.
 
 Closing the connection aborts the agent run via an `AbortSignal` (it cancels the classifier call too).
 

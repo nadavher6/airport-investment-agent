@@ -16,7 +16,7 @@ const config = loadConfig();
 // The selected model's provider gets every LLM call: a `claude -p` child (claude-headless) or the Gemini API.
 const claude = new ClaudeHeadlessClient({ config: config.claude, home: homedir(), ...(process.env.CLAUDE_CONFIG_DIR ? { configDir: process.env.CLAUDE_CONFIG_DIR } : {}) });
 const llmClients = { "claude-headless": claude, gemini: new GeminiClient({ apiKey: config.gemini.apiKey }) };
-const agent = new LlmPassthroughAgent(llmClients);
+const agent = new LlmPassthroughAgent(llmClients, config.claude.model);
 const app = createApp({ config, agent, llmClients });
 
 // Express 5 also calls this callback on the server's "error" event (e.g. EADDRINUSE).
