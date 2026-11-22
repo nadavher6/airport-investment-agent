@@ -39,8 +39,12 @@ export interface Resolution {
   readonly codes: readonly string[];
   /** How many distinct airports the candidates resolved to before the cap. */
   readonly total: number;
-  /** Candidate codes that get_airport_by_code did not confirm (dropped). */
+  /** Candidate codes that get_airport_by_code answered with not_found (dropped). Never put in the system context: they are model-returned text. */
   readonly unknownCodes: readonly string[];
+  /** Candidate codes whose lookup itself failed (tool error): not scored, but not known to be wrong. Same rule: never echoed. */
+  readonly failedCodes: readonly string[];
+  /** How many of `codes` were named by the user/model (kept ahead of the place airports). */
+  readonly namedKept: number;
 }
 
 const isObject = (value: JsonValue | undefined): value is { readonly [key: string]: JsonValue } =>
@@ -81,12 +85,17 @@ export async function resolveCandidates(
   const named = new Map<string, Resolved>();
   const places = new Map<string, Resolved>();
   const unknownCodes: string[] = [];
+  const failedCodes: string[] = [];
 
   const codes = [...new Set(candidates.codes.map((c) => c.trim().toUpperCase()))];
   for (const code of codes) {
     const step = await runToolStep(tools.getAirportByCode, { code }, messageId, signal);
     steps.push(step);
-    const airport = step.result.ok ? asAirport(step.result.output) : undefined;
+    if (!step.result.ok) {
+      failedCodes.push(code);
+      continue;
+    }
+    const airport = asAirport(step.result.output);
     if (airport === undefined) unknownCodes.push(code);
     else named.set(airport.code, airport);
   }
@@ -109,5 +118,7 @@ export async function resolveCandidates(
     codes: [...keptNamed, ...keptPlaces].map((a) => a.code),
     total: named.size + places.size,
     unknownCodes,
+    failedCodes,
+    namedKept: keptNamed.length,
   };
 }

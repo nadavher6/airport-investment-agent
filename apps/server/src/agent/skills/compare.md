@@ -16,7 +16,7 @@ The UI renders the deterministic score view: side-by-side reports for 2 airports
 
 ## Formatting rules
 - Short Markdown: the bold verdict line, then `###` sections and bullets. No walls of text.
-- **2 airports:** you may add ONE `compare` fence with **markdown text blocks only**, with rows such as "Strengths", "Risks" and "Best fit for". Put no number in it unless it is copied exactly from the tool result.
+- **2 airports:** you may add ONE `compare` fence with **markdown text blocks only**, with rows such as "Strengths", "Risks" and "Best fit for". The body must be **valid JSON** (the UI parses it, and shows an error box otherwise): `{ "columns": [airport A, airport B], "rows": [{ "label": string, "cells": [[block], [block]] }] }`, exactly 2 columns, one cell per column in every row, and each cell a list of `{ "kind": "markdown", "text": string }` blocks, as in the example below. Put no number in it unless it is copied exactly from the tool result.
 - **3–5 airports:** one bullet per airport, in score order ("**#1 DEN (82)**: …"). No extra table: the UI has one.
 - **Never invent numbers.** Every number you quote must appear in the tool result (the only exception is the verdict's gap between two final scores).
 - Do not use `chart`, `table` or `kpi` fences for score data: the score view covers it.
@@ -36,9 +36,14 @@ The UI renders the deterministic score view: side-by-side reports for 2 airports
 Scored relative to each other (100 = best of these two, not of the US). Coverage is 1 for both: no category is missing.
 
 ```compare
-Strengths | LAX: a congested, international gateway | SNA: steady growth
-Risks | LAX: traffic still below CY2019 | SNA: small and almost all domestic
-Best fit for | LAX: capacity and terminal expansion | SNA: incremental modernization
+{
+  "columns": ["LAX", "SNA"],
+  "rows": [
+    { "label": "Strengths", "cells": [[{ "kind": "markdown", "text": "A congested, international gateway" }], [{ "kind": "markdown", "text": "Steady growth" }]] },
+    { "label": "Risks", "cells": [[{ "kind": "markdown", "text": "Traffic still below CY2019" }], [{ "kind": "markdown", "text": "Small and almost all domestic" }]] },
+    { "label": "Best fit for", "cells": [[{ "kind": "markdown", "text": "Capacity and terminal expansion" }], [{ "kind": "markdown", "text": "Incremental modernization" }]] }
+  ]
+}
 ```
 
 A return of LAX traffic to growth would widen the gap; more SNA international service would narrow it.

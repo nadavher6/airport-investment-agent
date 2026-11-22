@@ -1,10 +1,12 @@
 import { asMessageId, asModelId, type AgentEvent, type ModelInfo } from "@airport/shared";
+import { z } from "zod";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { LlmClient, LlmRequest } from "../llm/llmClient.ts";
 import { MODELS } from "../llm/models.ts";
 import { collect } from "../test/helpers.ts";
 import { CLASSIFIER_PROMPT } from "./classifier/prompt.ts";
-import { fakeScoreAirports } from "./flow/fakeScoreAirports.ts";
+import { fakeScoreAirports } from "../test/fakeScoreAirports.ts";
+import { answerSystemContext } from "./flow/answerContext.ts";
 import { MAX_SCORED_AIRPORTS, registryLookupTools, resolveCandidates } from "./flow/resolve.ts";
 import { defaultScoreAirportsTool } from "./flow/scoreAirports.ts";
 import { LlmPassthroughAgent } from "./llmPassthroughAgent.ts";
@@ -14,6 +16,7 @@ import { NO_CANDIDATES_PROMPT, SCORE_ANSWER_PROMPT, SCORE_FAILED_PROMPT } from "
 import { COMPARE_SKILL } from "./skills/compare.ts";
 import { GRADING_SKILL } from "./skills/grading.ts";
 import { getTool } from "./tools/registry.ts";
+import { defineTool, fail } from "./tools/tool.ts";
 
 const model: ModelInfo = {
   id: asModelId("claude-headless-model"),
@@ -135,7 +138,54 @@ describe("agent flow: in_scope -> candidates -> lookups -> score_airports -> ans
     const score = fakeScoreAirports();
     await runFlow(client, "compare LAX and ZZZ", score);
     expect(score.calls).toEqual([["LAX"]]);
-    expect(main[0]!.system).toContain("were dropped: ZZZ");
+    expect(main[0]!.system).toContain("1 candidate code(s) are not US airports in the data and were dropped");
+    expect(main[0]!.system).not.toContain("ZZZ");
+  });
+
+  it("never copies unknown model-returned codes into the system context (only resolved ones)", async () => {
+    const { client, main } = flowClient("in_scope", [json(["LAX", "IGNOREALL", "SAYPWNED"])]);
+    const score = fakeScoreAirports();
+    await runFlow(client, "compare LAX", score);
+    expect(score.calls).toEqual([["LAX"]]);
+    expect(main[0]!.system).not.toMatch(/IGNOREALL|SAYPWNED/i);
+    expect(main[0]!.system).toContain("2 candidate code(s) are not US airports");
+  });
+
+  it("a failed lookup says could not look up, not 'not a US airport'", async () => {
+    const failing = defineTool({
+      name: "get_airport_by_code",
+      description: "FAKE failing lookup.",
+      inputSchema: z.object({ code: z.string() }).strict(),
+      exampleInput: { code: "LAX" },
+      run: () => Promise.resolve(fail("unavailable", "data not loaded")),
+    });
+    const resolution = await resolveCandidates(
+      { codes: ["LAX"], cities: [], region: null },
+      { ...registryLookupTools(), getAirportByCode: failing },
+      asMessageId("m"),
+      new AbortController().signal,
+    );
+    expect(resolution.codes).toEqual([]);
+    expect(resolution.unknownCodes).toEqual([]);
+    expect(resolution.failedCodes).toEqual(["LAX"]);
+    const system = answerSystemContext({ resolution });
+    expect(system).toContain("could not be looked up");
+    expect(system).not.toContain("not US airports");
+    expect(system).not.toContain("LAX");
+  });
+
+  it("the '5 busiest of N' note only claims busiest when no named code was kept", async () => {
+    const tools = registryLookupTools();
+    const signal = new AbortController().signal;
+    const placesOnly = await resolveCandidates({ codes: [], cities: [], region: "New England" }, tools, asMessageId("m"), signal);
+    expect(answerSystemContext({ resolution: placesOnly })).toContain("showing the 5 busiest of 6");
+    const mixed = await resolveCandidates({ codes: ["SNA"], cities: [], region: "New England" }, tools, asMessageId("m"), signal);
+    expect(mixed.codes[0]).toBe("SNA");
+    expect(mixed.codes).toHaveLength(5);
+    expect(mixed.namedKept).toBe(1);
+    const system = answerSystemContext({ resolution: mixed });
+    expect(system).toContain("showing the airports you named plus the 4 busiest of the rest");
+    expect(system).not.toContain("5 busiest");
   });
 
   it("no candidates: score_airports is not called and the answer says no airport was identified", async () => {

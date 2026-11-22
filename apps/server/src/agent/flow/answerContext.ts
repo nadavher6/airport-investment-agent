@@ -13,14 +13,25 @@ export interface ScoreOutcome {
 
 function notes(resolution: Resolution): string[] {
   const out: string[] = [];
-  if (resolution.total > resolution.codes.length) {
+  const { total, codes, namedKept } = resolution;
+  if (total > codes.length) {
+    // Named airports are kept ahead of the place airports, so "busiest" only describes the place airports.
+    const note =
+      namedKept === 0
+        ? `showing the ${codes.length} busiest of ${total}`
+        : `showing the airports you named plus the ${codes.length - namedKept} busiest of the rest`;
     out.push(
-      `The question matched ${resolution.total} airports; only the ${resolution.codes.length} busiest (latest enplanements) were scored. ` +
-        `Say so in the answer: "showing the ${resolution.codes.length} busiest of ${resolution.total}".`,
+      namedKept === 0
+        ? `The question matched ${total} airports; only the ${codes.length} busiest (latest enplanements) were scored. Say so in the answer: "${note}".`
+        : `The question matched ${total} airports; the airports named in it were kept and the other slots went to the busiest (latest enplanements) of the rest, ${codes.length} scored in all. Say so in the answer: "${note}".`,
     );
   }
+  // Model-returned codes are never copied into the system context: only counts.
   if (resolution.unknownCodes.length > 0) {
-    out.push(`These codes are not US airports in the data and were dropped: ${resolution.unknownCodes.join(", ")}. Say so briefly.`);
+    out.push(`${resolution.unknownCodes.length} candidate code(s) are not US airports in the data and were dropped. Say so briefly.`);
+  }
+  if (resolution.failedCodes.length > 0) {
+    out.push(`${resolution.failedCodes.length} candidate code(s) could not be looked up (a tool error, not a wrong code) and were not scored. Say so briefly.`);
   }
   return out;
 }

@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+import { z } from "zod";
 import { describe, expect, it } from "vitest";
 import { COMPARE_SKILL, usesCompareSkill } from "./compare.ts";
 
@@ -19,13 +20,31 @@ describe("the compare skill (#46)", () => {
     }
   });
 
-  it("its examples only use numbers present in their fixture (or a gap between two final scores, or a rank)", () => {
-    const allowed = new Set(numbersIn(FIXTURE_TEXT));
-    const scores = [...FIXTURE.two.ranking, ...FIXTURE.four.ranking].map((r) => r.score);
-    const gaps = new Set(scores.flatMap((a) => scores.map((b) => Math.round((a - b) * 10) / 10)));
-    const ranks = new Set([...EXAMPLES.matchAll(/#(\d)/g)].map((m) => Number(m[1])));
-    const unknown = numbersIn(EXAMPLES).filter((n) => !allowed.has(n) && !gaps.has(n) && !ranks.has(n));
-    expect(unknown).toEqual([]);
+  it("each example only uses numbers present in its own score result (or the gap between two of its final scores)", () => {
+    // Split at the second "## Example"; strip the "#n" rank tokens so the digit is not read as a number.
+    const at = EXAMPLES.indexOf("## Example: 4 airports");
+    const parts = { two: EXAMPLES.slice(0, at), four: EXAMPLES.slice(at) } as const;
+    for (const key of ["two", "four"] as const) {
+      const allowed = new Set(numbersIn(JSON.stringify(FIXTURE[key])));
+      const scores = FIXTURE[key].ranking.map((r) => r.score);
+      const gaps = new Set(scores.flatMap((a) => scores.map((b) => Math.round((a - b) * 10) / 10)));
+      const text = parts[key].replace(/^## Example.*$/m, "").replace(/#\d/g, "");
+      const unknown = numbersIn(text).filter((n) => !allowed.has(n) && !gaps.has(n));
+      expect(unknown, key).toEqual([]);
+    }
+  });
+
+  it("the compare fence example is valid JSON of the web's compare shape (the web test parses the same file with parseCompare)", () => {
+    const bodies = [...COMPARE_SKILL.matchAll(/```compare\n([\s\S]*?)\n```/g)].map((m) => m[1] ?? "");
+    expect(bodies).toHaveLength(1);
+    const spec = z
+      .object({
+        columns: z.array(z.string().min(1)).length(2),
+        rows: z.array(z.object({ label: z.string().min(1), cells: z.array(z.array(z.object({ kind: z.literal("markdown"), text: z.string() }).strict())) }).strict()).min(1),
+      })
+      .strict()
+      .parse(JSON.parse(bodies[0] ?? ""));
+    for (const row of spec.rows) expect(row.cells).toHaveLength(spec.columns.length);
   });
 
   it.each([

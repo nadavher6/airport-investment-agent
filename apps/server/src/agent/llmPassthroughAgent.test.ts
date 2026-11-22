@@ -4,7 +4,7 @@ import { HttpError } from "../http/errors.ts";
 import { LlmError, type LlmClient, type LlmRequest, type LlmStreamEvent } from "../llm/llmClient.ts";
 import { collect } from "../test/helpers.ts";
 import { CLASSIFIER_PROMPT } from "./classifier/prompt.ts";
-import { fakeScoreAirports } from "./flow/fakeScoreAirports.ts";
+import { fakeScoreAirports } from "../test/fakeScoreAirports.ts";
 import { CANDIDATE_PROMPT } from "./prompts/candidates.ts";
 import { NO_CANDIDATES_PROMPT } from "./prompts/scoreAnswer.ts";
 import { LlmPassthroughAgent } from "./llmPassthroughAgent.ts";

@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { defineTool, fail, ok, type ToolRunResult } from "../tools/tool.ts";
-import { SCORE_AIRPORTS_TOOL_NAME, type ScoreAirportsTool } from "./scoreAirports.ts";
+import { defineTool, fail, ok, type ToolRunResult } from "../agent/tools/tool.ts";
+import { SCORE_AIRPORTS_TOOL_NAME, type ScoreAirportsTool } from "../agent/flow/scoreAirports.ts";
 
 /** A recording fake score_airports, in #38's output shape. For tests only: no real scoring. */
 export interface FakeScoreAirports {
