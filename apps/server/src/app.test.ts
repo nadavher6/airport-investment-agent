@@ -1,7 +1,7 @@
 import type { AddressInfo } from "node:net";
 import { API_ROUTES, asMessageId, asModelId, type AgentEvent } from "@airport/shared";
 import request from "supertest";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { Agent } from "./agent/agent.ts";
 import { createApp } from "./app.ts";
 import { DEFAULT_MODEL_ID } from "./catalog/models.ts";
@@ -55,6 +55,34 @@ describe("POST /api/chat", () => {
     expect(res.body.error).toEqual({ code: "bad_request", message: "Request body is not valid JSON" });
   });
 
+  // Regression: body-parser errors other than bad JSON used to become a logged 500.
+  it("returns 413 payload_too_large for a body over the limit", async () => {
+    const res = await request(appWith())
+      .post(API_ROUTES.chat)
+      .send({ ...chatBody, padding: "x".repeat(1_200_000) })
+      .expect(413);
+    expect(res.body.error).toEqual({ code: "payload_too_large", message: "Request body is too large" });
+  });
+
+  it("returns 415 for an unsupported charset", async () => {
+    const res = await request(appWith())
+      .post(API_ROUTES.chat)
+      .set("Content-Type", "application/json; charset=latin9")
+      .send(JSON.stringify(chatBody))
+      .expect(415);
+    expect(res.body.error.code).toBe("bad_request");
+  });
+
+  it("streams when the history contains an empty assistant turn", async () => {
+    const messages = [
+      { role: "user", content: "rank airports" },
+      { role: "assistant", content: "" },
+      { role: "user", content: "continue" },
+    ];
+    const res = await request(appWith()).post(API_ROUTES.chat).send({ ...chatBody, messages }).expect(200);
+    expect(parseSse(res.text)).toEqual(script);
+  });
+
   it("returns 404 for an unknown model", async () => {
     const res = await request(appWith())
       .post(API_ROUTES.chat)
@@ -85,7 +113,8 @@ describe("POST /api/chat", () => {
     });
   });
 
-  it("aborts the agent run when the client disconnects", async () => {
+  it("aborts the agent run when the client disconnects, without logging", async () => {
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
     let resolveAborted!: () => void;
     const aborted = new Promise<void>((resolve) => (resolveAborted = resolve));
     const hangingAgent: Agent = {
@@ -109,7 +138,9 @@ describe("POST /api/chat", () => {
       await res.body!.getReader().read(); // first frame arrived
       client.abort();
       await expect(aborted).resolves.toBeUndefined();
+      expect(consoleError).not.toHaveBeenCalled();
     } finally {
+      consoleError.mockRestore();
       server.closeAllConnections();
       server.close();
     }
