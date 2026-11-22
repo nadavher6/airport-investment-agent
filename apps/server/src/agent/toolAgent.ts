@@ -19,7 +19,8 @@ import { selectFocusedRecords } from "./memory/assemble.ts";
 import { resolveFocus } from "./memory/focus.ts";
 import { buildSystemPrompt } from "./prompt.ts";
 import { CAPABILITIES_ANSWER } from "./responses/capabilities.ts";
-import { OFF_TOPIC_ANSWER } from "./responses/offTopic.ts";
+import { GREETING_ANSWER } from "./responses/greeting.ts";
+import { offTopicAnswer } from "./responses/offTopic.ts";
 import { TOOLS } from "./tools/registry.ts";
 import type { RegisteredTool } from "./tools/tool.ts";
 import { looksLikeToolCall, parseModelStep } from "./toolCall.ts";
@@ -37,9 +38,11 @@ import {
   type ToolsOffReason,
 } from "./toolGuard.ts";
 
-const STATIC_ANSWERS: Readonly<Partial<Record<ClassificationLabel, string>>> = {
-  capabilities: CAPABILITIES_ANSWER,
-  off_topic: OFF_TOPIC_ANSWER,
+/** Labels answered with one fixed text and no main LLM call (as on main, #21/#44). */
+const STATIC_ANSWERS: Readonly<Partial<Record<ClassificationLabel, () => string>>> = {
+  greeting: () => GREETING_ANSWER,
+  capabilities: () => CAPABILITIES_ANSWER,
+  off_topic: () => offTopicAnswer(),
 };
 
 const API_CODE: Record<LlmError["code"], ApiErrorCode> = {
@@ -50,8 +53,8 @@ const API_CODE: Record<LlmError["code"], ApiErrorCode> = {
   internal: "internal",
 };
 
-/** The tools the loop may call: the registry minus `score_airports` (#48, #49). */
-export const LOOP_TOOLS: readonly RegisteredTool[] = TOOLS.filter((t) => t.name !== "score_airports");
+/** The tools the loop may call: the whole registry, score_airports included (owner, #48 rework). */
+export const LOOP_TOOLS: readonly RegisteredTool[] = TOOLS;
 
 /**
  * The main agent: classify (shown as classify_message), then run a tool-use loop. Because the
@@ -96,7 +99,7 @@ export class ToolAgent implements Agent {
     if (staticAnswer !== undefined) {
       yield { type: "message_start", messageId, modelId: input.model.id };
       yield* classified;
-      yield { type: "text_delta", messageId, delta: staticAnswer };
+      yield { type: "text_delta", messageId, delta: staticAnswer() };
       yield { type: "message_end", messageId, stopReason: "end_turn" };
       return;
     }

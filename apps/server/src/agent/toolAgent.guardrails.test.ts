@@ -3,7 +3,8 @@ import { describe, expect, it } from "vitest";
 import type { LlmClient, LlmMessage, LlmRequest } from "../llm/llmClient.ts";
 import { collect } from "../test/helpers.ts";
 import { CLASSIFIER_PROMPT } from "./classifier/prompt.ts";
-import { ToolAgent } from "./toolAgent.ts";
+import { LOOP_TOOLS, ToolAgent } from "./toolAgent.ts";
+import { MAX_AIRPORT_CODES } from "./tools/scoreAirports.ts";
 import { FAKE_TOOLS, lookupTool } from "./toolGuard.fixtures.ts";
 import { GRACEFUL_FALLBACK, MAX_INVALID_RETRIES, MAX_TOOL_STEPS } from "./toolGuard.ts";
 
@@ -46,8 +47,9 @@ function fakeClient(replies: readonly Reply[], fallback = "Here is my answer.") 
   return { client, requests };
 }
 
-function runAgent(client: LlmClient, opts: { userText?: string; signal?: AbortSignal } = {}) {
-  const agent = new ToolAgent({ "claude-headless": client, gemini: client }, undefined, FAKE_TOOLS);
+function runAgent(client: LlmClient, opts: { userText?: string; signal?: AbortSignal; realTools?: boolean } = {}) {
+  const tools = opts.realTools === true ? LOOP_TOOLS : FAKE_TOOLS;
+  const agent = new ToolAgent({ "claude-headless": client, gemini: client }, undefined, tools);
   const messages: LlmMessage[] = [{ role: "user", content: opts.userText ?? "How busy is BOS?" }];
   return collect(
     agent.run({ request: { modelId: model.id, messages }, model, signal: opts.signal ?? new AbortController().signal }),
@@ -216,6 +218,39 @@ describe("ToolAgent guardrails (#49)", () => {
     expect(requests).toHaveLength(2);
     expect(loopCalls(events)).toHaveLength(1); // only the first, failed attempt; the retry is never run
     expect(events.some((e) => e.type === "message_end")).toBe(false);
+  });
+});
+
+describe("ToolAgent guardrails on the real loop tools (#49)", () => {
+  const scoreSchema = JSON.stringify(LOOP_TOOLS.find((t) => t.name === "score_airports")?.inputJsonSchema);
+
+  it("score_airports is in the loop", () => {
+    expect(LOOP_TOOLS.map((t) => t.name)).toContain("score_airports");
+  });
+
+  it("too many airports for score_airports is invalid_input with its schema, then the corrected call runs", async () => {
+    const tooMany = Array.from({ length: MAX_AIRPORT_CODES + 1 }, (_, i) => `A${String(i).padStart(2, "0")}`);
+    const { client, requests } = fakeClient([
+      JSON.stringify({ tool: "score_airports", input: { airport_codes: tooMany } }),
+      '{"tool":"score_airports","input":{"airport_codes":["BOS","LAX"]}}',
+      "LAX scores higher than BOS.",
+    ]);
+    const events = await runAgent(client, { realTools: true });
+    const feedback = feedbackBefore(requests, 1);
+    expect(feedback).toContain("code: invalid_input");
+    expect(feedback).toContain("tool: score_airports");
+    expect(feedback).toContain("problem: airport_codes — ");
+    expect(feedback).toContain(`expected input (JSON Schema): ${scoreSchema}`);
+    expect(loopResults(events).map((r) => r.ok)).toEqual([false, true]);
+    expect(textOf(events)).toBe("LAX scores higher than BOS.");
+  });
+
+  it("score_airports with no known code is a not_found: no retry asked", async () => {
+    const { client, requests } = fakeClient(['{"tool":"score_airports","input":{"airport_codes":["QQQ"]}}', "There is no data for QQQ."]);
+    const events = await runAgent(client, { realTools: true });
+    expect(feedbackBefore(requests, 1)).toContain("problem: not_found — ");
+    expect(feedbackBefore(requests, 1)).toContain("Do not retry it");
+    expect(textOf(events)).toContain("no data");
   });
 });
 
