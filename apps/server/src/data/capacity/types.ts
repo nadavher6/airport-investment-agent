@@ -20,6 +20,8 @@ export interface CapacityConfiguration {
   readonly asvRange: readonly [number, number];
   /** The ASV used: the midpoint of asvRange (the mix index is unknown), operations per year. */
   readonly asv: number;
+  /** Runways the configuration's sketch has. Fewer than the airport's layoutRunways means the ASV is understated. */
+  readonly runwaysUsed: number;
 }
 
 export interface CapacityAirport {
@@ -28,6 +30,8 @@ export interface CapacityAirport {
   readonly runways: readonly CapacityRunway[];
   /** Parallel-runway groups: the centerline spacings (ft) between neighbours in each group with 2+ runways. */
   readonly parallelSpacingsFt: readonly (readonly number[])[];
+  /** Runways in the layout after counting parallels under 700 ft apart as one (0 when there are none). */
+  readonly layoutRunways: number;
   /** Whether two non-parallel runways physically cross (null with fewer than two orientations). */
   readonly crossing: boolean | null;
   /** The Figure 2-1 configuration and ASV, or null when the layout could not be mapped. */

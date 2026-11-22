@@ -45,6 +45,12 @@ export const FIGURE_2_1_ASV: readonly Figure21Row[] = [
   { no: 19, label: "two close parallel pairs, divergent (open V), operations toward", asvByMixIndex: [375_000, 295_000, 275_000, 300_000, 355_000] },
 ];
 
+/** How many runways each Figure 2-1 configuration draws (configurations 1-19, as in the figure's sketches). */
+export const RUNWAYS_IN_CONFIGURATION: Readonly<Record<number, number>> = {
+  1: 1, 2: 2, 3: 2, 4: 2, 5: 3, 6: 3, 7: 3, 8: 4, 9: 2, 10: 3,
+  11: 3, 12: 3, 13: 4, 14: 2, 15: 2, 16: 3, 17: 3, 18: 4, 19: 4,
+};
+
 /** Figure 2-1 spacing bands for parallel runways (ft). Under 700 ft, two runways count as one. */
 export const MIN_PARALLEL_SPACING_FT = 700;
 export const INTERMEDIATE_SPACING_FT = 2_500;
@@ -151,6 +157,7 @@ export function configurationOf(no: number): CapacityConfiguration {
     label: row.label,
     asvRange: [Math.min(...row.asvByMixIndex), Math.max(...row.asvByMixIndex)],
     asv: asvMidpoint(row),
+    runwaysUsed: RUNWAYS_IN_CONFIGURATION[row.no] ?? 0,
   };
 }
 

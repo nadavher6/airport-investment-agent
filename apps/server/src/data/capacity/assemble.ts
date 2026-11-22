@@ -10,15 +10,12 @@ export const NO_COORDINATES = "NASR has no end coordinates for one or more runwa
 /** One airport's record: its runways, layout and Figure 2-1 configuration, or a reason it is missing. */
 export function assembleAirport(code: string, runways: readonly NasrRunway[]): CapacityAirport {
   const kept = runways.map(({ id, lengthFt, surface }) => ({ id, lengthFt, surface }));
-  if (runways.length === 0) {
-    return { code, runways: kept, parallelSpacingsFt: [], crossing: null, configuration: null, missingReason: NO_RUNWAY };
-  }
+  const base = { code, runways: kept, parallelSpacingsFt: [], crossing: null };
+  if (runways.length === 0) return { ...base, layoutRunways: 0, configuration: null, missingReason: NO_RUNWAY };
   // One runway is configuration 1 whatever its position, so it needs no coordinates.
-  if (runways.length === 1) {
-    return { code, runways: kept, parallelSpacingsFt: [], crossing: null, configuration: configurationOf(1) };
-  }
+  if (runways.length === 1) return { ...base, layoutRunways: 1, configuration: configurationOf(1) };
   if (runways.some((r) => r.ends === null)) {
-    return { code, runways: kept, parallelSpacingsFt: [], crossing: null, configuration: null, missingReason: NO_COORDINATES };
+    return { ...base, layoutRunways: runways.length, configuration: null, missingReason: NO_COORDINATES };
   }
   const summary = summarizeLayout(runways as readonly LocatedRunway[]);
   const configuration = bestConfiguration(summary.layout);
@@ -26,6 +23,7 @@ export function assembleAirport(code: string, runways: readonly NasrRunway[]): C
     code,
     runways: kept,
     parallelSpacingsFt: summary.parallelSpacingsFt,
+    layoutRunways: summary.layout.parallelGroups.reduce((n, g) => n + g.length, 0),
     crossing: summary.crossing,
     configuration,
     ...(configuration === null ? { missingReason: NO_RUNWAY } : {}),

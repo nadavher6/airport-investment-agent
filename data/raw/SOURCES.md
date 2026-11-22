@@ -210,3 +210,58 @@ the FAA files above.
   one airport's T-100 passengers can differ from its FAA enplanements by around 10% (ORD +10%, ATL −3%).
 - **Known quirk, accepted:** a tiny airport can have a load factor above 100% (more passengers than seats). In the
   committed file only **ODW** does: **108.3% from 2 departures**. It is kept as reported, not capped; see DESIGN.md §4.
+
+## FAA NASR runways and AC 150/5060-5: `data/capacity.json` (#54)
+
+Runway capacity for the congestion KPI (runway utilization = operations ÷ ASV). Method and assumptions: DESIGN.md §1
+"Runway capacity (ASV)" and §4.
+
+**Runway data: FAA NASR (National Airspace System Resources), 28-day subscription**
+- **Publisher:** FAA Aeronautical Information Services (the 5010 airport master records, published through NASR).
+- **Index page:** https://www.faa.gov/air_traffic/flight_info/aeronav/aero_data/NASR_Subscription/2026-10-29
+  (cycle effective **2026-10-29**, the current cycle on the day it was downloaded).
+- **File:** https://nfdc.faa.gov/webContent/28DaySub/extra/29_Oct_2026_APT_CSV.zip, 8,502,128 bytes,
+  SHA-256 `6e1e422f483d44cc8a38a1c97cf98e97588a6fc3fa857b39b5bdcbcfe8331154`. Downloaded **2026-11-22** with `curl`
+  (browser User-Agent). Free and public: no key, no login.
+- **Used from the zip:** `APT_RWY.csv` (one row per runway) and `APT_RWY_END.csv` (one row per runway end). Both are
+  gitignored under `data/raw/nasr/`; only the built `data/capacity.json` is committed.
+- **Fields read:** `EFF_DATE` (cycle), `SITE_TYPE_CODE` (only `A` = airport; heliports and seaplane bases are other
+  codes), `ARPT_ID` (FAA location ID, the same key as `data/enplanements.json`), `RWY_ID`, `RWY_LEN`,
+  `SURFACE_TYPE_CODE`, and per end `LAT_DECIMAL` / `LONG_DECIMAL`.
+- **Rebuild:** `npm run data:build-capacity` runs `scripts/download-faa-nasr.sh` (download into a new temporary
+  directory, SHA-256 check, extract the two CSVs into `data/raw/nasr/`), then `apps/server/src/data/capacity/build.ts`.
+  The build itself needs no network; the server and the tests read only the committed JSON
+  (`apps/server/src/data/capacity/dataset.ts`). A newer NASR cycle has a new URL and checksum: update the script and
+  this section together.
+- **Deterministic:** airports are written in code order and the file has no build date (`meta.nasrCycle` dates it),
+  so two builds from the same files are byte-identical (checked: SHA-256
+  `fc189a0ca5275ffea7dd7cadaca5fcc66badce9e81dc5ed860c88ae693c2340a` both times).
+- **Coverage:** the 575 airports of `data/enplanements.json`. 569 map to a configuration. 6 have no land runway in
+  NASR and are `configuration: null` with a `missingReason`: **ISN** (Sloulin Field, closed; replaced by XWA),
+  **PBI** (renamed: NASR lists Palm Beach International as **DJT**, and T-100 also reports it as DJT, so every T-100
+  KPI is already missing for PBI), **W33**, **CGA**, **KAE**, **MTM** (seaplane bases).
+
+**Which runways count** (`runwayKind` in `nasr.ts`): paved runways (surface contains `ASPH`, `CONC` or `PEM`); at an
+airport with no paved runway, its unpaved land runways (turf, gravel, dirt; many Alaskan airports with scheduled
+service). Helipads (`H…` IDs), water lanes and rooftop/deck pads never count.
+
+**Parallel test.** Two runways are parallel when their headings (from the end coordinates) differ by at most 10°.
+Over every runway pair at the 575 airports, the differences are under 1° (210 pairs), then 2.0° (ORD), 2.1° (MAF),
+2.2° (CNM), 3.8° (DFW), 5.0° (SLC, 17/35 against 16L/16R), 9.5° (BOS, 14/32 against 15R/33L), and the next is 17°.
+So any cut-off between 9.5° and 17° gives the same groups.
+
+**ASV table: FAA Advisory Circular AC 150/5060-5, *Airport Capacity and Delay*, Change 2 (1995-12-01)**
+- **URL:** https://www.faa.gov/documentLibrary/media/Advisory_Circular/150_5060_5.pdf, 12,753,978 bytes,
+  SHA-256 `fb0583932d2a7366ef195ad5707fa1edd27c0b7362a2cdc2e166537bf235fc72`, downloaded 2026-11-22. Not committed.
+- **Used:** Chapter 2, paragraphs 2-2 (assumptions; 2-2.f: 3,400 ft independent spacing needs PRM radar, else
+  4,300 ft), 2-3.b (the airport runs its highest-capacity configuration ~80% of the time), 2-4 (how to read the
+  figure), and **Figure 2-1 "Capacity and ASV for long range planning"** (AC pages 8–11): the ASV column for the 19
+  runway-use configurations and five mix-index bands. The values were read from the scanned figure and typed into
+  `FIGURE_2_1_ASV` (`apps/server/src/data/capacity/asv.ts`); `asv.test.ts` pins three rows.
+- **ASV used:** the midpoint of each row's lowest and highest value, because the mix index needs fleet-mix data that
+  is not freely tabulated.
+
+**Operations** are not in `data/capacity.json`: they are T-100 departures × 2 from `data/t100.json` (above), computed
+when scoring, as issue #54 specifies. The issue allows FAA OPSNET/ATADS tower counts (which include general
+aviation) instead if they are freely downloadable; this PR did not find or use a public file download of them, so
+utilization leaves general-aviation and military operations out (a lower bound on that side; see DESIGN.md §4).
