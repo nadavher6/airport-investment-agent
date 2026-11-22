@@ -1,0 +1,13 @@
+{
+  "name": "@airport/shared",
+  "version": "0.1.0",
+  "private": true,
+  "description": "API contract shared by server and web: types plus a few tiny runtime helpers (ID brand constructors, nowIso, assertNever, API_ROUTES).",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  }
+}
