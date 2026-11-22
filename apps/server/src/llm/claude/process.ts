@@ -1,7 +1,9 @@
 import { spawn, type ChildProcess } from "node:child_process";
-import { mkdtemp, rm } from "node:fs/promises";
+import { rmSync } from "node:fs";
+import { mkdtemp, realpath, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { claudeProjectDirToRemove, SANDBOX_PREFIX } from "./projectDir.ts";
 
 export interface ChildExit {
   readonly code: number | null;
@@ -36,9 +38,33 @@ export function terminate(child: ChildProcess, graceMs: number): void {
   child.once("exit", () => clearTimeout(timer));
 }
 
-/** An empty directory for the child's cwd, so it never sees (or touches) the repo. */
-export const makeSandboxDir = (): Promise<string> => mkdtemp(join(tmpdir(), "airport-claude-"));
-export const removeSandboxDir = (dir: string): Promise<void> => rm(dir, { recursive: true, force: true });
+/**
+ * An empty directory for the child's cwd, so it never sees (or touches) the repo. Returned resolved
+ * (/private/var/… on macOS), because Claude Code names its project dir after the resolved cwd.
+ */
+export const makeSandboxDir = async (): Promise<string> => realpath(await mkdtemp(join(tmpdir(), SANDBOX_PREFIX)));
+
+/**
+ * Removes what one run left behind: its sandbox dir, and the one `<home>/.claude/projects/<name>` dir
+ * Claude Code made for that exact cwd (only if claudeProjectDirToRemove accepts it). Never throws.
+ */
+export async function cleanupRun(home: string, sandboxCwd: string): Promise<void> {
+  await rm(sandboxCwd, { recursive: true, force: true }).catch(() => {});
+  const projectDir = claudeProjectDirToRemove(home, sandboxCwd);
+  if (projectDir) await rm(projectDir, { recursive: true, force: true }).catch(() => {});
+}
+
+/** cleanupRun for a synchronous `exit` handler. Never throws. */
+export function cleanupRunSync(home: string, sandboxCwd: string): void {
+  const projectDir = claudeProjectDirToRemove(home, sandboxCwd);
+  for (const dir of projectDir ? [sandboxCwd, projectDir] : [sandboxCwd]) {
+    try {
+      rmSync(dir, { recursive: true, force: true });
+    } catch {
+      // best effort on the way out
+    }
+  }
+}
 
 export interface CommandResult extends ChildExit {
   readonly stdout: string;

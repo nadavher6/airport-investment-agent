@@ -1,21 +1,23 @@
 import { API_ROUTES } from "@airport/shared";
 import request from "supertest";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterAll, afterEach, describe, expect, it } from "vitest";
 import { createApp } from "../app.ts";
 import { ClaudeHeadlessClient } from "../llm/claude/claudeHeadlessClient.ts";
-import { fakeClaude, type FakeClaude, type FakeClaudeSpec } from "../test/fakeClaude.ts";
+import { fakeClaude, fakeHome, type FakeClaude, type FakeClaudeSpec } from "../test/fakeClaude.ts";
 import { scriptedAgent, testConfig } from "../test/helpers.ts";
 
 const route = (provider: string) => API_ROUTES.providerHealth.replace(":provider", provider);
 
 let fake: FakeClaude | undefined;
+const home = fakeHome();
 afterEach(() => fake?.cleanup());
+afterAll(() => home.cleanup());
 
 /** The real ClaudeHeadlessClient behind the route, with a fake `claude` (or none). */
 function appWithClaude(spec: FakeClaudeSpec | null, providers: Parameters<typeof testConfig>[0] = []) {
   fake = spec ? fakeClaude(spec) : undefined;
   const config = testConfig(providers, { bin: fake?.bin ?? "/nope/claude" });
-  const claude = new ClaudeHeadlessClient({ config: config.claude, healthTimeoutMs: 500 });
+  const claude = new ClaudeHeadlessClient({ config: config.claude, home: home.home, healthTimeoutMs: 500 });
   return createApp({ config, agent: scriptedAgent([]), llmClients: { "claude-headless": claude } });
 }
 
