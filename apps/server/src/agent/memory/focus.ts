@@ -1,7 +1,10 @@
 import { findAirportsByCityTool } from "../tools/findAirportsByCity.ts";
 import { findAirportsByRegionTool } from "../tools/findAirportsByRegion.ts";
 import { getAirportByCodeTool } from "../tools/getAirportByCode.ts";
+import { enplanementsDataset } from "../../data/enplanements/dataset.ts";
 import type { CityResult } from "../../data/places/airports.ts";
+import { metrosFile, regionsFile } from "../../data/places/files.ts";
+import { normalizePlace } from "../../data/places/text.ts";
 import type { MemoryState } from "./types.ts";
 
 /**
@@ -50,69 +53,153 @@ const unique = (codes: readonly string[]): string[] => [...new Set(codes)];
 
 /** Longest place name scanned, in words ("salt lake city", "dallas fort worth"). */
 const MAX_PLACE_WORDS = 4;
-/** Most words of one message scanned for place names (bounds the lookups per turn). */
+/** Most words of one message scanned for airports (bounds the work per turn). */
 const MAX_SCANNED_WORDS = 60;
-/** find_airports_by_city resolves at most this many names per call (#23's MAX_CITIES). */
-const CITY_BATCH = 50;
 const WORD = /[\p{L}\p{N}]+(?:['’.][\p{L}\p{N}]+)*/gu;
 
-/** The canonical code when get_airport_by_code (#23) knows the token, in any case; else undefined. */
+// Built once at module load from #23's data, so a turn costs only Map/Set lookups (no fuzzy search).
+/** Every code get_airport_by_code can confirm (a pre-filter; hits are still confirmed by the tool). */
+const KNOWN_CODES: ReadonlySet<string> = new Set(
+  Object.values(enplanementsDataset.airports).map((r) => r.airportCode.toUpperCase()),
+);
+/** Normalized place text -> which #23 tool resolves it. Same keys as #23 (normalizePlace). */
+const PLACE_KIND: ReadonlyMap<string, "region" | "city"> = (() => {
+  const m = new Map<string, "region" | "city">();
+  for (const r of Object.values(enplanementsDataset.airports)) {
+    const key = normalizePlace(r.city);
+    if (key !== "") m.set(key, "city");
+  }
+  for (const [name, metro] of Object.entries(metrosFile.metros)) {
+    for (const text of [name, ...metro.aliases]) m.set(normalizePlace(text), "city");
+  }
+  for (const [name, region] of Object.entries(regionsFile.regions)) {
+    for (const text of [name, ...region.aliases]) m.set(normalizePlace(text), "region");
+  }
+  m.delete("");
+  return m;
+})();
+
+/** Words before a lowercase token that mark it as an airport ("compare lax", "fly to bos"). */
+const CUE_BEFORE: readonly (readonly string[])[] = [
+  ["compare"],
+  ["vs"],
+  ["versus"],
+  ["fly", "to"],
+  ["fly", "from"],
+  ["flights", "to"],
+  ["flights", "from"],
+  ["flights", "out", "of"],
+];
+/** Words right after a lowercase token that mark it as an airport ("den airport", "lax vs"). */
+const CUE_AFTER: ReadonlySet<string> = new Set(["airport", "airports", "vs", "versus"]);
+
+/** The canonical code when get_airport_by_code (#23) confirms the token; else undefined. */
 function confirmCode(token: string): string | undefined {
   const found = getAirportByCodeTool.run({ code: token });
   return "error" in found ? undefined : found.code;
 }
 
-interface Span {
-  readonly start: number;
-  readonly end: number; // exclusive
-  readonly text: string;
-}
-
 const cityCodes = (result: CityResult | undefined): string[] => (result ? result.airports.map((a) => a.code) : []);
 
+/** Airports for a place key the index matched; the #23 tools return them (a match never hits the fuzzy path). */
+function placeCodes(key: string, kind: "region" | "city"): string[] {
+  if (kind === "region") {
+    const region = findAirportsByRegionTool.run({ region: key });
+    return region.cities.flatMap((city) => cityCodes(region.results[city]));
+  }
+  return cityCodes(findAirportsByCityTool.run({ cities: [key] }).results[key]);
+}
+
+const isUpperCode = (w: string): boolean => /^[A-Z]{3}$/.test(w);
+const isCodeShaped = (w: string): boolean => /^[A-Za-z]{3}$/.test(w);
+
 /**
- * Explicit airports in the message, in message order. Place names (1-4 word phrases) are resolved
- * with find_airports_by_region and find_airports_by_city (#23), longest phrase first, so
- * "San Diego" is a city and not the code SAN. Leftover 3-letter words are kept only when
- * get_airport_by_code (#23) confirms them. There is no local table of places or codes.
+ * Explicit airports in the message, in message order (option B, one pass):
+ * - an UPPERCASE 3-letter word is a code when get_airport_by_code confirms it;
+ * - otherwise the longest 1-4 word phrase that names a #23 region or city/metro is resolved by
+ *   find_airports_by_region / find_airports_by_city ("San Diego", "NYC");
+ * - a lowercase or mixed-case 3-letter word is a code only next to an airport cue ("airport",
+ *   "fly to/from", "flights to/from/out of", "vs", "compare"), in a comma / "and" list with a
+ *   confirmed code, or when it is the whole message ("lax?"); it is still confirmed by the tool.
  */
 export function extractExplicitCodes(message: string): string[] {
-  const words = [...message.matchAll(WORD)].map((m) => m[0]).slice(0, MAX_SCANNED_WORDS);
-  const spans: Span[] = [];
-  for (let len = Math.min(MAX_PLACE_WORDS, words.length); len >= 1; len--) {
-    for (let start = 0; start + len <= words.length; start++) {
-      spans.push({ start, end: start + len, text: words.slice(start, start + len).join(" ") });
+  const matches = [...message.matchAll(WORD)].slice(0, MAX_SCANNED_WORDS);
+  const words = matches.map((m) => m[0]);
+  const lower = words.map((w) => w.toLowerCase());
+  const norm = words.map((w) => normalizePlace(w));
+  /** Codes found at each word index (place hits are stored at their first word). */
+  const found = new Map<number, string[]>();
+  /** Lowercase/mixed code-shaped words that are known codes, waiting for a cue. */
+  const pending: number[] = [];
+  const confirmed = new Set<number>();
+
+  for (let i = 0; i < words.length; ) {
+    const w = words[i] ?? "";
+    if (isUpperCode(w) && KNOWN_CODES.has(w)) {
+      const code = confirmCode(w);
+      if (code !== undefined) {
+        found.set(i, [code]);
+        confirmed.add(i);
+        i++;
+        continue;
+      }
     }
+    let matched = 0;
+    for (let len = Math.min(MAX_PLACE_WORDS, words.length - i); len >= 1 && matched === 0; len--) {
+      const key = norm.slice(i, i + len).filter((t) => t !== "").join(" ");
+      const kind = key === "" ? undefined : PLACE_KIND.get(key);
+      if (kind === undefined) continue;
+      const codes = placeCodes(key, kind);
+      if (codes.length > 0) {
+        found.set(i, codes);
+        matched = len;
+      }
+    }
+    if (matched > 0) {
+      i += matched;
+      continue;
+    }
+    if (isCodeShaped(w) && KNOWN_CODES.has(w.toUpperCase())) pending.push(i);
+    i++;
   }
 
-  const cityResults: Record<string, CityResult> = {};
-  const names = [...new Set(spans.map((sp) => sp.text))];
-  for (let i = 0; i < names.length; i += CITY_BATCH) {
-    Object.assign(cityResults, findAirportsByCityTool.run({ cities: names.slice(i, i + CITY_BATCH) }).results);
+  const wholeMessage = normalizePlace(message);
+  const hasCue = (i: number): boolean =>
+    wholeMessage === lower[i] ||
+    CUE_AFTER.has(lower[i + 1] ?? "") ||
+    CUE_BEFORE.some((cue) => cue.every((c, k) => lower[i - cue.length + k] === c));
+  /** Two code words form a list when only a comma, or the word "and", separates them. */
+  const linked = (a: number, b: number): boolean => {
+    if (b === a + 1) {
+      const ma = matches[a];
+      const mb = matches[b];
+      if (ma === undefined || mb === undefined) return false;
+      return message.slice((ma.index ?? 0) + ma[0].length, mb.index ?? 0).includes(",");
+    }
+    return b === a + 2 && lower[a + 1] === "and";
+  };
+
+  const accepted = new Set<number>(confirmed);
+  for (const i of pending) if (hasCue(i)) accepted.add(i);
+  // Spread acceptance along comma / "and" lists of code words, both directions, until stable.
+  const codeWords = [...new Set([...confirmed, ...pending])].sort((x, y) => x - y);
+  for (let changed = true; changed; ) {
+    changed = false;
+    for (let k = 0; k + 1 < codeWords.length; k++) {
+      const a = codeWords[k] ?? -1;
+      const b = codeWords[k + 1] ?? -1;
+      if (!linked(a, b) || accepted.has(a) === accepted.has(b)) continue;
+      accepted.add(accepted.has(a) ? b : a);
+      changed = true;
+    }
+  }
+  for (const i of pending) {
+    if (!accepted.has(i)) continue;
+    const code = confirmCode(words[i] ?? "");
+    if (code !== undefined) found.set(i, [code]);
   }
 
-  const used = new Array<boolean>(words.length).fill(false);
-  const hits: { start: number; codes: string[] }[] = [];
-  for (const sp of spans) {
-    if (used.slice(sp.start, sp.end).some(Boolean)) continue;
-    let codes: string[] = [];
-    const region = findAirportsByRegionTool.run({ region: sp.text });
-    if (region.matchedAs === "region") {
-      for (const city of region.cities) codes.push(...cityCodes(region.results[city]));
-    } else {
-      codes = cityCodes(cityResults[sp.text]);
-    }
-    if (codes.length === 0 && sp.end - sp.start === 1 && /^[A-Za-z]{3}$/.test(sp.text)) {
-      const code = confirmCode(sp.text);
-      if (code !== undefined) codes = [code];
-    }
-    if (codes.length > 0) {
-      used.fill(true, sp.start, sp.end);
-      hits.push({ start: sp.start, codes });
-    }
-  }
-  hits.sort((a, b) => a.start - b.start);
-  return unique(hits.flatMap((h) => h.codes));
+  return unique([...found.entries()].sort((x, y) => x[0] - y[0]).flatMap(([, codes]) => codes));
 }
 
 /** The list position an ordinal reference points to (`-1` = last), or undefined if there is none. */

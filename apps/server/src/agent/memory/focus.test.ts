@@ -27,12 +27,61 @@ describe("extractExplicitCodes", () => {
     expect(extractExplicitCodes("WHY is LAX higher")).toEqual(["LAX"]);
   });
 
-  it("accepts only codes get_airport_by_code confirms, in any case", () => {
-    expect(extractExplicitCodes("add bos")).toEqual(["BOS"]);
-    expect(extractExplicitCodes("compare lax and Sfo")).toEqual(["LAX", "SFO"]);
+  it("an UPPERCASE word is a code only when get_airport_by_code confirms it", () => {
     expect(extractExplicitCodes("How does the FAA rank the USA hubs?")).toEqual([]);
     expect(extractExplicitCodes("What ROI would the CEO expect?")).toEqual([]);
     expect(extractExplicitCodes("Is ZZQ a hub?")).toEqual([]);
+    expect(extractExplicitCodes("growth at DAY and SEA")).toEqual(["DAY", "SEA"]);
+  });
+
+  it("'per day' and other lowercase words without an airport cue give no code", () => {
+    expect(extractExplicitCodes("how many passengers per day")).toEqual([]);
+    expect(extractExplicitCodes("is the sun belt growing?")).toEqual([]);
+    expect(extractExplicitCodes("I am far from sure, it is hot")).toEqual([]);
+    expect(extractExplicitCodes("add bos")).toEqual([]);
+  });
+
+  it("'compare lax and sfo' gives LAX and SFO (compare cue + 'and' list)", () => {
+    expect(extractExplicitCodes("compare lax and sfo")).toEqual(["LAX", "SFO"]);
+    expect(extractExplicitCodes("compare lax and Sfo")).toEqual(["LAX", "SFO"]);
+  });
+
+  it("'what about den airport' gives DEN (airport cue)", () => {
+    expect(extractExplicitCodes("what about den airport")).toEqual(["DEN"]);
+  });
+
+  it("lowercase codes after fly/flights cues, around 'vs', in a list with a confirmed code, or alone", () => {
+    expect(extractExplicitCodes("cheap to fly to bos?")).toEqual(["BOS"]);
+    expect(extractExplicitCodes("flights out of sea")).toEqual(["SEA"]);
+    expect(extractExplicitCodes("flights from den to sfo")).toEqual(["DEN"]);
+    expect(extractExplicitCodes("lax vs sfo")).toEqual(["LAX", "SFO"]);
+    expect(extractExplicitCodes("LAX, sfo and den")).toEqual(["LAX", "SFO", "DEN"]);
+    expect(extractExplicitCodes("lax?")).toEqual(["LAX"]);
+    expect(extractExplicitCodes("lax, sfo and den")).toEqual([]);
+  });
+
+  it("'NYC' is not a code and goes to the city tool", () => {
+    expect(extractExplicitCodes("NYC")).toEqual(cityCodes("NYC"));
+    expect(extractExplicitCodes("NYC")).not.toContain("NYC");
+  });
+
+  it("scans a 60-word message in under 5 ms (median of 9 runs after warm-up)", () => {
+    const msg =
+      "I would like to understand which of these airports has the most unmet demand and whether the capacity " +
+      "constraints at the busiest hubs justify a major expansion over the next decade given the growth in passenger " +
+      "traffic and the congestion we have seen in recent years across the country especially in large metro areas " +
+      "with several competing airports and limited land near Denver";
+    expect(msg.split(" ").length).toBeGreaterThanOrEqual(60);
+    for (let i = 0; i < 3; i++) extractExplicitCodes(msg);
+    const runs: number[] = [];
+    for (let i = 0; i < 9; i++) {
+      const t = performance.now();
+      extractExplicitCodes(msg);
+      runs.push(performance.now() - t);
+    }
+    runs.sort((a, b) => a - b);
+    // Threshold 5 ms on the median: the target itself; a warm run takes well under 1 ms.
+    expect(runs[4]).toBeLessThan(5);
   });
 
   it("does not replace the focus with non-airport caps words", () => {
