@@ -72,7 +72,9 @@ describe("per-category tools (#61)", () => {
     expect(out).toMatchObject({ category: key, label: def.label, weight: def.weight, mode: "absolute", notFound: [] });
     expect(out.airports.map((a) => a.airportCode)).toEqual(["LAX", "SNA"]);
     for (const a of out.airports) {
-      expect(Object.keys(a).sort()).toEqual(["airportCode", "available", "evidence", "name", "raw", "subScore"]);
+      // get_growth also carries the yearly series and trend facts (#67); the other three are only the category.
+      const keys = ["airportCode", "available", "evidence", "name", "raw", "subScore", ...(key === "growth" ? ["growth"] : [])];
+      expect(Object.keys(a).sort()).toEqual(keys.sort());
       expect(a.available).toBe(true);
       expect(a.evidence?.value).toBe(a.raw);
       expect(a.evidence?.formula.length).toBeGreaterThan(0);
