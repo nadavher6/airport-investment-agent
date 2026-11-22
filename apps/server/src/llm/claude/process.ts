@@ -48,15 +48,15 @@ export const makeSandboxDir = async (): Promise<string> => realpath(await mkdtem
  * Removes what one run left behind: its sandbox dir, and the one `<home>/.claude/projects/<name>` dir
  * Claude Code made for that exact cwd (only if claudeProjectDirToRemove accepts it). Never throws.
  */
-export async function cleanupRun(home: string, sandboxCwd: string): Promise<void> {
+export async function cleanupRun(home: string, sandboxCwd: string, configDir?: string): Promise<void> {
   await rm(sandboxCwd, { recursive: true, force: true }).catch(() => {});
-  const projectDir = claudeProjectDirToRemove(home, sandboxCwd);
+  const projectDir = claudeProjectDirToRemove(home, sandboxCwd, configDir);
   if (projectDir) await rm(projectDir, { recursive: true, force: true }).catch(() => {});
 }
 
 /** cleanupRun for a synchronous `exit` handler. Never throws. */
-export function cleanupRunSync(home: string, sandboxCwd: string): void {
-  const projectDir = claudeProjectDirToRemove(home, sandboxCwd);
+export function cleanupRunSync(home: string, sandboxCwd: string, configDir?: string): void {
+  const projectDir = claudeProjectDirToRemove(home, sandboxCwd, configDir);
   for (const dir of projectDir ? [sandboxCwd, projectDir] : [sandboxCwd]) {
     try {
       rmSync(dir, { recursive: true, force: true });

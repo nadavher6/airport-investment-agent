@@ -14,6 +14,8 @@ export interface ClaudeHeadlessOptions {
    * removed after the run. Required, so tests always pass a temp fake home (index.ts: os.homedir()).
    */
   readonly home: string;
+  /** $CLAUDE_CONFIG_DIR, when set: Claude Code then keeps its projects in `<configDir>/projects`, not under home. */
+  readonly configDir?: string;
   /** How long a child gets between SIGTERM and SIGKILL. */
   readonly killGraceMs?: number;
   /** How long `claude --version` may take in health(). */
@@ -147,7 +149,7 @@ export class ClaudeHeadlessClient implements LlmClient {
       signal.removeEventListener("abort", onAbort);
       if (child) terminate(child, this.killGraceMs);
       if (exited) await exited;
-      await cleanupRun(home, cwd);
+      await cleanupRun(home, cwd, this.options.configDir);
       this.sandboxes.delete(cwd);
     }
   }
@@ -160,12 +162,12 @@ export class ClaudeHeadlessClient implements LlmClient {
     const children = [...this.running];
     for (const child of children) terminate(child, this.killGraceMs);
     await Promise.all(children.map(whenExited));
-    await Promise.all([...this.sandboxes].map((cwd) => cleanupRun(this.options.home, cwd)));
+    await Promise.all([...this.sandboxes].map((cwd) => cleanupRun(this.options.home, cwd, this.options.configDir)));
   }
 
   /** Last resort on process exit: synchronous SIGKILL and synchronous cleanup, so nothing outlives the server. */
   killAllNow(): void {
     for (const child of this.running) child.kill("SIGKILL");
-    for (const cwd of this.sandboxes) cleanupRunSync(this.options.home, cwd);
+    for (const cwd of this.sandboxes) cleanupRunSync(this.options.home, cwd, this.options.configDir);
   }
 }
