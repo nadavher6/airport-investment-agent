@@ -26,9 +26,7 @@ describe("tool registry", () => {
 
   it("every tool runs its own exampleInput to an ok result", async () => {
     for (const t of TOOLS) {
-      const input = t.exampleInput;
-      if (input === null || typeof input !== "object" || Array.isArray(input)) throw new Error(`${t.name}: example is not an object`);
-      expect((await t.run(input, ctx)).ok, t.name).toBe(true);
+      expect((await t.run(t.exampleInput, ctx)).ok, t.name).toBe(true);
     }
   });
 

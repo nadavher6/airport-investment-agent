@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
+import type { JsonValue } from "@airport/shared";
 import { defineTool, fail, ok, renderToolsForPrompt, toWireResult } from "./tool.ts";
 
 const ctx = { signal: new AbortController().signal };
@@ -45,7 +46,66 @@ describe("defineTool (validation guardrail)", () => {
   });
 
   it("rejects unknown/extra fields (strict schema)", async () => {
-    expect((await echo.run({ n: 1, sneaky: true }, ctx)).ok).toBe(false);
+    const result = await echo.run({ n: 1, sneaky: true }, ctx);
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error.code).toBe("invalid_input");
+  });
+
+  const badInputs: [string, JsonValue][] = [
+    ["null", null],
+    ["an empty object", {}],
+    ["an array", [1]],
+    ["a string", "n=1"],
+  ];
+  it.each(badInputs)("rejects %s as input with invalid_input (run not reached)", async (_label, input) => {
+    let called = false;
+    const tracked = defineTool({
+      name: "tracked",
+      description: "Tracks calls.",
+      inputSchema: z.object({ n: z.number() }).strict(),
+      exampleInput: { n: 1 },
+      run: () => {
+        called = true;
+        return Promise.resolve(ok(null));
+      },
+    });
+    const result = await tracked.run(input, ctx);
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error.code).toBe("invalid_input");
+    expect(called).toBe(false);
+  });
+
+  describe("nested input", () => {
+    const nested = defineTool({
+      name: "nested_tool",
+      description: "Nested input.",
+      inputSchema: z.object({ where: z.object({ city: z.string().min(1) }).strict() }).strict(),
+      exampleInput: { where: { city: "Boston" } },
+      run: (input) => Promise.resolve(ok({ city: input.where.city })),
+    });
+
+    it("accepts a valid nested object", async () => {
+      expect(await nested.run({ where: { city: "Boston" } }, ctx)).toEqual({ ok: true, output: { city: "Boston" } });
+    });
+
+    it("rejects an extra key inside the nested object (strict), naming the path", async () => {
+      const result = await nested.run({ where: { city: "Boston", state: "MA" } }, ctx);
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe("invalid_input");
+        expect(result.error.message).toContain("where");
+      }
+    });
+
+    it("rejects a wrong nested type, naming the field path but not echoing the value", async () => {
+      const result = await nested.run({ where: { city: 42 } }, ctx);
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe("invalid_input");
+        expect(result.error.message).toContain("where.city");
+        expect(result.error.message).not.toContain("42");
+      }
+    });
   });
 });
 

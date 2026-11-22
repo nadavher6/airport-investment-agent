@@ -84,7 +84,7 @@ export interface RegisteredTool {
    * Validates `rawInput` against `inputSchema` (failure: `invalid_input`), then runs the tool.
    * Never rejects: a throw, a rejection or an abort becomes an `internal` error.
    */
-  run(rawInput: JsonObject, ctx: ToolContext): Promise<ToolRunResult<JsonValue>>;
+  run(rawInput: JsonValue, ctx: ToolContext): Promise<ToolRunResult<JsonValue>>;
 }
 
 // ---------------------------------------------------------------------------
