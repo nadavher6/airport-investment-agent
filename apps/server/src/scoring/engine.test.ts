@@ -125,6 +125,13 @@ describe("scale: percent", () => {
     expect(percentScore(81.7, "lower")).toBe(18.3);
   });
 
+  it("percentScore treats NaN, +Infinity and -Infinity as missing (null)", () => {
+    for (const bad of [Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY]) {
+      expect(percentScore(bad, "higher")).toBeNull();
+      expect(percentScore(bad, "lower")).toBeNull();
+    }
+  });
+
   it("is the same in absolute (fixed reference) and relative (compared set) mode", () => {
     const absolute = buildScorer(rows, pk);
     const relative = buildScorer(rows.slice(0, 2), pk);

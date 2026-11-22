@@ -103,8 +103,9 @@ export function normalize(raw: number, bounds: Bounds, direction: Direction): nu
   return Math.round(oriented * 1000) / 10; // 0-100, one decimal
 }
 
-/** The "percent" scale: the raw percentage itself, clamped to 0-100, one decimal ("lower" = 100 − value). */
-export function percentScore(raw: number, direction: Direction): number {
+/** The "percent" scale: the raw percentage itself, clamped to 0-100, one decimal ("lower" = 100 − value). NaN and ±Infinity are missing (null). */
+export function percentScore(raw: number, direction: Direction): number | null {
+  if (!Number.isFinite(raw)) return null;
   const clamped = Math.min(100, Math.max(0, raw));
   return Math.round((direction === "higher" ? clamped : 100 - clamped) * 10) / 10;
 }
@@ -158,12 +159,17 @@ export function buildScorer<A>(
       const raw = k.extract(item);
       const noteField = k.note !== undefined ? { note: k.note } : {};
       const evidenceField = k.evidence ? { evidence: k.evidence(item) } : {};
-      if (raw === null || !Number.isFinite(raw)) {
+      const scored =
+        raw === null || !Number.isFinite(raw)
+          ? null
+          : k.scale === "percent"
+            ? percentScore(raw, k.direction)
+            : normalize(raw, bounds.get(k.key) as Bounds, k.direction);
+      if (raw === null || scored === null) {
         missing.push(k.key);
         return { key: k.key, label: k.label, weight: k.weight, available: false, raw: null, normalized: null, contribution: null, ...noteField, ...evidenceField };
       }
-      const normalized =
-        k.scale === "percent" ? percentScore(raw, k.direction) : normalize(raw, bounds.get(k.key) as Bounds, k.direction);
+      const normalized = scored;
       const renormWeight = availableWeight > 0 ? k.weight / availableWeight : 0;
       const contribution = Math.round(renormWeight * normalized * 10) / 10;
       composite += renormWeight * normalized;

@@ -11,7 +11,7 @@ The UI renders the deterministic score view: side-by-side reports for 2 airports
 1. **Verdict first:** one bold sentence naming the leader by **final score** (`ranking[*].score`) and the gap in points (the difference of the two final scores), e.g. "**DEN leads SFO by 18 points.**"
 2. **Why:** the 2–3 categories with the **largest contribution gap** (`ranking[*].breakdown[*].contribution`). Explain each in plain words, using its evidence `explanation`.
 3. **Trade-offs:** where a lower-ranked airport wins a category, say so.
-4. **Honesty:** state the `mode` ("scored relative to each other: 100 = best of this set, not of the US"), the `coverage` and any `missing` categories, the data windows (FAA CY2024 enplanements and CY2019→CY2024 growth; BTS T-100 latest 12 months), and any `notFound` codes.
+4. **Honesty:** state the `mode` ("scored relative to each other: for the min-max categories 100 = best of this set, not of the US; unmet demand is the load factor % itself, capped at 100"), the `coverage` and any `missing` categories, the data windows (FAA CY2024 enplanements and CY2019→CY2024 growth; BTS T-100 latest 12 months), and any `notFound` codes.
 5. **Close:** one line on what would change the ranking, or what data is missing.
 
 ## Formatting rules
@@ -33,7 +33,7 @@ The UI renders the deterministic score view: side-by-side reports for 2 airports
 - **Growth** is SNA's category: passengers grew 0.8% per year from CY2019 to CY2024, while LAX shrank by -2.5% per year.
 
 ### How to read this
-Scored relative to each other (100 = best of these two, not of the US). Coverage is 1 for both: no category is missing.
+Scored relative to each other (for the min-max categories 100 = best of these two, not of the US; unmet demand is the load factor % itself). Coverage is 1 for both: no category is missing.
 
 ```compare
 {
@@ -57,4 +57,4 @@ A return of LAX traffic to growth would widen the gap; more SNA international se
 - **#4 DEN (32.5):** the fastest growth (3.6% per year), but the lowest international share (5.8%).
 
 ### How to read this
-Scored relative to each other (100 = best of these four, not of the US). Coverage is 1 for all four: no category is missing. DFW and ATL are close, so a small change in load factor or growth could swap them.
+Scored relative to each other (for the min-max categories 100 = best of these four, not of the US; unmet demand is the load factor % itself). Coverage is 1 for all four: no category is missing. DFW and ATL are close, so a small change in load factor or growth could swap them.
