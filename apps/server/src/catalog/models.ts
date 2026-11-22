@@ -1,4 +1,5 @@
 import { asModelId, type ModelId, type ModelInfo, type ModelProvider } from "@airport/shared";
+import { MODELS } from "../llm/models.ts";
 import { findClaudeBinary } from "../llm/claude/binary.ts";
 import type { ServerConfig } from "../config.ts";
 
@@ -6,7 +7,7 @@ type ModelDefinition = Omit<ModelInfo, "available">;
 
 const MODEL_DEFINITIONS: readonly ModelDefinition[] = [
   {
-    id: asModelId("gemini-3.5-flash"),
+    id: asModelId(MODELS.gemini.main),
     label: "Gemini 3.5 Flash",
     provider: "gemini",
     description: "Fast, free-tier default with reasoning and tool calls.",

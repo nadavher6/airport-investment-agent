@@ -6,7 +6,7 @@ export interface ClaudeConfig {
   readonly bin: string | undefined;
   /** The PATH to search when `bin` is unset. */
   readonly searchPath: string;
-  /** CLAUDE_MODEL: passed as `--model` when set (e.g. "sonnet"). */
+  /** CLAUDE_MODEL: overrides the Claude MAIN model only (e.g. "sonnet"); the classifier keeps its own (#17). */
   readonly model: string | undefined;
 }
 

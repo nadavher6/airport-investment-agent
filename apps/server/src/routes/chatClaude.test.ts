@@ -49,7 +49,8 @@ describe("POST /api/chat with claude-headless", () => {
     const lines = [JSON.stringify({ type: "result", subtype: "success", is_error: true, result: "Not logged in · Please run /login" })];
     const res = await request(wiredApp({ lines, exitCode: 1 })).post(API_ROUTES.chat).send(body("claude-headless")).expect(503);
     expect(res.headers["content-type"]).toMatch(/json/);
-    expect(res.body.error).toMatchObject({ code: "model_unavailable", message: expect.stringMatching(/not logged in/i) });
+    // #22: the classifier call fails first (3 tries), so the error is the classifier's, not Claude's own text.
+    expect(res.body.error).toMatchObject({ code: "model_unavailable", message: "The classifier is unavailable right now. Please try again." });
   });
 
   it("returns 503 when the claude binary is missing", async () => {

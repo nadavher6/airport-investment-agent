@@ -9,7 +9,7 @@ describe("classificationToolEvents", () => {
     const [call, result] = classificationToolEvents(
       messageId,
       "hello",
-      { label: "greeting", reason: "Says hello." },
+      { label: "greeting", reason: "Says hello.", attempts: 1 },
       asToolCallId("t1"),
     );
     expect(call).toEqual({ type: "tool_call", messageId, toolCallId: "t1", name: CLASSIFY_MESSAGE_TOOL, input: { message: "hello" } });
@@ -18,12 +18,12 @@ describe("classificationToolEvents", () => {
       type: "tool_result",
       messageId,
       toolCallId: "t1",
-      result: { ok: true, output: { label: "greeting", reason: "Says hello." } },
+      result: { ok: true, output: { label: "greeting", reason: "Says hello.", attempts: 1 } },
     });
   });
 
   it("gives each pair a fresh shared tool call id by default", () => {
-    const c = { label: "in_scope", reason: "Airports." } as const;
+    const c = { label: "in_scope", reason: "Airports.", attempts: 1 } as const;
     const [a1, a2] = classificationToolEvents(messageId, "x", c);
     const [b1] = classificationToolEvents(messageId, "x", c);
     expect(a1.toolCallId).toBe(a2.toolCallId);
